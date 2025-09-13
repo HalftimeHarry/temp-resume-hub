@@ -45,4 +45,7 @@ tasks:
       fi
     command: |
       cd app
+      # Set dynamic origin for OAuth callbacks in Gitpod and trust proxy host
+      export AUTH_TRUST_HOST=true
+      export ORIGIN="$(gp url 5173)"
       pnpm run dev --host
