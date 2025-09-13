@@ -1,0 +1,20 @@
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 5173
+    onOpen: open-preview
+    name: SvelteKit
+
+tasks:
+  - name: Setup & Dev
+    init: |
+      corepack enable
+      cd app
+      pnpm install
+      printf '\n\n' | pnpm dlx sv add tailwindcss
+      printf '\n' | pnpm dlx shadcn-svelte@latest init
+      pnpm dlx shadcn-svelte@latest add button card
+    command: |
+      cd app
+      pnpm run dev --host
