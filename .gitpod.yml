@@ -9,12 +9,40 @@ ports:
 tasks:
   - name: Setup & Dev
     init: |
+      set -euo pipefail
       corepack enable
       cd app
       pnpm install
-      printf '\n\n' | pnpm dlx sv add tailwindcss
-      printf '\n' | pnpm dlx shadcn-svelte@latest init
-      pnpm dlx shadcn-svelte@latest add button card
+
+      # TailwindCSS: only add if not already present
+      if node -e "const p=require('./package.json'); process.exit((p.devDependencies&&p.devDependencies.tailwindcss)||(p.dependencies&&p.dependencies.tailwindcss)?0:1)"; then
+        echo "Tailwind already present"
+      elif [ -f tailwind.config.cjs ] || [ -f tailwind.config.ts ]; then
+        echo "Tailwind config exists"
+      else
+        printf '\n\n' | pnpm dlx sv add tailwindcss
+      fi
+
+      # shadcn-svelte: init only once
+      if [ -f components.json ]; then
+        echo "shadcn-svelte already initialized"
+      else
+        printf '\n' | pnpm dlx shadcn-svelte@latest init
+      fi
+
+      # shadcn-svelte components: add only if missing
+      need_button=0
+      need_card=0
+      [ -d src/lib/components/ui/button ] || need_button=1
+      [ -d src/lib/components/ui/card ] || need_card=1
+      if [ "$need_button" -eq 1 ] || [ "$need_card" -eq 1 ]; then
+        comps=""
+        [ "$need_button" -eq 1 ] && comps="$comps button"
+        [ "$need_card" -eq 1 ] && comps="$comps card"
+        pnpm dlx shadcn-svelte@latest add $comps
+      else
+        echo "shadcn-svelte components already present"
+      fi
     command: |
       cd app
       pnpm run dev --host
