@@ -27,7 +27,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway login --browserless
+          export RAILWAY_TOKEN=$RAILWAY_TOKEN
           railway link 387321dc-13de-40a6-88b7-b6218716fb27
           railway up --detach
 

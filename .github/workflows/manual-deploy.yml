@@ -34,8 +34,11 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           echo "🚂 Deploying to Railway project: resourceful-patience"
-          railway login --browserless
-          echo "✅ Logged in to Railway"
+          
+          # Configure Railway token via environment
+          echo "🔑 Setting up Railway authentication..."
+          export RAILWAY_TOKEN=$RAILWAY_TOKEN
+          echo "✅ Railway token configured"
           
           echo "🔗 Linking to existing project..."
           railway link 387321dc-13de-40a6-88b7-b6218716fb27
@@ -54,7 +57,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway login --browserless
+          export RAILWAY_TOKEN=$RAILWAY_TOKEN
           echo "📊 Checking deployment status..."
           railway status || echo "Status check failed"
 
@@ -62,7 +65,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway login --browserless
+          export RAILWAY_TOKEN=$RAILWAY_TOKEN
           
           # Try to get the domain
           DOMAIN=$(railway domain 2>/dev/null || echo "")
