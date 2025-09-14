@@ -26,9 +26,10 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 387321dc-13de-40a6-88b7-b6218716fb27
         run: |
           export RAILWAY_TOKEN=$RAILWAY_TOKEN
-          railway link 387321dc-13de-40a6-88b7-b6218716fb27
+          export RAILWAY_PROJECT_ID=$RAILWAY_PROJECT_ID
           railway up --detach
 
       - name: Wait for deployment

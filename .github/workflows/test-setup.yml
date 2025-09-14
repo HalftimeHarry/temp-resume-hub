@@ -89,14 +89,16 @@ jobs:
       - name: Test Railway login (dry run)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: 387321dc-13de-40a6-88b7-b6218716fb27
         run: |
           echo "🔑 Testing Railway authentication..."
           if [ ! -z "$RAILWAY_TOKEN" ]; then
             # Test authentication via environment variable
             export RAILWAY_TOKEN=$RAILWAY_TOKEN
-            echo "✅ Railway token configured"
-            echo "🔗 Testing project link..."
-            railway link 387321dc-13de-40a6-88b7-b6218716fb27 && echo "✅ Project link successful" || echo "❌ Project link failed"
+            export RAILWAY_PROJECT_ID=$RAILWAY_PROJECT_ID
+            echo "✅ Railway environment configured"
+            echo "🔗 Testing project access..."
+            railway status && echo "✅ Project access successful" || echo "❌ Project access failed"
             echo "📊 Project info:"
             echo "  Name: resourceful-patience"
             echo "  ID: 387321dc-13de-40a6-88b7-b6218716fb27"
