@@ -1,0 +1,32 @@
+# Ignore everything except backend
+*
+!backend/
+
+# But ignore these in backend
+backend/.env
+backend/pb_data/
+backend/pocketbase
+backend/node_modules/
+backend/.git/
+
+# App directory (frontend)
+app/
+
+# Git and CI
+.git/
+.github/
+.gitignore
+
+# Documentation
+*.md
+!backend/*.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

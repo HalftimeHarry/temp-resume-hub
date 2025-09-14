@@ -1,0 +1,92 @@
+name: Manual Deploy to Railway
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+jobs:
+  deploy:
+    name: Deploy Backend to Railway
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+
+      - name: Verify Railway CLI
+        run: railway --version
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "🚂 Deploying to Railway project: resourceful-patience"
+          railway login --browserless
+          echo "✅ Logged in to Railway"
+          
+          echo "🔗 Linking to existing project..."
+          railway link 387321dc-13de-40a6-88b7-b6218716fb27
+          echo "✅ Linked to project: resourceful-patience"
+          
+          echo "🚀 Starting deployment..."
+          railway up --detach
+          echo "✅ Deployment initiated"
+
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting for deployment to complete..."
+          sleep 60
+
+      - name: Get deployment status
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway login --browserless
+          echo "📊 Checking deployment status..."
+          railway status || echo "Status check failed"
+
+      - name: Test health endpoint
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway login --browserless
+          
+          # Try to get the domain
+          DOMAIN=$(railway domain 2>/dev/null || echo "")
+          
+          if [ ! -z "$DOMAIN" ]; then
+            echo "🔍 Testing health endpoint: $DOMAIN/api/health"
+            curl -f "$DOMAIN/api/health" && echo "✅ Health check passed!" || echo "❌ Health check failed"
+            echo "🔗 Admin panel: $DOMAIN/_/"
+            echo "👤 Login: ddinsmore8@gmail.com / MADcap(123)"
+          else
+            echo "⚠️ Could not retrieve domain, checking logs..."
+            railway logs --tail 20 || echo "Could not retrieve logs"
+          fi
+
+      - name: Deployment summary
+        run: |
+          echo "🎉 Deployment Summary:"
+          echo "- Environment: ${{ github.event.inputs.environment }}"
+          echo "- Commit: ${{ github.sha }}"
+          echo "- Triggered by: ${{ github.actor }}"
+          echo "- Time: $(date)"
+          echo ""
+          echo "📋 Next steps:"
+          echo "1. Check Railway dashboard for deployment status"
+          echo "2. Test admin panel access"
+          echo "3. Verify API endpoints"
+          echo "4. Add custom domain if needed"

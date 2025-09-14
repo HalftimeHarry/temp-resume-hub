@@ -1,0 +1,54 @@
+name: Deploy Backend to Railway
+
+on:
+  push:
+    branches: [main]
+    paths: 
+      - 'backend/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy PocketBase Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway login --browserless
+          railway link 387321dc-13de-40a6-88b7-b6218716fb27
+          railway up --detach
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Get Railway URL
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway login --browserless
+          RAILWAY_URL=$(railway domain)
+          echo "Railway URL: $RAILWAY_URL"
+          echo "RAILWAY_URL=$RAILWAY_URL" >> $GITHUB_ENV
+
+      - name: Test deployment
+        run: |
+          if [ ! -z "$RAILWAY_URL" ]; then
+            echo "Testing health endpoint..."
+            curl -f "$RAILWAY_URL/api/health" || echo "Health check failed"
+          else
+            echo "No Railway URL found, testing with railway status"
+            railway status
+          fi

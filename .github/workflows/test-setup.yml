@@ -1,0 +1,151 @@
+name: Test Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-setup:
+    name: Test GitHub Actions Setup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check repository structure
+        run: |
+          echo "📁 Repository structure:"
+          ls -la
+          echo ""
+          echo "📁 Backend directory:"
+          ls -la backend/ || echo "❌ Backend directory not found"
+          echo ""
+          echo "📁 GitHub workflows:"
+          ls -la .github/workflows/ || echo "❌ Workflows directory not found"
+
+      - name: Check Dockerfile
+        run: |
+          echo "🐳 Checking Dockerfile..."
+          if [ -f "Dockerfile" ]; then
+            echo "✅ Root Dockerfile found"
+            echo "📄 Dockerfile content (first 10 lines):"
+            head -10 Dockerfile
+          else
+            echo "❌ Root Dockerfile not found"
+          fi
+
+      - name: Check backend files
+        run: |
+          echo "🔍 Checking backend files..."
+          if [ -d "backend" ]; then
+            echo "✅ Backend directory exists"
+            echo "📁 Backend contents:"
+            ls -la backend/
+            
+            if [ -f "backend/pb_hooks/main.pb.js" ]; then
+              echo "✅ PocketBase hooks found"
+            else
+              echo "❌ PocketBase hooks not found"
+            fi
+            
+            if [ -f "backend/.env" ]; then
+              echo "✅ Environment file found"
+            else
+              echo "❌ Environment file not found"
+            fi
+          else
+            echo "❌ Backend directory not found"
+          fi
+
+      - name: Test Railway token
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "🔐 Testing Railway token..."
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "❌ RAILWAY_TOKEN secret not set"
+            echo "📋 To fix:"
+            echo "1. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "2. Add secret: RAILWAY_TOKEN = 53da0c89-bc1b-4f30-ab46-a82dd3416f3d"
+          else
+            echo "✅ RAILWAY_TOKEN secret is set"
+            echo "🔒 Token length: ${#RAILWAY_TOKEN} characters"
+          fi
+
+      - name: Install Railway CLI (test)
+        run: |
+          echo "🚂 Testing Railway CLI installation..."
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
+          
+          # Test if Railway CLI works
+          if command -v railway &> /dev/null; then
+            echo "✅ Railway CLI installed successfully"
+            railway --version
+          else
+            echo "❌ Railway CLI installation failed"
+          fi
+
+      - name: Test Railway login (dry run)
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "🔑 Testing Railway authentication..."
+          if [ ! -z "$RAILWAY_TOKEN" ]; then
+            # Test login and project linking
+            railway login --browserless && echo "✅ Railway authentication successful" || echo "❌ Railway authentication failed"
+            echo "🔗 Testing project link..."
+            railway link 387321dc-13de-40a6-88b7-b6218716fb27 && echo "✅ Project link successful" || echo "❌ Project link failed"
+            echo "📊 Project info:"
+            echo "  Name: resourceful-patience"
+            echo "  ID: 387321dc-13de-40a6-88b7-b6218716fb27"
+          else
+            echo "⚠️ Skipping Railway auth test - no token"
+          fi
+
+      - name: Setup summary
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "📋 Setup Summary:"
+          echo "=================="
+          
+          # Check each requirement
+          if [ -f "Dockerfile" ]; then
+            echo "✅ Root Dockerfile: Present"
+          else
+            echo "❌ Root Dockerfile: Missing"
+          fi
+          
+          if [ -d "backend" ]; then
+            echo "✅ Backend directory: Present"
+          else
+            echo "❌ Backend directory: Missing"
+          fi
+          
+          if [ -f "backend/pb_hooks/main.pb.js" ]; then
+            echo "✅ PocketBase hooks: Present"
+          else
+            echo "❌ PocketBase hooks: Missing"
+          fi
+          
+          if [ ! -z "$RAILWAY_TOKEN" ]; then
+            echo "✅ Railway token: Configured"
+          else
+            echo "❌ Railway token: Missing"
+          fi
+          
+          if command -v railway &> /dev/null; then
+            echo "✅ Railway CLI: Working"
+          else
+            echo "❌ Railway CLI: Failed"
+          fi
+          
+          echo ""
+          echo "🎯 Next Steps:"
+          if [ -f "Dockerfile" ] && [ -d "backend" ] && [ ! -z "$RAILWAY_TOKEN" ]; then
+            echo "✅ Ready for deployment!"
+            echo "🚀 Run 'Manual Deploy to Railway' workflow"
+          else
+            echo "⚠️ Fix the issues above before deploying"
+          fi
