@@ -1,233 +1,192 @@
-# Digital Resume Hub
+# 🎯 **Digital Resume Hub**
 
-A modern, full-stack resume builder and sharing platform built with SvelteKit and PocketBase.
+A modern, full-stack application for creating and sharing professional resumes online. Built with SvelteKit frontend and PocketBase backend, deployed on Railway and Netlify.
 
-## 🌟 Features
+## ✨ **Features**
 
-- ✅ **Modern UI**: Built with SvelteKit, TailwindCSS, and shadcn-svelte
-- ✅ **User Authentication**: Secure login/register with PocketBase
-- ✅ **Resume Builder**: Create and edit resumes with rich content
-- ✅ **Public Sharing**: Share resumes via custom URLs
-- ✅ **Responsive Design**: Works on desktop and mobile
-- ✅ **Real-time Updates**: Live preview and auto-save
-- ✅ **Multiple Templates**: Various resume layouts
-- ✅ **Export Options**: PDF and print-friendly formats
+- 🎨 **Modern UI**: Clean, responsive design with TailwindCSS and shadcn-svelte
+- 🔐 **User Authentication**: Secure login and registration system
+- 📝 **Resume Builder**: Interactive resume creation and editing
+- 🌐 **Public Sharing**: Share resumes with custom URLs
+- 📱 **Mobile Responsive**: Works perfectly on all devices
+- 🚀 **Fast Performance**: Optimized for speed and SEO
+- 🔄 **Real-time Updates**: Live preview and auto-save functionality
 
-## 🏗️ Architecture
+## 🏗️ **Tech Stack**
 
-```
-Frontend (SvelteKit)     Backend (PocketBase)
-digitalresumehub.com  ←→  api.digitalresumehub.com
-     ↓                         ↓
-   Netlify/Vercel           Railway
-```
+### **Frontend**
+- **Framework**: SvelteKit with TypeScript
+- **Styling**: TailwindCSS + shadcn-svelte components
+- **Build Tool**: Vite
+- **Testing**: Vitest + Testing Library
+- **Deployment**: Netlify
 
-## 🚀 Tech Stack
+### **Backend**
+- **Database**: PocketBase (SQLite with REST API)
+- **Authentication**: JWT-based auth with PocketBase
+- **File Storage**: PocketBase file handling
+- **Deployment**: Railway
 
-### Frontend
-- **SvelteKit** - Full-stack web framework
-- **TypeScript** - Type-safe development
-- **TailwindCSS** - Utility-first styling
-- **shadcn-svelte** - Beautiful UI components
-- **Vitest** - Testing framework
+### **DevOps**
+- **CI/CD**: GitHub Actions
+- **Version Control**: Git with automated deployments
+- **Monitoring**: Railway dashboard + Netlify analytics
 
-### Backend
-- **PocketBase** - Backend-as-a-Service
-- **SQLite** - Database
-- **Railway** - Cloud hosting
+## 🚀 **Quick Start**
 
-## 🛠️ Development Setup
+### **Prerequisites**
+- Node.js 18+ and npm
+- Git
+- Railway account (for backend)
+- Netlify account (for frontend)
 
-### Prerequisites
-- Node.js 20+
-- pnpm (recommended) or npm
-
-### 1. Clone Repository
+### **1. Clone Repository**
 ```bash
-git clone https://github.com/your-username/temp-resume-hub.git
+git clone https://github.com/HalftimeHarry/temp-resume-hub.git
 cd temp-resume-hub
 ```
 
-### 2. Backend Setup
-```bash
-cd backend
-
-# Download PocketBase (Linux/Mac)
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.21/pocketbase_0.22.21_linux_amd64.zip
-unzip pocketbase_0.22.21_linux_amd64.zip
-
-# Start PocketBase
-./pocketbase serve --http=0.0.0.0:8080
-```
-
-Visit `http://localhost:8080/_/` to set up admin account.
-
-### 3. Frontend Setup
+### **2. Setup Frontend**
 ```bash
 cd app
-
-# Install dependencies
-pnpm install
-
-# Copy environment file
+npm install
 cp .env.example .env
-
-# Start development server
-pnpm run dev
+# Edit .env with your backend URL
+npm run dev
 ```
 
-Visit `http://localhost:5173` to see the app.
+### **3. Access Live Backend**
+- **API**: https://pocketbase-production-1493.up.railway.app
+- **Admin Panel**: https://pocketbase-production-1493.up.railway.app/_/
+- **Credentials**: ddinsmore8@gmail.com / MADcap(123)
 
-## 📁 Project Structure
+## 🌐 **Live URLs**
+
+### **Production**
+- **Frontend**: https://digitalresumehub.com (planned)
+- **Backend API**: https://pocketbase-production-1493.up.railway.app
+- **Admin Panel**: https://pocketbase-production-1493.up.railway.app/_/
+
+### **Development**
+- **Frontend**: http://localhost:5173
+- **Backend**: Uses production API for development
+
+## 📁 **Project Structure**
 
 ```
 temp-resume-hub/
 ├── app/                    # SvelteKit frontend
 │   ├── src/
-│   │   ├── lib/
-│   │   │   ├── components/ui/  # shadcn-svelte components
-│   │   │   ├── pocketbase.ts   # PocketBase client
-│   │   │   └── config.ts       # App configuration
-│   │   ├── routes/             # SvelteKit routes
-│   │   └── tests/              # Test files
-│   ├── static/                 # Static assets
+│   │   ├── lib/           # Shared utilities and components
+│   │   ├── routes/        # SvelteKit pages and API routes
+│   │   └── app.html       # HTML template
+│   ├── static/            # Static assets
+│   ├── tests/             # Frontend tests
 │   └── package.json
-├── backend/                # PocketBase backend
-│   ├── pb_hooks/          # Custom API hooks
-│   ├── pb_migrations/     # Database migrations
-│   ├── Dockerfile         # Railway deployment
-│   └── railway.toml       # Railway configuration
-├── .github/workflows/     # CI/CD pipelines
-├── DEPLOYMENT.md          # Deployment guide
-└── DNS_SETUP.md          # Domain configuration
+├── backend/               # PocketBase configuration
+│   ├── pb_hooks/          # PocketBase JavaScript hooks
+│   ├── pb_migrations/     # Database schema migrations
+│   └── .env               # Backend environment variables
+├── .github/workflows/     # GitHub Actions CI/CD
+├── Dockerfile             # Railway deployment configuration
+├── railway.json           # Railway service configuration
+└── README.md              # This file
 ```
 
-## 🧪 Testing
+## 🔧 **Environment Configuration**
+
+### **Frontend (.env)**
+```bash
+PUBLIC_POCKETBASE_URL=https://pocketbase-production-1493.up.railway.app
+POCKETBASE_URL=https://pocketbase-production-1493.up.railway.app
+PUBLIC_APP_URL=https://digitalresumehub.com
+ORIGIN=https://digitalresumehub.com
+```
+
+### **Backend (.env)**
+```bash
+ADMIN_EMAIL=ddinsmore8@gmail.com
+ADMIN_PASSWORD=MADcap(123)
+APP_NAME=Digital Resume Hub
+API_URL=https://pocketbase-production-1493.up.railway.app
+```
+
+## 🚀 **Deployment**
+
+### **Automated Deployment**
+- **Backend**: Deploys to Railway via GitHub Actions
+- **Frontend**: Deploys to Netlify on git push
+- **Triggers**: Push to main branch or manual workflow dispatch
+
+### **Manual Deployment**
+```bash
+# Deploy backend to Railway
+npm run deploy:backend
+
+# Deploy frontend to Netlify
+npm run deploy:frontend
+```
+
+## 🧪 **Testing**
 
 ```bash
+# Run frontend tests
 cd app
-
-# Run tests
-pnpm run test
+npm run test
 
 # Run tests in watch mode
-pnpm run test:watch
+npm run test:watch
 
-# Run tests with UI
-pnpm run test:ui
+# Run tests with coverage
+npm run test:coverage
 ```
 
-## 🚀 Deployment
+## 📚 **API Documentation**
 
-### Quick Deploy
+### **Base URL**
+```
+https://pocketbase-production-1493.up.railway.app
+```
 
-1. **Backend (Railway)**:
-   - Fork this repository
-   - Connect to Railway
-   - Deploy `backend` directory
-   - Set custom domain: `api.digitalresumehub.com`
+### **Key Endpoints**
+- `GET /api/health` - Health check
+- `POST /api/collections/users/auth-with-password` - User login
+- `GET /api/collections/resumes/records` - Get resumes
+- `POST /api/collections/resumes/records` - Create resume
 
-2. **Frontend (Netlify)**:
-   - Connect repository to Netlify
-   - Set build directory: `app`
-   - Set custom domain: `digitalresumehub.com`
-
-3. **DNS Configuration**:
-   - See [DNS_SETUP.md](DNS_SETUP.md) for detailed instructions
-
-### Detailed Instructions
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
-
-## 🔧 Configuration
-
-### Environment Variables
-
-#### Frontend (`app/.env`)
+### **Authentication**
+All protected endpoints require JWT token in Authorization header:
 ```bash
-PUBLIC_POCKETBASE_URL=https://api.digitalresumehub.com
-PUBLIC_APP_URL=https://digitalresumehub.com
+Authorization: Bearer <jwt_token>
 ```
 
-#### Backend (Railway)
-```bash
-PORT=8080
-```
-
-## 📊 Database Schema
-
-### Collections
-
-#### Users
-- `id` - Unique identifier
-- `email` - User email (auth)
-- `name` - Display name
-- `avatar` - Profile picture
-
-#### Resumes
-- `id` - Unique identifier
-- `title` - Resume title
-- `user` - Owner (relation to users)
-- `content` - Resume data (JSON)
-- `template` - Template name
-- `is_public` - Public sharing flag
-- `slug` - Custom URL slug
-
-## 🎨 UI Components
-
-Available shadcn-svelte components:
-- Button (variants: default, outline, ghost, etc.)
-- Card (with header, content, footer)
-- Input, Label, Textarea
-- Dialog, Sheet, Popover
-- Badge, Avatar, Separator
-
-Add more components:
-```bash
-cd app
-pnpm dlx shadcn-svelte@latest add [component-name]
-```
-
-## 🔐 Authentication
-
-- Email/password authentication
-- OAuth providers (configurable)
-- JWT-based sessions
-- Automatic token refresh
-- Server-side auth verification
-
-## 📱 Features Roadmap
-
-- [ ] Resume templates
-- [ ] PDF export
-- [ ] Resume analytics
-- [ ] Team collaboration
-- [ ] Custom domains for users
-- [ ] Resume themes
-- [ ] Import from LinkedIn
-- [ ] ATS optimization tips
-
-## 🤝 Contributing
+## 🤝 **Contributing**
 
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature/amazing-feature`
 3. Commit changes: `git commit -m 'Add amazing feature'`
 4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+5. Open Pull Request
 
-## 📄 License
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🆘 **Support**
 
-- **Documentation**: Check the docs in this repository
-- **Issues**: [GitHub Issues](https://github.com/your-username/temp-resume-hub/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/temp-resume-hub/discussions)
+- **Issues**: [GitHub Issues](https://github.com/HalftimeHarry/temp-resume-hub/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/HalftimeHarry/temp-resume-hub/discussions)
+- **Email**: ddinsmore8@gmail.com
 
-## 🙏 Acknowledgments
+## 🎯 **Roadmap**
 
-- [SvelteKit](https://kit.svelte.dev/) - Amazing full-stack framework
-- [PocketBase](https://pocketbase.io/) - Fantastic backend solution
-- [shadcn-svelte](https://www.shadcn-svelte.com/) - Beautiful UI components
-- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Railway](https://railway.app/) - Simple cloud deployment
+- [ ] Custom domain setup (api.digitalresumehub.com)
+- [ ] Resume templates and themes
+- [ ] PDF export functionality
+- [ ] Social media integration
+- [ ] Analytics dashboard
+- [ ] Multi-language support
+
+---
+
+**Built with ❤️ by the Digital Resume Hub Team**

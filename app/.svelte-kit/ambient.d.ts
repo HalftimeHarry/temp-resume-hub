@@ -26,6 +26,10 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const POCKETBASE_URL: string;
+	export const ORIGIN: string;
+	export const AUTH_TRUST_HOST: string;
+	export const NODE_ENV: string;
 	export const LESSOPEN: string;
 	export const USER: string;
 	export const npm_config_user_agent: string;
@@ -50,6 +54,7 @@ declare module '$env/static/private' {
 	export const NODE: string;
 	export const npm_package_name: string;
 	export const LS_COLORS: string;
+	export const npm_config_loglevel: string;
 	export const npm_lifecycle_script: string;
 	export const npm_package_version: string;
 	export const npm_lifecycle_event: string;
@@ -63,7 +68,7 @@ declare module '$env/static/private' {
 	export const GITPOD_OUTPUT: string;
 	export const INIT_CWD: string;
 	export const EDITOR: string;
-	export const NODE_ENV: string;
+	export const VITE_USER_NODE_ENV: string;
 }
 
 /**
@@ -76,7 +81,8 @@ declare module '$env/static/private' {
  * ```
  */
 declare module '$env/static/public' {
-	
+	export const PUBLIC_POCKETBASE_URL: string;
+	export const PUBLIC_APP_URL: string;
 }
 
 /**
@@ -93,6 +99,10 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		POCKETBASE_URL: string;
+		ORIGIN: string;
+		AUTH_TRUST_HOST: string;
+		NODE_ENV: string;
 		LESSOPEN: string;
 		USER: string;
 		npm_config_user_agent: string;
@@ -117,6 +127,7 @@ declare module '$env/dynamic/private' {
 		NODE: string;
 		npm_package_name: string;
 		LS_COLORS: string;
+		npm_config_loglevel: string;
 		npm_lifecycle_script: string;
 		npm_package_version: string;
 		npm_lifecycle_event: string;
@@ -130,7 +141,7 @@ declare module '$env/dynamic/private' {
 		GITPOD_OUTPUT: string;
 		INIT_CWD: string;
 		EDITOR: string;
-		NODE_ENV: string;
+		VITE_USER_NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
@@ -148,6 +159,8 @@ declare module '$env/dynamic/private' {
  */
 declare module '$env/dynamic/public' {
 	export const env: {
+		PUBLIC_POCKETBASE_URL: string;
+		PUBLIC_APP_URL: string;
 		[key: `PUBLIC_${string}`]: string | undefined;
 	}
 }

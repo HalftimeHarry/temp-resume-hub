@@ -1,197 +1,174 @@
-# Deployment Guide - Digital Resume Hub
+# 🚀 **Deployment Guide**
 
-This guide covers deploying the Resume Hub application to production with PocketBase on Railway and the frontend on Netlify/Vercel.
+Complete guide for deploying Digital Resume Hub to production with Railway (backend) and Netlify (frontend).
 
-## Architecture Overview
+## 📋 **Overview**
 
-```
-digitalresumehub.com (Frontend - Netlify/Vercel)
-    ↓
-api.digitalresumehub.com (Backend - Railway + PocketBase)
-```
+### **Current Production Setup**
+- **Backend**: Railway PocketBase service ✅
+- **Frontend**: Netlify (planned) 🔄
+- **Domain**: digitalresumehub.com
+- **API Subdomain**: api.digitalresumehub.com (planned)
 
-## 1. Backend Deployment (Railway + PocketBase)
+### **Live URLs**
+- **Backend API**: https://pocketbase-production-1493.up.railway.app
+- **Admin Panel**: https://pocketbase-production-1493.up.railway.app/_/
+- **Frontend**: https://digitalresumehub.com (to be deployed)
 
-### Step 1: Create Railway Project
-1. Go to [Railway](https://railway.app) and sign up/login
-2. Create a new project from GitHub
-3. Connect your repository
-4. Select the `backend` directory as the root
+## 🔧 **Backend Deployment (Railway)**
 
-### Step 2: Configure Railway
-1. **Environment Variables** (in Railway dashboard):
-   ```
-   PORT=8080
-   ```
+### **✅ Current Status: DEPLOYED**
+The backend is already deployed and working on Railway.
 
-2. **Custom Domain**:
-   - Add domain: `api.digitalresumehub.com`
-   - Railway will provide DNS instructions
+### **Service Details**
+- **Service Name**: `pocketbase-production-1493`
+- **Project**: `resourceful-patience`
+- **Region**: us-west2
+- **Status**: ✅ Running
 
-### Step 3: DNS Configuration
-Add these DNS records to your domain provider:
-
-```
-Type: CNAME
-Name: api
-Value: [railway-provided-domain]
-TTL: 300
-```
-
-### Step 4: Verify Backend
-- Visit `https://api.digitalresumehub.com/api/health`
-- Should return: `{"status": "ok", "message": "Resume Hub API is running"}`
-- Admin panel: `https://api.digitalresumehub.com/_/`
-
-## 2. Frontend Deployment
-
-### Option A: Netlify (Recommended)
-
-#### Step 1: Netlify Setup
-1. Go to [Netlify](https://netlify.com) and sign up/login
-2. Connect your GitHub repository
-3. Configure build settings:
-   - **Build command**: `cd app && npm run build`
-   - **Publish directory**: `app/build`
-   - **Base directory**: `app`
-
-#### Step 2: Environment Variables
-In Netlify dashboard, add:
-```
-PUBLIC_POCKETBASE_URL=https://api.digitalresumehub.com
-PUBLIC_APP_URL=https://digitalresumehub.com
-NODE_ENV=production
-```
-
-#### Step 3: Custom Domain
-1. Add custom domain: `digitalresumehub.com`
-2. Configure DNS:
-   ```
-   Type: A
-   Name: @
-   Value: [netlify-ip]
-   
-   Type: CNAME
-   Name: www
-   Value: [your-site].netlify.app
-   ```
-
-### Option B: Vercel
-
-#### Step 1: Vercel Setup
-1. Go to [Vercel](https://vercel.com) and sign up/login
-2. Import your GitHub repository
-3. Set root directory to `app`
-
-#### Step 2: Environment Variables
-```
-PUBLIC_POCKETBASE_URL=https://api.digitalresumehub.com
-PUBLIC_APP_URL=https://digitalresumehub.com
-NODE_ENV=production
-```
-
-#### Step 3: Custom Domain
-1. Add domain in Vercel dashboard
-2. Configure DNS as provided by Vercel
-
-## 3. GitHub Actions Setup
-
-### Required Secrets
-Add these to your GitHub repository secrets:
-
-**For Railway:**
-```
-RAILWAY_TOKEN=your_railway_token
-```
-
-**For Netlify:**
-```
-NETLIFY_AUTH_TOKEN=your_netlify_token
-NETLIFY_SITE_ID=your_site_id
-PUBLIC_POCKETBASE_URL=https://api.digitalresumehub.com
-```
-
-**For Vercel:**
-```
-VERCEL_TOKEN=your_vercel_token
-VERCEL_ORG_ID=your_org_id
-VERCEL_PROJECT_ID=your_project_id
-PUBLIC_POCKETBASE_URL=https://api.digitalresumehub.com
-```
-
-## 4. SSL/HTTPS Configuration
-
-Both Railway and Netlify/Vercel provide automatic SSL certificates. Ensure:
-
-1. **Backend**: `https://api.digitalresumehub.com` has valid SSL
-2. **Frontend**: `https://digitalresumehub.com` has valid SSL
-3. **CORS**: Backend allows requests from your frontend domain
-
-## 5. Database Setup
-
-### Initial Admin Setup
-1. Visit `https://api.digitalresumehub.com/_/`
-2. Create admin account
-3. Database schema will auto-migrate
-
-### Collections Created
-- **users**: User authentication and profiles
-- **resumes**: Resume data with JSON content
-
-## 6. Monitoring & Maintenance
-
-### Health Checks
-- Backend: `https://api.digitalresumehub.com/api/health`
-- Frontend: `https://digitalresumehub.com`
-
-### Logs
-- **Railway**: View logs in Railway dashboard
-- **Netlify**: View function logs and build logs
-- **Vercel**: View function logs and build logs
-
-### Backups
-- PocketBase automatically creates database backups
-- Consider setting up automated backups to cloud storage
-
-## 7. Environment-Specific Configuration
-
-### Development
+### **Manual Deployment**
 ```bash
-# Backend
-cd backend
-./pocketbase serve --http=0.0.0.0:8080
+# Install Railway CLI
+curl -fsSL https://railway.app/install.sh | sh
 
-# Frontend
-cd app
-npm run dev
+# Deploy to existing service
+export RAILWAY_TOKEN=<your-project-token>
+railway up --service pocketbase-production-1493 --detach
 ```
 
-### Production
-- Backend: Deployed on Railway
-- Frontend: Deployed on Netlify/Vercel
-- Database: PocketBase SQLite with Railway volumes
+### **Automated Deployment**
+GitHub Actions automatically deploys on workflow dispatch:
 
-## 8. Troubleshooting
+```bash
+# Trigger deployment
+Go to: https://github.com/HalftimeHarry/temp-resume-hub/actions/workflows/manual-deploy.yml
+Click: "Run workflow" → "production" → "Run workflow"
+```
 
-### Common Issues
+### **Environment Variables**
+Set in Railway dashboard:
+```bash
+ADMIN_EMAIL=ddinsmore8@gmail.com
+ADMIN_PASSWORD=MADcap(123)
+APP_NAME=Digital Resume Hub
+NODE_ENV=production
+```
 
-1. **CORS Errors**:
-   - Check backend CORS configuration
-   - Verify domain whitelist in `pb_hooks/main.pb.js`
+## 🌐 **Frontend Deployment (Netlify)**
 
-2. **Build Failures**:
-   - Check environment variables
-   - Verify Node.js version (20+)
+### **🔄 Status: TO BE DEPLOYED**
 
-3. **Database Connection**:
-   - Verify `PUBLIC_POCKETBASE_URL` is correct
-   - Check Railway service status
+### **Deployment Steps**
 
-4. **Authentication Issues**:
-   - Clear browser cookies
-   - Check PocketBase admin settings
+#### **1. Connect Repository**
+1. **Login to Netlify**: https://app.netlify.com
+2. **New Site**: "Import from Git"
+3. **Connect GitHub**: Authorize Netlify
+4. **Select Repository**: `HalftimeHarry/temp-resume-hub`
 
-### Support
-- Railway: [Railway Docs](https://docs.railway.app)
-- Netlify: [Netlify Docs](https://docs.netlify.com)
-- PocketBase: [PocketBase Docs](https://pocketbase.io/docs)
+#### **2. Configure Build Settings**
+```bash
+Base directory: app
+Build command: npm run build
+Publish directory: app/build
+Node version: 18
+```
+
+#### **3. Environment Variables**
+Add in Netlify dashboard:
+```bash
+PUBLIC_POCKETBASE_URL=https://pocketbase-production-1493.up.railway.app
+POCKETBASE_URL=https://pocketbase-production-1493.up.railway.app
+PUBLIC_APP_URL=https://digitalresumehub.com
+ORIGIN=https://digitalresumehub.com
+NODE_ENV=production
+```
+
+#### **4. Custom Domain Setup**
+1. **Netlify Dashboard**: Site settings → Domain management
+2. **Add Domain**: digitalresumehub.com
+3. **DNS Configuration**: Point to Netlify
+4. **SSL**: Automatic via Let's Encrypt
+
+## 🌍 **DNS Configuration**
+
+### **Domain: digitalresumehub.com**
+Hosted with Bluehost:
+
+#### **Frontend (Netlify)**
+```bash
+# A Record
+@ → Netlify IP (provided by Netlify)
+
+# CNAME Record  
+www → your-site.netlify.app
+```
+
+#### **Backend API (Railway) - Planned**
+```bash
+# CNAME Record
+api → pocketbase-production-1493.up.railway.app
+```
+
+## 🔐 **Security & Environment**
+
+### **GitHub Secrets**
+Required for automated deployment:
+```bash
+RAILWAY_TOKEN=<project-token-for-pocketbase-service>
+```
+
+### **Admin Access**
+- **URL**: https://pocketbase-production-1493.up.railway.app/_/
+- **Email**: ddinsmore8@gmail.com
+- **Password**: MADcap(123)
+
+## 🧪 **Testing Deployment**
+
+### **Backend Health Check**
+```bash
+curl https://pocketbase-production-1493.up.railway.app/api/health
+# Expected: {"message":"API is healthy.","code":200,"data":{}}
+```
+
+### **Frontend Testing**
+```bash
+cd app
+npm run dev  # Local development
+npm run build && npm run preview  # Production build test
+```
+
+## 🚨 **Troubleshooting**
+
+### **Railway Issues**
+```bash
+# Check service logs
+railway logs --service pocketbase-production-1493
+
+# Redeploy
+railway up --service pocketbase-production-1493 --detach
+```
+
+### **Netlify Issues**
+- Check build logs in Netlify dashboard
+- Verify environment variables
+- Ensure Node.js version compatibility
+
+## 📊 **Deployment Status**
+
+### **Completed ✅**
+- [x] Railway backend deployed
+- [x] Domain accessible
+- [x] Admin panel working
+- [x] API endpoints responding
+- [x] GitHub Actions configured
+
+### **Pending 🔄**
+- [ ] Netlify frontend deployment
+- [ ] Custom domain configuration
+- [ ] SSL certificate setup
+- [ ] End-to-end testing
+
+---
+
+**Current Status**: Backend ✅ | Frontend 🔄 | DNS 🔄
