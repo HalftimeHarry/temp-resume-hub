@@ -40,7 +40,7 @@ jobs:
           echo "✅ Railway token configured"
           
           echo "🚀 Starting deployment..."
-          railway up --service temp-resume-hub --detach
+          railway up --service pocketbase-production-1493 --detach
           echo "✅ Deployment initiated"
 
       - name: Wait for deployment
