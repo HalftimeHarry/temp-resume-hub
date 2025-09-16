@@ -40,7 +40,7 @@ jobs:
           echo "✅ Railway token configured"
           
           echo "🚀 Starting deployment..."
-          railway up --detach
+          railway up --service temp-resume-hub --detach
           echo "✅ Deployment initiated"
 
       - name: Wait for deployment
