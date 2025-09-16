@@ -1,5 +1,5 @@
-# Simplified Dockerfile for Railway deployment
-# This gets basic PocketBase working first
+# Root Dockerfile for Railway deployment
+# This builds the PocketBase backend from the backend directory
 
 FROM alpine:latest
 
@@ -18,14 +18,26 @@ RUN unzip /tmp/pb.zip -d /pb/ && \
     rm /tmp/pb.zip
 
 # Create necessary directories
-RUN mkdir -p /pb/pb_data /pb/pb_public
+RUN mkdir -p /pb/pb_data /pb/pb_public /pb/pb_hooks /pb/pb_migrations
+
+# Copy backend configuration files
+COPY backend/pb_hooks/ /pb/pb_hooks/
+COPY backend/pb_migrations/ /pb/pb_migrations/
+COPY backend/.env /pb/.env
 
 # Set environment variables
+ENV PORT=8080
 ENV ADMIN_EMAIL=ddinsmore8@gmail.com
 ENV ADMIN_PASSWORD=MADcap(123)
+ENV APP_NAME="Digital Resume Hub"
+ENV NODE_ENV=production
 
-# Expose port (Railway will set PORT env var)
-EXPOSE $PORT
+# Expose port
+EXPOSE 8080
 
-# Start PocketBase with basic configuration
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/api/health || exit 1
+
+# Start PocketBase
 CMD /pb/pocketbase serve --http=0.0.0.0:$PORT --dir=/pb/pb_data --publicDir=/pb/pb_public
