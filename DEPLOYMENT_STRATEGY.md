@@ -51,7 +51,7 @@ CLI/GitHub Actions = Professional Development
 ### **Root Cause Analysis:**
 ```bash
 # Service responds but PocketBase routes don't work
-curl https://temp-resume-hub-production.up.railway.app/
+curl https://pocketbase-production-1493.up.railway.app/
 # Returns: 404 "Application not found"
 
 # This suggests:
