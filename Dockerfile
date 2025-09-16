@@ -23,7 +23,7 @@ RUN mkdir -p /pb/pb_data /pb/pb_public /pb/pb_hooks /pb/pb_migrations
 # Copy backend configuration files
 COPY backend/pb_hooks/ /pb/pb_hooks/
 COPY backend/pb_migrations/ /pb/pb_migrations/
-COPY backend/.env* /pb/ 2>/dev/null || true
+COPY backend/.env /pb/.env
 
 # Set environment variables
 ENV PORT=8080
