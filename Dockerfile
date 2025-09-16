@@ -19,5 +19,5 @@ RUN mkdir -p pb_data
 # Expose port
 EXPOSE $PORT
 
-# Start PocketBase
-CMD ["./pocketbase", "serve", "--http=0.0.0.0:$PORT"]
+# Start PocketBase (shell form to expand $PORT)
+CMD ./pocketbase serve --http=0.0.0.0:$PORT
