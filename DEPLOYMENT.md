@@ -25,6 +25,7 @@ The backend is already deployed and working on Railway.
 - **Project**: `resourceful-patience`
 - **Region**: us-west2
 - **Status**: ✅ Running
+- **Type**: Railway PocketBase Template (no custom Dockerfile needed)
 
 ### **Manual Deployment**
 ```bash

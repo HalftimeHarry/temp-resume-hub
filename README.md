@@ -88,8 +88,7 @@ temp-resume-hub/
 │   ├── pb_migrations/     # Database schema migrations
 │   └── .env               # Backend environment variables
 ├── .github/workflows/     # GitHub Actions CI/CD
-├── Dockerfile             # Railway deployment configuration
-├── railway.json           # Railway service configuration
+
 └── README.md              # This file
 ```
 
