@@ -19,12 +19,14 @@ export const handle: Handle = async ({ event, resolve }) => {
         await pb.collection('users').authRefresh();
         
         // Set user in locals for use in load functions
-        event.locals.user = {
-          id: pb.authStore.model?.id,
-          email: pb.authStore.model?.email,
-          name: pb.authStore.model?.name,
-          avatar: pb.authStore.model?.avatar
-        };
+        if (pb.authStore.model?.id && pb.authStore.model?.email) {
+          event.locals.user = {
+            id: pb.authStore.model.id,
+            email: pb.authStore.model.email,
+            name: pb.authStore.model.name,
+            avatar: pb.authStore.model.avatar
+          };
+        }
       }
     } catch (error) {
       // Clear invalid auth

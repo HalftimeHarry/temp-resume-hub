@@ -1,7 +1,8 @@
-import PocketBase from 'pocketbase';
+import PocketBase, { type RecordModel } from 'pocketbase';
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { POCKETBASE_URL } from './config';
+import type { Resume, User } from './types/resume';
 
 // Initialize PocketBase client
 export const pb = new PocketBase(POCKETBASE_URL);
@@ -14,28 +15,36 @@ pb.authStore.onChange((auth) => {
   currentUser.set(pb.authStore.model);
 });
 
-// Types for our collections
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-  avatar?: string;
-  created: string;
-  updated: string;
+// Type conversion helpers
+function isError(error: unknown): error is Error {
+  return error instanceof Error;
 }
 
-export interface Resume {
-  id: string;
-  title: string;
-  user: string;
-  content: Record<string, any>;
-  template?: string;
-  is_public: boolean;
-  slug?: string;
-  created: string;
-  updated: string;
-  expand?: {
-    user?: User;
+function convertToResume(record: RecordModel): Resume {
+  return {
+    id: record.id,
+    title: record.title || '',
+    user: record.user || '',
+    content: record.content || {},
+    template: record.template,
+    is_public: record.is_public || false,
+    slug: record.slug,
+    created: record.created,
+    updated: record.updated,
+    expand: record.expand
+  };
+}
+
+function convertToUser(record: RecordModel): User {
+  return {
+    id: record.id,
+    email: record.email || '',
+    name: record.name,
+    username: record.username || '',
+    avatar: record.avatar,
+    plan: record.plan || 'free',
+    created: record.created,
+    updated: record.updated
   };
 }
 
@@ -48,7 +57,7 @@ export const auth = {
       return { success: true, user: authData.record };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Login failed' };
     }
   },
 
@@ -70,7 +79,7 @@ export const auth = {
       return { success: true, user: record };
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Registration failed' };
     }
   },
 
@@ -114,10 +123,10 @@ export const resumes = {
         filter: `user = "${pb.authStore.model?.id}"`,
         sort: '-updated'
       });
-      return { success: true, resumes: records as Resume[] };
+      return { success: true, resumes: records.map(convertToResume) };
     } catch (error) {
       console.error('Get resumes error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to get resumes' };
     }
   },
 
@@ -129,10 +138,10 @@ export const resumes = {
         sort: '-updated',
         expand: 'user'
       });
-      return { success: true, resumes: records.items as Resume[], totalPages: records.totalPages };
+      return { success: true, resumes: records.items.map(convertToResume), totalPages: records.totalPages };
     } catch (error) {
       console.error('Get public resumes error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to get public resumes' };
     }
   },
 
@@ -142,10 +151,10 @@ export const resumes = {
       const record = await pb.collection('resumes').getOne(id, {
         expand: 'user'
       });
-      return { success: true, resume: record as Resume };
+      return { success: true, resume: convertToResume(record) };
     } catch (error) {
       console.error('Get resume error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to get resume' };
     }
   },
 
@@ -161,10 +170,10 @@ export const resumes = {
         return { success: false, error: 'Resume not found' };
       }
       
-      return { success: true, resume: records[0] as Resume };
+      return { success: true, resume: convertToResume(records[0]) };
     } catch (error) {
       console.error('Get resume by slug error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to get resume by slug' };
     }
   },
 
@@ -180,10 +189,10 @@ export const resumes = {
       };
       
       const record = await pb.collection('resumes').create(data);
-      return { success: true, resume: record as Resume };
+      return { success: true, resume: convertToResume(record) };
     } catch (error) {
       console.error('Create resume error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to create resume' };
     }
   },
 
@@ -191,10 +200,10 @@ export const resumes = {
   async updateResume(id: string, data: Partial<Resume>) {
     try {
       const record = await pb.collection('resumes').update(id, data);
-      return { success: true, resume: record as Resume };
+      return { success: true, resume: convertToResume(record) };
     } catch (error) {
       console.error('Update resume error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to update resume' };
     }
   },
 
@@ -205,7 +214,7 @@ export const resumes = {
       return { success: true };
     } catch (error) {
       console.error('Delete resume error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: isError(error) ? error.message : 'Failed to delete resume' };
     }
   }
 };

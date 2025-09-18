@@ -54,7 +54,6 @@ declare module '$env/static/private' {
 	export const NODE: string;
 	export const npm_package_name: string;
 	export const LS_COLORS: string;
-	export const npm_config_loglevel: string;
 	export const npm_lifecycle_script: string;
 	export const npm_package_version: string;
 	export const npm_lifecycle_event: string;
@@ -127,7 +126,6 @@ declare module '$env/dynamic/private' {
 		NODE: string;
 		npm_package_name: string;
 		LS_COLORS: string;
-		npm_config_loglevel: string;
 		npm_lifecycle_script: string;
 		npm_package_version: string;
 		npm_lifecycle_event: string;

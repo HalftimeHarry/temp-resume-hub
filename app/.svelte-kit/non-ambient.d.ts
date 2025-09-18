@@ -27,14 +27,18 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/";
+		RouteId(): "/" | "/dashboard" | "/r" | "/r/[token]" | "/test";
 		RouteParams(): {
-			
+			"/r/[token]": { token: string }
 		};
 		LayoutParams(): {
-			"/": Record<string, never>
+			"/": { token?: string };
+			"/dashboard": Record<string, never>;
+			"/r": { token?: string };
+			"/r/[token]": { token: string };
+			"/test": Record<string, never>
 		};
-		Pathname(): "/";
+		Pathname(): "/" | "/dashboard" | "/dashboard/" | "/r" | "/r/" | `/r/${string}` & {} | `/r/${string}/` & {} | "/test" | "/test/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/favicon.png" | string & {};
 	}
