@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authService } from '$lib/stores/auth';
+  import { auth } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
@@ -35,7 +35,7 @@
     if (username.length < 3) return;
     
     checkingUsername = true;
-    const result = await authService.checkUsernameAvailability(username);
+    const result = await auth.checkUsernameAvailability(username);
     usernameAvailable = result.available;
     checkingUsername = false;
   }
@@ -49,7 +49,7 @@
     isLoading = true;
     error = '';
 
-    const result = await authService.register(email, password, name, username);
+    const result = await auth.register(email, password, name, username);
 
     if (result.success) {
       goto('/auth/verify-email?email=' + encodeURIComponent(email));

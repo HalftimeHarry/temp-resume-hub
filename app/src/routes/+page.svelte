@@ -1,15 +1,45 @@
+<script>
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { isAuthenticated } from '$lib/stores/auth';
+  
+  // Redirect authenticated users to dashboard
+  onMount(() => {
+    const unsubscribe = isAuthenticated.subscribe(value => {
+      if (value) {
+        console.log('🔐 Auth Debug: User is authenticated, redirecting to dashboard');
+        goto('/dashboard-simple');
+      }
+    });
+    
+    return unsubscribe;
+  });
+  
+  function handleGetStarted() {
+    goto('/auth/register');
+  }
+  
+  function handleSignIn() {
+    goto('/auth/login');
+  }
+  
+  function handleViewTemplates() {
+    goto('/templates');
+  }
+</script>
+
 <svelte:head>
   <title>Digital Resume Hub - Professional Resume Builder</title>
   <meta name="description" content="Create professional resumes with our easy-to-use resume builder. Choose from templates, customize your design, and share your resume online." />
 </svelte:head>
 
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center">
-      <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+<section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-20" style="background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); padding: 5rem 0;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 80rem; margin: 0 auto; padding: 0 1rem;">
+    <div class="text-center" style="text-align: center;">
+      <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6" style="font-size: 3rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">
         Build Your Perfect
-        <span class="text-blue-600">Resume</span>
+        <span class="text-blue-600" style="color: #2563eb;">Resume</span>
       </h1>
       <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
         Create professional resumes in minutes with our intuitive builder. 
@@ -17,11 +47,17 @@
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <button class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors">
+        <button 
+          class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
+          onclick={handleGetStarted}
+        >
           Get Started Free
         </button>
-        <button class="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-50 transition-colors">
-          View Templates
+        <button 
+          class="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-50 transition-colors"
+          onclick={handleSignIn}
+        >
+          Sign In
         </button>
       </div>
       
@@ -38,161 +74,62 @@
 <section class="py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-        Everything You Need to Stand Out
-      </h2>
-      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Our comprehensive resume builder includes all the tools you need to create, customize, and share your professional story.
-      </p>
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose Digital Resume Hub?</h2>
+      <p class="text-xl text-gray-600">Everything you need to create a standout resume</p>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <!-- Feature 1 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          📄
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="text-center">
+        <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a1 1 0 01-1-1V9a1 1 0 011-1h1a2 2 0 100-4H4a1 1 0 01-1-1V5a1 1 0 011-1h3a1 1 0 001-1V2a2 2 0 012-2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">Easy Builder</h3>
+        <p class="text-gray-600">Intuitive interface makes creating your resume simple and fast.</p>
+      </div>
+
+      <div class="text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
         </div>
         <h3 class="text-xl font-semibold mb-2">Professional Templates</h3>
-        <p class="text-gray-600">
-          Choose from dozens of professionally designed templates that are ATS-friendly and recruiter-approved.
-        </p>
+        <p class="text-gray-600">Choose from dozens of professionally designed templates.</p>
       </div>
-      
-      <!-- Feature 2 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          ⚡
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Real-time Editor</h3>
-        <p class="text-gray-600">
-          See your changes instantly with our live preview editor. What you see is what you get.
-        </p>
-      </div>
-      
-      <!-- Feature 3 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          🔗
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Easy Sharing</h3>
-        <p class="text-gray-600">
-          Share your resume with a custom link, download as PDF, or export to various formats.
-        </p>
-      </div>
-      
-      <!-- Feature 4 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          📊
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Analytics & Insights</h3>
-        <p class="text-gray-600">
-          Track how many people view your resume and get insights into your job search performance.
-        </p>
-      </div>
-      
-      <!-- Feature 5 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          🎨
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Custom Branding</h3>
-        <p class="text-gray-600">
-          Customize colors, fonts, and layouts to match your personal brand and stand out from the crowd.
-        </p>
-      </div>
-      
-      <!-- Feature 6 -->
-      <div class="text-center p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg transition-shadow">
-        <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-2xl">
-          👥
-        </div>
-        <h3 class="text-xl font-semibold mb-2">Collaboration</h3>
-        <p class="text-gray-600">
-          Get feedback from friends, mentors, or career coaches with our collaboration features.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- Stats Section -->
-<section class="py-16 bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-      <div>
-        <div class="text-4xl font-bold text-blue-600 mb-2">50K+</div>
-        <div class="text-gray-600">Resumes Created</div>
-      </div>
-      <div>
-        <div class="text-4xl font-bold text-green-600 mb-2">95%</div>
-        <div class="text-gray-600">User Satisfaction</div>
-      </div>
-      <div>
-        <div class="text-4xl font-bold text-purple-600 mb-2">24/7</div>
-        <div class="text-gray-600">Support Available</div>
+      <div class="text-center">
+        <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">Share & Track</h3>
+        <p class="text-gray-600">Share your resume online and track views and engagement.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CTA Section -->
-<section class="py-20 bg-blue-600">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-      Ready to Build Your Dream Resume?
-    </h2>
-    <p class="text-xl text-blue-100 mb-8">
-      Join thousands of professionals who have landed their dream jobs with our resume builder.
-    </p>
-    
+<section class="py-20 bg-gray-50">
+  <div class="max-w-4xl mx-auto text-center px-4">
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to Build Your Resume?</h2>
+    <p class="text-xl text-gray-600 mb-8">Join thousands of professionals who have created stunning resumes with our platform.</p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <button class="bg-white text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-100 transition-colors">
-        Start Building Now →
+      <button 
+        class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
+        onclick={handleGetStarted}
+      >
+        Start Building Now
       </button>
-      <button class="border border-white text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-white hover:text-blue-600 transition-colors">
-        Sign In
+      <button 
+        class="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-50 transition-colors"
+        onclick={handleViewTemplates}
+      >
+        Browse Templates
       </button>
     </div>
   </div>
 </section>
-
-<!-- Footer -->
-<footer class="bg-gray-900 text-white py-12">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div class="col-span-1 md:col-span-2">
-        <div class="flex items-center space-x-2 mb-4">
-          <span class="text-2xl">📄</span>
-          <span class="text-xl font-bold">Digital Resume Hub</span>
-        </div>
-        <p class="text-gray-400 mb-4">
-          The modern way to create, customize, and share professional resumes. 
-          Built for job seekers who want to stand out.
-        </p>
-      </div>
-      
-      <div>
-        <h3 class="font-semibold mb-4">Product</h3>
-        <ul class="space-y-2 text-gray-400">
-          <li><a href="/templates" class="hover:text-white">Templates</a></li>
-          <li><a href="/features" class="hover:text-white">Features</a></li>
-          <li><a href="/pricing" class="hover:text-white">Pricing</a></li>
-        </ul>
-      </div>
-      
-      <div>
-        <h3 class="font-semibold mb-4">Support</h3>
-        <ul class="space-y-2 text-gray-400">
-          <li><a href="/help" class="hover:text-white">Help Center</a></li>
-          <li><a href="/contact" class="hover:text-white">Contact</a></li>
-          <li><a href="/privacy" class="hover:text-white">Privacy</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-      <p>&copy; 2024 Digital Resume Hub. All rights reserved.</p>
-    </div>
-  </div>
-</footer>

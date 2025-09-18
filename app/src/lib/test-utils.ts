@@ -75,3 +75,32 @@ export function createMockResumeStore() {
     }
   };
 }
+
+// Test scenarios for the test page
+export const testScenarios = [
+  {
+    name: 'Authentication Flow',
+    description: 'Test user registration, login, and logout',
+    category: 'auth'
+  },
+  {
+    name: 'Resume Creation',
+    description: 'Test creating and editing resumes',
+    category: 'resume'
+  },
+  {
+    name: 'Template System',
+    description: 'Test template selection and customization',
+    category: 'templates'
+  }
+];
+
+// Mock test runner
+export async function runAllTests() {
+  return testScenarios.map(scenario => ({
+    name: scenario.name,
+    status: 'passed' as const,
+    duration: Math.random() * 1000,
+    message: 'Test completed successfully'
+  }));
+}

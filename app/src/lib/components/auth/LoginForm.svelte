@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { authService } from '$lib/stores/auth';
+  import { auth } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
@@ -23,7 +23,7 @@
     isLoading = true;
     error = '';
 
-    const result = await authService.login(email, password);
+    const result = await auth.login(email, password);
 
     if (result.success) {
       goto('/dashboard');

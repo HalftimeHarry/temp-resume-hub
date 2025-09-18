@@ -1,0 +1,113 @@
+<script>
+  import { goto } from '$app/navigation';
+  import { authStore } from '$lib/stores/auth';
+  import { Input } from '$lib/components/ui/input';
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+  
+  let email = '';
+  let password = '';
+  let isLoading = false;
+  let error = '';
+  
+  async function handleLogin() {
+    console.log('🔐 Login Debug: Attempting login for:', email);
+    isLoading = true;
+    error = '';
+    
+    try {
+      const result = await authStore.login(email, password);
+      console.log('🔐 Login Debug: Login result:', result);
+      
+      if (result.success) {
+        console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
+        window.location.href = '/dashboard-simple';
+      } else {
+        console.log('🔐 Login Debug: Login failed:', result.error);
+        error = result.error || 'Login failed';
+      }
+    } catch (err) {
+      console.error('🔐 Login Debug: Login error:', err);
+      error = 'Login failed. Please try again.';
+    } finally {
+      isLoading = false;
+    }
+  }
+  
+  function goToRegister() {
+    goto('/auth/register');
+  }
+  
+  function goHome() {
+    goto('/');
+  }
+</script>
+
+<svelte:head>
+  <title>Login - Digital Resume Hub</title>
+</svelte:head>
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+  <Card class="w-full max-w-md">
+    <CardHeader class="text-center">
+      <CardTitle class="text-2xl font-bold">Welcome Back</CardTitle>
+      <CardDescription>Sign in to your Digital Resume Hub account</CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      {#if error}
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      {/if}
+      
+      <div class="space-y-2">
+        <label for="email" class="text-sm font-medium">Email</label>
+        <Input
+          id="email"
+          type="email"
+          bind:value={email}
+          placeholder="john@example.com"
+          disabled={isLoading}
+          required
+        />
+      </div>
+      
+      <div class="space-y-2">
+        <label for="password" class="text-sm font-medium">Password</label>
+        <Input
+          id="password"
+          type="password"
+          bind:value={password}
+          placeholder="••••••••"
+          disabled={isLoading}
+          required
+        />
+      </div>
+      
+      <button
+        class="w-full bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+        onclick={handleLogin}
+        disabled={isLoading || !email || !password}
+      >
+        {isLoading ? 'Signing In...' : 'Sign In'}
+      </button>
+      
+      <div class="text-center space-y-2">
+        <p class="text-sm text-gray-600">
+          Don't have an account?
+          <button
+            class="text-blue-600 hover:underline font-medium"
+            onclick={goToRegister}
+          >
+            Create one
+          </button>
+        </p>
+        <button
+          class="text-sm text-gray-500 hover:underline"
+          onclick={goHome}
+        >
+          ← Back to home
+        </button>
+      </div>
+    </CardContent>
+  </Card>
+</div>

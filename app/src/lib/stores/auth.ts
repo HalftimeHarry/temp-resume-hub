@@ -25,28 +25,57 @@ function convertToUser(record: any): User {
 
 // Initialize auth state
 if (browser) {
+  console.log('🔐 Auth Debug: Initializing auth state');
+  console.log('🔐 Auth Debug: PocketBase auth valid?', pb.authStore.isValid);
+  console.log('🔐 Auth Debug: PocketBase model:', pb.authStore.model);
+  
   // Check if user is already authenticated
   if (pb.authStore.isValid && pb.authStore.model) {
+    console.log('🔐 Auth Debug: User is authenticated, setting current user');
     currentUser.set(convertToUser(pb.authStore.model));
     isAuthenticated.set(true);
+  } else {
+    console.log('🔐 Auth Debug: No valid authentication found');
   }
   
   // Listen for auth changes
   pb.authStore.onChange((auth) => {
+    console.log('🔐 Auth Debug: Auth state changed:', auth);
     if (auth && pb.authStore.model) {
+      console.log('🔐 Auth Debug: User logged in:', pb.authStore.model);
       currentUser.set(convertToUser(pb.authStore.model));
       isAuthenticated.set(true);
     } else {
+      console.log('🔐 Auth Debug: User logged out');
       currentUser.set(null);
       isAuthenticated.set(false);
     }
   });
   
+  // Try to refresh auth token on startup
+  if (pb.authStore.isValid) {
+    console.log('🔐 Auth Debug: Attempting to refresh auth token');
+    pb.collection('users').authRefresh().then(() => {
+      console.log('🔐 Auth Debug: Auth token refreshed successfully');
+    }).catch(() => {
+      console.log('🔐 Auth Debug: Auth token refresh failed, clearing auth');
+      // If refresh fails, clear auth
+      pb.authStore.clear();
+      currentUser.set(null);
+      isAuthenticated.set(false);
+    });
+  }
+  
   isLoading.set(false);
+  
+  // Debug current auth state every 5 seconds
+  setInterval(() => {
+    console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', pb.authStore.model?.email || 'None');
+  }, 5000);
 }
 
 // Auth functions
-export const authService = {
+export const auth = {
   // Register new user
   async register(email: string, password: string, name: string, username: string) {
     try {
@@ -61,12 +90,34 @@ export const authService = {
 
       const user = await pb.collection('users').create(userData);
       
-      // Send verification email
-      await pb.collection('users').requestVerification(email);
+      // Auto-login after registration
+      const authData = await pb.collection('users').authWithPassword(email, password);
       
-      return { success: true, user };
+      currentUser.set(convertToUser(authData.record));
+      isAuthenticated.set(true);
+      
+      return { success: true, user: authData.record };
     } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Handle PocketBase validation errors
+      if (error.response?.data) {
+        const data = error.response.data;
+        if (data.data) {
+          // Extract field-specific errors
+          const fieldErrors = [];
+          for (const [field, fieldError] of Object.entries(data.data)) {
+            if (fieldError && typeof fieldError === 'object' && fieldError.message) {
+              fieldErrors.push(`${field}: ${fieldError.message}`);
+            }
+          }
+          if (fieldErrors.length > 0) {
+            return { success: false, error: fieldErrors.join(', ') };
+          }
+        }
+        return { success: false, error: data.message || 'Registration failed' };
+      }
+      
       return { 
         success: false, 
         error: error.message || 'Registration failed' 
@@ -189,4 +240,19 @@ export const authService = {
       };
     }
   }
+};
+
+// Export combined auth store
+export const authStore = {
+  subscribe: currentUser.subscribe,
+  isAuthenticated,
+  isLoading,
+  login: auth.login,
+  register: auth.register,
+  logout: auth.logout,
+  requestPasswordReset: auth.requestPasswordReset,
+  confirmPasswordReset: auth.confirmPasswordReset,
+  updateProfile: auth.updateProfile,
+  checkUsernameAvailability: auth.checkUsernameAvailability,
+  refreshAuth: auth.refreshAuth
 };

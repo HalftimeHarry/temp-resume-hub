@@ -37,7 +37,7 @@
   <link rel="manifest" href="/manifest.json" />
 </svelte:head>
 
-<main class="min-h-screen bg-background">
+<main class="min-h-screen bg-background" style="background-color: #f8fafc; min-height: 100vh;">
   <slot />
 </main>
 
