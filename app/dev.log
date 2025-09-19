@@ -1,0 +1,210 @@
+
+> app@1.0.0 dev
+> vite dev
+
+NODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.
+
+  VITE v7.1.5  ready in 1059 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://100.64.180.40:5173/
+12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+
+[1;31m[500] GET /dashboard[0m
+TypeError: Cannot read properties of null (reading 'user')
+    at _page (src/routes/dashboard/+page.svelte:47:10)
+    at eval (.svelte-kit/generated/root.svelte:71:5)
+    at Module.slot (node_modules/svelte/src/internal/server/index.js:378:3)
+    at _layout (src/routes/+layout.svelte:81:24)
+
+[1;31m[404] GET /favicon.ico[0m
+
+[1;31m[500] GET /dashboard[0m
+TypeError: Cannot read properties of null (reading 'user')
+    at _page (src/routes/dashboard/+page.svelte:47:10)
+    at eval (.svelte-kit/generated/root.svelte:71:5)
+    at Module.slot (node_modules/svelte/src/internal/server/index.js:378:3)
+    at _layout (src/routes/+layout.svelte:81:24)
+
+[1;31m[404] GET /favicon.ico[0m
+12:55:05 AM [vite] (client) hmr update /src/app.css
+12:55:05 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:06 AM [vite] (ssr) Error when evaluating SSR module /src/routes/dashboard/+page.svelte: /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:47:12 `$authStore` is an illegal variable name. To reference a global variable called `$authStore`, use `globalThis.$authStore`
+https://svelte.dev/e/global_reference_invalid
+  Plugin: vite-plugin-svelte:compile
+  File: /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:47:12
+   45 |    $: resumes = $userResumes;
+   46 |    $: analytics = $userAnalytics;
+   47 |    $: user = $authStore.user;
+                               ^
+   48 |    
+   49 |    // Filter resumes based on search query
+
+[1;31m[500] GET /dashboard[0m
+
+
+[1;31m[404] GET /favicon.ico[0m
+12:55:08 AM [vite] (client) hmr update /src/app.css
+12:55:08 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:20 AM [vite] (client) hmr update /src/app.css
+12:55:20 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+
+[1;31m[404] GET /favicon.ico[0m
+12:55:21 AM [vite] (client) hmr update /src/app.css
+12:55:21 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:55:21 AM [vite] (client) ✨ new dependencies optimized: style-to-object, @internationalized/date, tabbable, @floating-ui/dom
+12:55:21 AM [vite] (client) ✨ optimized dependencies changed. reloading
+12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-KPXOP4UB.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-RG3GKSXM.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-VRKWUSFV.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-OKPIXEMK.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-QSRP6QV7.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+
+[1;31m[404] GET /favicon.ico[0m
+12:55:24 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:24 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:37 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:37 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:41 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:41 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:46 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:46 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:51 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:51 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:55:58 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:55:58 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:56:02 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:56:02 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:57:58 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:57:58 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+12:58:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+12:58:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+
+[1;31m[404] GET /favicon.ico[0m
+
+[1;31m[404] GET /favicon.ico[0m
+1:00:19 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:00:19 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:00:23 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:00:23 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+
+[1;31m[404] GET /favicon.ico[0m
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:88:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:97:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:109:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:118:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:140:6 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:88:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:97:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:109:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:118:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:129:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:138:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:161:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:169:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:04:58 AM [vite] (client) hmr update /src/app.css
+1:04:58 AM [vite] (ssr) page reload src/routes/+page.svelte
+1:05:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:05:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:05:11 AM [vite] (client) page reload src/app.html
+1:05:11 AM [vite] (ssr) page reload src/app.html
+1:05:11 AM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:88:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:97:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:109:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:118:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:140:6 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:88:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:97:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:109:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:118:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:129:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:138:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:161:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:169:7 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
+🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
+1:08:31 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:08:31 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
+1:13:57 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:13:57 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
+1:14:57 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:14:57 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:15:08 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:15:08 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
+1:16:38 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:16:38 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:16:44 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:16:44 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:19:10 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
+1:19:25 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:19:25 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:19:38 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:19:38 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:20:03 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:20:03 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:20:14 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:20:14 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:20:18 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
+1:20:18 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
+1:22:00 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:22:00 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:22:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:22:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:23:32 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:23:32 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:23:41 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
+1:23:46 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:23:46 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:24:25 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
+1:24:25 AM [vite] (ssr) page reload src/lib/components/ui/Logo.svelte
+1:25:44 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:25:44 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+1:25:48 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
+1:25:48 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte

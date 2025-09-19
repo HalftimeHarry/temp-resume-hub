@@ -3,7 +3,6 @@
 	"/auth/login": [],
 	"/auth/register": [],
 	"/builder": [],
-	"/dashboard-simple": [],
 	"/dashboard": [],
 	"/resume/[slug]": [],
 	"/r/[token]": [],

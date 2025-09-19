@@ -1,6 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit()],
@@ -12,11 +11,5 @@ export default defineConfig({
       '5173--0199459d-ff02-7212-8cfc-8704245d361b.us-east-1-01.gitpod.dev',
       '.gitpod.dev'
     ]
-  },
-  test: {
-    environment: 'happy-dom',
-    include: ['src/tests/**/*.{test,spec}.{js,ts}'],
-    globals: true,
-    setupFiles: ['./src/test-setup.ts']
   }
 });

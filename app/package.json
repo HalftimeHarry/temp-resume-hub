@@ -7,9 +7,9 @@
     "build": "vite build",
     "dev": "vite dev",
     "preview": "vite preview",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:ui": "vitest --ui",
+    "test": "vitest --config vitest.config.js",
+    "test:run": "vitest run --config vitest.config.js",
+    "test:ui": "vitest --ui --config vitest.config.js",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
