@@ -1268,28 +1268,37 @@ function ExperienceTab($$payload, $$props) {
         },
         $$slots: { default: true }
       });
-      $$payload.out.push(`<!----></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label class="text-sm font-medium">Job Title *</label> `);
+      $$payload.out.push(`<!----></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label${attr("for", `position-${stringify(experience.id)}`)} class="text-sm font-medium">Job Title *</label> `);
       Input($$payload, {
+        id: `position-${stringify(experience.id)}`,
         placeholder: "Software Developer Intern",
         value: experience.position,
         required: true
       });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">Company *</label> `);
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `company-${stringify(experience.id)}`)} class="text-sm font-medium">Company *</label> `);
       Input($$payload, {
+        id: `company-${stringify(experience.id)}`,
         placeholder: "Tech Company Inc.",
         value: experience.company,
         required: true
       });
-      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="space-y-2"><label class="text-sm font-medium">Start Date *</label> `);
-      Input($$payload, { type: "month", value: experience.startDate, required: true });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">End Date</label> `);
+      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="space-y-2"><label${attr("for", `start-date-${stringify(experience.id)}`)} class="text-sm font-medium">Start Date *</label> `);
       Input($$payload, {
+        id: `start-date-${stringify(experience.id)}`,
+        type: "month",
+        value: experience.startDate,
+        required: true
+      });
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `end-date-${stringify(experience.id)}`)} class="text-sm font-medium">End Date</label> `);
+      Input($$payload, {
+        id: `end-date-${stringify(experience.id)}`,
         type: "month",
         value: experience.endDate || "",
         disabled: experience.current
       });
-      $$payload.out.push(`<!----></div> <div class="flex items-end"><label class="flex items-center gap-2"><input type="checkbox" class="rounded"${attr("checked", experience.current, true)}/> <span class="text-sm">Currently working here</span></label></div></div> <div class="space-y-2"><label class="text-sm font-medium">Description * <span class="text-muted-foreground">(${escape_html(characterLimits.experienceDescription)} characters max)</span></label> `);
+      $$payload.out.push(`<!----></div> <div class="flex items-end"><label class="flex items-center gap-2"><input type="checkbox" class="rounded"${attr("checked", experience.current, true)}/> <span class="text-sm">Currently working here</span></label></div></div> <div class="space-y-2"><label${attr("for", `description-${stringify(experience.id)}`)} class="text-sm font-medium">Description * <span class="text-muted-foreground">(${escape_html(characterLimits.experienceDescription)} characters max)</span></label> `);
       Textarea($$payload, {
+        id: `description-${stringify(experience.id)}`,
         placeholder: "Describe your key responsibilities and achievements...",
         value: experience.description,
         maxlength: characterLimits.experienceDescription,
@@ -1373,38 +1382,56 @@ function EducationTab($$payload, $$props) {
         },
         $$slots: { default: true }
       });
-      $$payload.out.push(`<!----></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label class="text-sm font-medium">School/University *</label> `);
+      $$payload.out.push(`<!----></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label${attr("for", `institution-${stringify(edu.id)}`)} class="text-sm font-medium">School/University *</label> `);
       Input($$payload, {
+        id: `institution-${stringify(edu.id)}`,
         placeholder: "University of Technology",
         value: edu.institution,
         required: true
       });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">Degree *</label> `);
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `degree-${stringify(edu.id)}`)} class="text-sm font-medium">Degree *</label> `);
       Input($$payload, {
+        id: `degree-${stringify(edu.id)}`,
         placeholder: "Bachelor of Science",
         value: edu.degree,
         required: true
       });
-      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label class="text-sm font-medium">Field of Study *</label> `);
+      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label${attr("for", `field-${stringify(edu.id)}`)} class="text-sm font-medium">Field of Study *</label> `);
       Input($$payload, {
+        id: `field-${stringify(edu.id)}`,
         placeholder: "Computer Science",
         value: edu.field || "",
         required: true
       });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">Location</label> `);
-      Input($$payload, { placeholder: "City, State", value: edu.location || "" });
-      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="space-y-2"><label class="text-sm font-medium">Start Date *</label> `);
-      Input($$payload, { type: "month", value: edu.startDate, required: true });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">End Date</label> `);
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `location-${stringify(edu.id)}`)} class="text-sm font-medium">Location</label> `);
       Input($$payload, {
+        id: `location-${stringify(edu.id)}`,
+        placeholder: "City, State",
+        value: edu.location || ""
+      });
+      $$payload.out.push(`<!----></div></div> <div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="space-y-2"><label${attr("for", `start-date-${stringify(edu.id)}`)} class="text-sm font-medium">Start Date *</label> `);
+      Input($$payload, {
+        id: `start-date-${stringify(edu.id)}`,
+        type: "month",
+        value: edu.startDate,
+        required: true
+      });
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `end-date-${stringify(edu.id)}`)} class="text-sm font-medium">End Date</label> `);
+      Input($$payload, {
+        id: `end-date-${stringify(edu.id)}`,
         type: "month",
         value: edu.endDate || "",
         disabled: edu.current
       });
-      $$payload.out.push(`<!----></div> <div class="flex items-end"><label class="flex items-center gap-2"><input type="checkbox" class="rounded"${attr("checked", edu.current, true)}/> <span class="text-sm">Currently enrolled</span></label></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label class="text-sm font-medium">GPA (Optional)</label> `);
-      Input($$payload, { placeholder: "3.8/4.0", value: edu.gpa || "" });
-      $$payload.out.push(`<!----></div> <div class="space-y-2"><label class="text-sm font-medium">Honors (Optional)</label> `);
+      $$payload.out.push(`<!----></div> <div class="flex items-end"><label class="flex items-center gap-2"><input type="checkbox" class="rounded"${attr("checked", edu.current, true)}/> <span class="text-sm">Currently enrolled</span></label></div></div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-2"><label${attr("for", `gpa-${stringify(edu.id)}`)} class="text-sm font-medium">GPA (Optional)</label> `);
       Input($$payload, {
+        id: `gpa-${stringify(edu.id)}`,
+        placeholder: "3.8/4.0",
+        value: edu.gpa || ""
+      });
+      $$payload.out.push(`<!----></div> <div class="space-y-2"><label${attr("for", `honors-${stringify(edu.id)}`)} class="text-sm font-medium">Honors (Optional)</label> `);
+      Input($$payload, {
+        id: `honors-${stringify(edu.id)}`,
         placeholder: "Magna Cum Laude, Dean's List",
         value: edu.honors?.join(", ") || ""
       });

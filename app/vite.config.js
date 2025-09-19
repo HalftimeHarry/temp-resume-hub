@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     allowedHosts: [
       'all',
-      '5173--0199459d-ff02-7212-8cfc-8704245d361b.us-east-1-01.gitpod.dev',
+      '5173-halftimehar-tempresumeh-6rkv9juxpbe.ws-us121.gitpod.io',
       '.gitpod.dev'
     ]
   }

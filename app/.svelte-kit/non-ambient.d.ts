@@ -48,6 +48,6 @@ declare module "$app/types" {
 		};
 		Pathname(): "/" | "/auth" | "/auth/" | "/auth/login" | "/auth/login/" | "/auth/register" | "/auth/register/" | "/builder" | "/builder/" | "/dashboard" | "/dashboard/" | "/resume" | "/resume/" | `/resume/${string}` & {} | `/resume/${string}/` & {} | "/r" | "/r/" | `/r/${string}` & {} | `/r/${string}/` & {} | "/templates" | "/templates/" | "/test" | "/test/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/favicon.png" | "/icon.svg" | "/logo.svg" | "/manifest.json" | string & {};
+		Asset(): "/_redirects" | "/favicon.png" | "/icon.svg" | "/logo.svg" | "/manifest.json" | string & {};
 	}
 }

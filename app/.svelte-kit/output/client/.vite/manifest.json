@@ -1,6 +1,6 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.CeQ977nz.js",
+    "file": "_app/immutable/entry/app.CMOrgksn.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
@@ -44,7 +44,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.Gu9pjf-L.js",
+    "file": "_app/immutable/nodes/1.DPd_LdH3.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
@@ -55,7 +55,7 @@
       "_DNlOMr4R.js",
       "_NpgcrMAD.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js"
+      "_d8AsRpeB.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/10.js": {
@@ -84,7 +84,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.fpNAGh4X.js",
+    "file": "_app/immutable/nodes/2.DFUMP0Ue.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
@@ -95,12 +95,12 @@
       "_NpgcrMAD.js",
       "_DNlOMr4R.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "src/lib/stores/auth.ts"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/3.js": {
-    "file": "_app/immutable/nodes/3.NPqfNxrW.js",
+    "file": "_app/immutable/nodes/3.xBt6FRWs.js",
     "name": "nodes/3",
     "src": ".svelte-kit/generated/client-optimized/nodes/3.js",
     "isEntry": true,
@@ -112,7 +112,7 @@
       "_NpgcrMAD.js",
       "_Uffus4TO.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "src/lib/stores/auth.ts",
       "_BVD0f_uu.js",
       "_Sf51xTbD.js",
@@ -120,7 +120,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/4.js": {
-    "file": "_app/immutable/nodes/4.CuOonhFv.js",
+    "file": "_app/immutable/nodes/4.0ClzCtJI.js",
     "name": "nodes/4",
     "src": ".svelte-kit/generated/client-optimized/nodes/4.js",
     "isEntry": true,
@@ -132,7 +132,7 @@
       "_NpgcrMAD.js",
       "_Uffus4TO.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "src/lib/stores/auth.ts",
       "_BVD0f_uu.js",
       "_Sf51xTbD.js",
@@ -140,7 +140,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/5.js": {
-    "file": "_app/immutable/nodes/5.DVNOZ0cy.js",
+    "file": "_app/immutable/nodes/5.CIwHq8LD.js",
     "name": "nodes/5",
     "src": ".svelte-kit/generated/client-optimized/nodes/5.js",
     "isEntry": true,
@@ -155,7 +155,7 @@
       "_QPJWSYHW.js",
       "_CyC9u20f.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "src/lib/stores/auth.ts",
       "_D9Z9MdNV.js",
       "_0oEJbfLG.js",
@@ -178,7 +178,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/6.js": {
-    "file": "_app/immutable/nodes/6.mJRmBgOO.js",
+    "file": "_app/immutable/nodes/6.pVeBILYQ.js",
     "name": "nodes/6",
     "src": ".svelte-kit/generated/client-optimized/nodes/6.js",
     "isEntry": true,
@@ -192,7 +192,7 @@
       "_CdozxLW2.js",
       "_CyC9u20f.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "src/lib/stores/auth.ts",
       "_BJWMZ0JU.js",
       "_BVD0f_uu.js",
@@ -208,7 +208,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/7.js": {
-    "file": "_app/immutable/nodes/7.DY4ExiiC.js",
+    "file": "_app/immutable/nodes/7.H3E-WFHd.js",
     "name": "nodes/7",
     "src": ".svelte-kit/generated/client-optimized/nodes/7.js",
     "isEntry": true,
@@ -221,8 +221,8 @@
       "_Uffus4TO.js",
       "_CyC9u20f.js",
       "_DjbkuMlD.js",
-      "_CFdvgFMZ.js",
-      "_OipgqrF8.js",
+      "_DXjxtPfi.js",
+      "_d8AsRpeB.js",
       "src/lib/pocketbase.ts",
       "_0oEJbfLG.js",
       "_BJWMZ0JU.js",
@@ -243,7 +243,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/8.js": {
-    "file": "_app/immutable/nodes/8.Can0QnxX.js",
+    "file": "_app/immutable/nodes/8.ZAEm7rig.js",
     "name": "nodes/8",
     "src": ".svelte-kit/generated/client-optimized/nodes/8.js",
     "isEntry": true,
@@ -257,12 +257,12 @@
       "_CdozxLW2.js",
       "_CyC9u20f.js",
       "_DjbkuMlD.js",
-      "_CFdvgFMZ.js",
+      "_DXjxtPfi.js",
       "src/lib/pocketbase.ts"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/9.js": {
-    "file": "_app/immutable/nodes/9.DFMgciBH.js",
+    "file": "_app/immutable/nodes/9.PGI0z8zF.js",
     "name": "nodes/9",
     "src": ".svelte-kit/generated/client-optimized/nodes/9.js",
     "isEntry": true,
@@ -276,7 +276,7 @@
       "_CdozxLW2.js",
       "_CyC9u20f.js",
       "_DjbkuMlD.js",
-      "_OipgqrF8.js",
+      "_d8AsRpeB.js",
       "_Sf51xTbD.js",
       "_D8xFJT4S.js"
     ]
@@ -327,13 +327,6 @@
       "_Dtsv3Ddm.js",
       "_CVVF92Bk.js",
       "_BJWMZ0JU.js"
-    ]
-  },
-  "_CFdvgFMZ.js": {
-    "file": "_app/immutable/chunks/CFdvgFMZ.js",
-    "name": "stores",
-    "imports": [
-      "_OipgqrF8.js"
     ]
   },
   "_CVVF92Bk.js": {
@@ -398,6 +391,13 @@
       "_BJWMZ0JU.js"
     ]
   },
+  "_DXjxtPfi.js": {
+    "file": "_app/immutable/chunks/DXjxtPfi.js",
+    "name": "stores",
+    "imports": [
+      "_d8AsRpeB.js"
+    ]
+  },
   "_DiW9MzfP.js": {
     "file": "_app/immutable/chunks/DiW9MzfP.js",
     "name": "trash-2",
@@ -435,14 +435,6 @@
       "_DNlOMr4R.js"
     ]
   },
-  "_OipgqrF8.js": {
-    "file": "_app/immutable/chunks/OipgqrF8.js",
-    "name": "entry",
-    "imports": [
-      "_NpgcrMAD.js",
-      "_DNlOMr4R.js"
-    ]
-  },
   "_QPJWSYHW.js": {
     "file": "_app/immutable/chunks/QPJWSYHW.js",
     "name": "svelte-component",
@@ -468,6 +460,14 @@
     "imports": [
       "_DNlOMr4R.js",
       "_NpgcrMAD.js"
+    ]
+  },
+  "_d8AsRpeB.js": {
+    "file": "_app/immutable/chunks/d8AsRpeB.js",
+    "name": "entry",
+    "imports": [
+      "_NpgcrMAD.js",
+      "_DNlOMr4R.js"
     ]
   },
   "_jy5kCRCv.js": {
@@ -499,16 +499,16 @@
     ]
   },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.DAELA5IA.js",
+    "file": "_app/immutable/entry/start.cXQNFGJl.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_OipgqrF8.js"
+      "_d8AsRpeB.js"
     ]
   },
   "src/lib/pocketbase.ts": {
-    "file": "_app/immutable/chunks/DNdyhkZ8.js",
+    "file": "_app/immutable/chunks/C3wDoZUW.js",
     "name": "pocketbase",
     "src": "src/lib/pocketbase.ts",
     "isDynamicEntry": true,
@@ -517,7 +517,7 @@
     ]
   },
   "src/lib/stores/auth.ts": {
-    "file": "_app/immutable/chunks/ozFm23WD.js",
+    "file": "_app/immutable/chunks/oV5rGy2o.js",
     "name": "auth",
     "src": "src/lib/stores/auth.ts",
     "isDynamicEntry": true,
