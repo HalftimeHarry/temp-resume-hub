@@ -23,17 +23,29 @@
   
   function handleGetStarted() {
     console.log('Get Started button clicked');
-    goto('/auth/register');
+    try {
+      goto('/auth/register');
+    } catch (error) {
+      console.error('Error navigating to /auth/register:', error);
+    }
   }
   
   function handleSignIn() {
     console.log('Sign In button clicked');
-    goto('/auth/login');
+    try {
+      goto('/auth/login');
+    } catch (error) {
+      console.error('Error navigating to /auth/login:', error);
+    }
   }
   
   function handleViewTemplates() {
     console.log('View Templates button clicked');
-    goto('/templates');
+    try {
+      goto('/templates');
+    } catch (error) {
+      console.error('Error navigating to /templates:', error);
+    }
   }
   
   // Modal states
@@ -44,17 +56,29 @@
   // Functions to open modals
   function openTermsModal() {
     console.log('Open Terms modal clicked');
-    showTermsModal = true;
+    try {
+      showTermsModal = true;
+    } catch (error) {
+      console.error('Error opening Terms modal:', error);
+    }
   }
   
   function openPrivacyModal() {
     console.log('Open Privacy modal clicked');
-    showPrivacyModal = true;
+    try {
+      showPrivacyModal = true;
+    } catch (error) {
+      console.error('Error opening Privacy modal:', error);
+    }
   }
   
   function openContactModal() {
     console.log('Open Contact modal clicked');
-    showContactModal = true;
+    try {
+      showContactModal = true;
+    } catch (error) {
+      console.error('Error opening Contact modal:', error);
+    }
   }
   
   // Functions to close modals
