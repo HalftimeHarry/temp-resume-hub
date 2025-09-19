@@ -1,9 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { userResumes, resumeStore } from '$lib/stores/resume';
-  import { userAnalytics, analyticsStore } from '$lib/stores/analytics';
-  import { authStore } from '$lib/stores/auth';
+  // Simplified imports for now
+  let userResumes = [];
+  let userAnalytics = {
+    totalResumes: 0,
+    totalViews: 0,
+    totalDownloads: 0,
+    totalShares: 0
+  };
+  import { currentUser, isAuthenticated } from '$lib/stores/auth';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -30,9 +36,7 @@
     Star
   } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
-  import TemplateGallery from '$lib/components/templates/TemplateGallery.svelte';
-  import AnalyticsDashboard from '$lib/components/analytics/AnalyticsDashboard.svelte';
-  import ShareDialog from '$lib/components/sharing/ShareDialog.svelte';
+  // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
   
   let searchQuery = '';
@@ -42,9 +46,9 @@
   let selectedResume: Resume | null = null;
   let showShareDialog = false;
   
-  $: resumes = $userResumes;
-  $: analytics = $userAnalytics;
-  $: user = $authStore.user;
+  $: resumes = userResumes;
+  $: analytics = userAnalytics;
+  $: user = $currentUser;
   
   // Filter resumes based on search query
   $: filteredResumes = resumes.filter(resume => 
@@ -52,32 +56,30 @@
     resume.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  onMount(async () => {
-    try {
-      await Promise.all([
-        resumeStore.loadUserResumes(),
-        analyticsStore.loadUserAnalytics()
-      ]);
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      toast.error('Failed to load dashboard data');
-    } finally {
-      isLoading = false;
+  // Redirect to login if not authenticated
+  $: {
+    if (!$isAuthenticated && !isLoading) {
+      goto('/auth/login');
     }
+  }
+
+  onMount(async () => {
+    // Only load data if authenticated
+    if (!$isAuthenticated) {
+      isLoading = false;
+      return;
+    }
+
+    // Simplified loading for now
+    isLoading = false;
   });
   
   async function createNewResume() {
-    try {
-      const resume = await resumeStore.create('New Resume');
-      goto(`/editor/${resume.id}`);
-    } catch (error) {
-      console.error('Failed to create resume:', error);
-      toast.error('Failed to create resume');
-    }
+    goto('/builder');
   }
   
   function editResume(resumeId: string) {
-    goto(`/editor/${resumeId}`);
+    goto('/builder');
   }
   
   function viewResume(resumeId: string) {
@@ -411,19 +413,24 @@
       
     {:else if activeTab === 'analytics'}
       <!-- Analytics Tab -->
-      <AnalyticsDashboard />
+      <div class="text-center py-12">
+        <BarChart3 class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Analytics Coming Soon</h3>
+        <p class="text-gray-600">Track your resume views, downloads, and engagement.</p>
+      </div>
       
     {:else if activeTab === 'templates'}
       <!-- Templates Tab -->
-      <TemplateGallery showFeatured={true} />
+      <div class="text-center py-12">
+        <Star class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Templates Coming Soon</h3>
+        <p class="text-gray-600">Browse and select from professional resume templates.</p>
+      </div>
     {/if}
   </main>
 </div>
 
-<!-- Share Dialog -->
-{#if selectedResume}
-  <ShareDialog bind:open={showShareDialog} resume={selectedResume} />
-{/if}
+<!-- Share Dialog - Simplified for now -->
 
 <style>
   .line-clamp-1 {
