@@ -11,5 +11,6 @@ export default defineConfig({
       '5173-halftimehar-tempresumeh-6rkv9juxpbe.ws-us121.gitpod.io',
       '.gitpod.dev'
     ]
-  }
+  },
+  base: '/'
 });
