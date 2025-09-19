@@ -85,8 +85,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">School/University *</label>
+							<label for="institution-{edu.id}" class="text-sm font-medium">School/University *</label>
 							<Input
+								id="institution-{edu.id}"
 								placeholder="University of Technology"
 								value={edu.institution}
 								on:input={(e) => handleEducationUpdate(edu.id, 'institution', e.target.value)}
@@ -94,8 +95,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Degree *</label>
+							<label for="degree-{edu.id}" class="text-sm font-medium">Degree *</label>
 							<Input
+								id="degree-{edu.id}"
 								placeholder="Bachelor of Science"
 								value={edu.degree}
 								on:input={(e) => handleEducationUpdate(edu.id, 'degree', e.target.value)}
@@ -106,8 +108,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Field of Study *</label>
+							<label for="field-{edu.id}" class="text-sm font-medium">Field of Study *</label>
 							<Input
+								id="field-{edu.id}"
 								placeholder="Computer Science"
 								value={edu.field || ''}
 								on:input={(e) => handleEducationUpdate(edu.id, 'field', e.target.value)}
@@ -115,8 +118,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Location</label>
+							<label for="location-{edu.id}" class="text-sm font-medium">Location</label>
 							<Input
+								id="location-{edu.id}"
 								placeholder="City, State"
 								value={edu.location || ''}
 								on:input={(e) => handleEducationUpdate(edu.id, 'location', e.target.value)}
@@ -126,8 +130,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Start Date *</label>
+							<label for="start-date-{edu.id}" class="text-sm font-medium">Start Date *</label>
 							<Input
+								id="start-date-{edu.id}"
 								type="month"
 								value={edu.startDate}
 								on:input={(e) => handleEducationUpdate(edu.id, 'startDate', e.target.value)}
@@ -135,8 +140,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">End Date</label>
+							<label for="end-date-{edu.id}" class="text-sm font-medium">End Date</label>
 							<Input
+								id="end-date-{edu.id}"
 								type="month"
 								value={edu.endDate || ''}
 								disabled={edu.current}
@@ -158,8 +164,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">GPA (Optional)</label>
+							<label for="gpa-{edu.id}" class="text-sm font-medium">GPA (Optional)</label>
 							<Input
+								id="gpa-{edu.id}"
 								placeholder="3.8/4.0"
 								value={edu.gpa || ''}
 								on:input={(e) => handleEducationUpdate(edu.id, 'gpa', e.target.value)}
