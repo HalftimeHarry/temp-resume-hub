@@ -32,3 +32,20 @@ export function debounce<T extends (...args: any[]) => any>(
 		timeout = setTimeout(() => func(...args), wait);
 	};
 }
+
+// Validation functions
+export function validateEmail(email: string): boolean {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	return emailRegex.test(email);
+}
+
+export function validatePhone(phone: string): boolean {
+	const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+	return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+}
+
+export function formatDate(date: string): string {
+	if (!date) return '';
+	const d = new Date(date);
+	return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+}

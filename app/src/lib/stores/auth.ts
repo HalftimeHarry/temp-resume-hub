@@ -52,19 +52,9 @@ if (browser) {
     }
   });
   
-  // Try to refresh auth token on startup
-  if (pb.authStore.isValid) {
-    console.log('🔐 Auth Debug: Attempting to refresh auth token');
-    pb.collection('users').authRefresh().then(() => {
-      console.log('🔐 Auth Debug: Auth token refreshed successfully');
-    }).catch(() => {
-      console.log('🔐 Auth Debug: Auth token refresh failed, clearing auth');
-      // If refresh fails, clear auth
-      pb.authStore.clear();
-      currentUser.set(null);
-      isAuthenticated.set(false);
-    });
-  }
+  // Skip automatic auth refresh on startup to avoid clearing valid auth
+  // The auth token will be refreshed automatically by PocketBase when needed
+  console.log('🔐 Auth Debug: Skipping automatic auth refresh to preserve auth state');
   
   isLoading.set(false);
   
@@ -231,9 +221,12 @@ export const auth = {
       return { success: false, error: 'No valid auth token' };
     } catch (error: any) {
       console.error('Auth refresh error:', error);
-      pb.authStore.clear();
-      currentUser.set(null);
-      isAuthenticated.set(false);
+      // Only clear auth if it's a real authentication error, not auto-cancellation
+      if (error.message && !error.message.includes('autocancelled')) {
+        pb.authStore.clear();
+        currentUser.set(null);
+        isAuthenticated.set(false);
+      }
       return { 
         success: false, 
         error: error.message || 'Auth refresh failed' 

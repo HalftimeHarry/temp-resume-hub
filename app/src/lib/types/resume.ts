@@ -258,3 +258,37 @@ export interface TemplateFilters {
   sortBy: 'name' | 'createdAt' | 'usageCount' | 'rating';
   sortOrder: 'asc' | 'desc';
 }
+
+// Resume Builder specific types
+export interface BuilderStep {
+  id: string;
+  title: string;
+  description: string;
+  isComplete: boolean;
+  isRequired: boolean;
+}
+
+export interface CharacterLimits {
+  summary: number;
+  experienceDescription: number;
+  projectDescription: number;
+  skillName: number;
+  achievementItem: number;
+}
+
+export interface BuilderSettings extends ResumeSettings {
+  layout: '1-page' | '2-page';
+  mode: 'simple' | 'elaborate';
+}
+
+export interface ResumeBuilderData {
+  personalInfo: PersonalInfo;
+  summary: string;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
+  projects: Project[];
+  settings: BuilderSettings;
+  currentStep: string;
+  completedSteps: string[];
+}
