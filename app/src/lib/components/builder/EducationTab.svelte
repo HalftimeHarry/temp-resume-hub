@@ -173,8 +173,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Honors (Optional)</label>
+							<label for="honors-{edu.id}" class="text-sm font-medium">Honors (Optional)</label>
 							<Input
+								id="honors-{edu.id}"
 								placeholder="Magna Cum Laude, Dean's List"
 								value={edu.honors?.join(', ') || ''}
 								on:input={(e) => handleEducationUpdate(edu.id, 'honors', e.target.value.split(',').map(h => h.trim()).filter(h => h))}

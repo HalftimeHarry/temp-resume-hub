@@ -85,8 +85,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Job Title *</label>
+							<label for="position-{experience.id}" class="text-sm font-medium">Job Title *</label>
 							<Input
+								id="position-{experience.id}"
 								placeholder="Software Developer Intern"
 								value={experience.position}
 								on:input={(e) => handleExperienceUpdate(experience.id, 'position', e.target.value)}
@@ -94,8 +95,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Company *</label>
+							<label for="company-{experience.id}" class="text-sm font-medium">Company *</label>
 							<Input
+								id="company-{experience.id}"
 								placeholder="Tech Company Inc."
 								value={experience.company}
 								on:input={(e) => handleExperienceUpdate(experience.id, 'company', e.target.value)}
@@ -106,8 +108,9 @@
 
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div class="space-y-2">
-							<label class="text-sm font-medium">Start Date *</label>
+							<label for="start-date-{experience.id}" class="text-sm font-medium">Start Date *</label>
 							<Input
+								id="start-date-{experience.id}"
 								type="month"
 								value={experience.startDate}
 								on:input={(e) => handleExperienceUpdate(experience.id, 'startDate', e.target.value)}
@@ -115,8 +118,9 @@
 							/>
 						</div>
 						<div class="space-y-2">
-							<label class="text-sm font-medium">End Date</label>
+							<label for="end-date-{experience.id}" class="text-sm font-medium">End Date</label>
 							<Input
+								id="end-date-{experience.id}"
 								type="month"
 								value={experience.endDate || ''}
 								disabled={experience.current}
@@ -137,11 +141,12 @@
 					</div>
 
 					<div class="space-y-2">
-						<label class="text-sm font-medium">
+						<label for="description-{experience.id}" class="text-sm font-medium">
 							Description * 
 							<span class="text-muted-foreground">({characterLimits.experienceDescription} characters max)</span>
 						</label>
 						<Textarea
+							id="description-{experience.id}"
 							placeholder="Describe your key responsibilities and achievements..."
 							value={experience.description}
 							maxlength={characterLimits.experienceDescription}
