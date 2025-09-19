@@ -1,6 +1,5 @@
 [build]
   command = "npm run build"
-  publish = "build"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -14,6 +13,6 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 [[headers]]
-  for = "/build/*"
+  for = "/_app/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
