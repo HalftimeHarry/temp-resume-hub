@@ -14,18 +14,25 @@
       }
     });
     
-    return unsubscribe;
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   });
   
   function handleGetStarted() {
+    console.log('Get Started button clicked');
     goto('/auth/register');
   }
   
   function handleSignIn() {
+    console.log('Sign In button clicked');
     goto('/auth/login');
   }
   
   function handleViewTemplates() {
+    console.log('View Templates button clicked');
     goto('/templates');
   }
   
@@ -36,14 +43,17 @@
   
   // Functions to open modals
   function openTermsModal() {
+    console.log('Open Terms modal clicked');
     showTermsModal = true;
   }
   
   function openPrivacyModal() {
+    console.log('Open Privacy modal clicked');
     showPrivacyModal = true;
   }
   
   function openContactModal() {
+    console.log('Open Contact modal clicked');
     showContactModal = true;
   }
   
@@ -85,13 +95,13 @@
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <button 
+        <button
           class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
           onclick={handleGetStarted}
         >
           Get Started Free
         </button>
-        <button 
+        <button
           class="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-50 transition-colors"
           onclick={handleSignIn}
         >
@@ -156,13 +166,13 @@
     <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to Build Your Resume?</h2>
     <p class="text-xl text-gray-600 mb-8">Join thousands of professionals who have created stunning resumes with our platform.</p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <button 
+      <button
         class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
         onclick={handleGetStarted}
       >
         Start Building Now
       </button>
-      <button 
+      <button
         class="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg text-lg font-medium hover:bg-gray-50 transition-colors"
         onclick={handleViewTemplates}
       >
