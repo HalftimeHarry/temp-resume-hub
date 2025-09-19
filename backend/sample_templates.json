@@ -1,0 +1,77 @@
+[
+    {
+      "name": "Modern Professional",
+      "slug": "modern-professional",
+      "description": "A clean, modern template perfect for professionals in any field. Features a balanced layout with clear sections.",
+      "category": "modern",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "blue",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "experience", "education", "skills"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Creative Portfolio",
+      "slug": "creative-portfolio",
+      "description": "A vibrant template designed for creative professionals. Showcases your personality and creative work.",
+      "category": "creative",
+      "is_premium": true,
+      "config": {
+        "layout": "two-column",
+        "colorScheme": "purple",
+        "fontFamily": "Poppins",
+        "sections": ["personal", "summary", "experience", "education", "skills", "portfolio"],
+        "maxPages": 2,
+        "spacing": "relaxed"
+      }
+    },
+    {
+      "name": "Minimal Classic",
+      "slug": "minimal-classic",
+      "description": "A timeless, minimal design that focuses on content. Perfect for traditional industries.",
+      "category": "minimal",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "black",
+        "fontFamily": "Times New Roman",
+        "sections": ["personal", "summary", "experience", "education", "skills"],
+        "maxPages": 1,
+        "spacing": "compact"
+      }
+    },
+    {
+      "name": "Tech Professional",
+      "slug": "tech-professional",
+      "description": "Designed specifically for tech professionals. Highlights technical skills and projects effectively.",
+      "category": "professional",
+      "is_premium": false,
+      "config": {
+        "layout": "two-column",
+        "colorScheme": "green",
+        "fontFamily": "Source Code Pro",
+        "sections": ["personal", "summary", "experience", "education", "skills", "projects"],
+        "maxPages": 2,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Academic Scholar",
+      "slug": "academic-scholar",
+      "description": "A comprehensive template for academic professionals. Includes sections for publications and research.",
+      "category": "academic",
+      "is_premium": true,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "blue",
+        "fontFamily": "Georgia",
+        "sections": ["personal", "summary", "education", "experience", "publications", "research", "skills"],
+        "maxPages": 2,
+        "spacing": "relaxed"
+      }
+    }
+]
