@@ -169,6 +169,7 @@
     "isEntry": true,
     "imports": [
       "_shared.js",
+      "_utils.js",
       "_false.js",
       "_environment.js"
     ]
@@ -220,6 +221,12 @@
     "css": [
       "_app/immutable/assets/_layout.CX5RDzmQ.css"
     ]
+  },
+  "src/routes/+page.js": {
+    "file": "entries/pages/_page.js",
+    "name": "entries/pages/_page",
+    "src": "src/routes/+page.js",
+    "isEntry": true
   },
   "src/routes/+page.svelte": {
     "file": "entries/pages/_page.svelte.js",

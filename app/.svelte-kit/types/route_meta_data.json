@@ -1,5 +1,7 @@
 {
-	"/": [],
+	"/": [
+		"src/routes/+page.js"
+	],
 	"/auth/login": [],
 	"/auth/register": [],
 	"/builder": [],
