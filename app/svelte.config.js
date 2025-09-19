@@ -5,7 +5,11 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 const config = {
 	preprocess: vitePreprocess(),
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			// Set the edge option to false to use serverless functions
+			// This might help with the static asset loading issue
+			edge: false
+		}),
 		alias: {
 			$lib: 'src/lib'
 		},
