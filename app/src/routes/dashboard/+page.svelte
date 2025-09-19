@@ -35,6 +35,7 @@
     List,
     Star
   } from 'lucide-svelte';
+  import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
   import { toast } from 'svelte-sonner';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
@@ -178,7 +179,9 @@
                 <p class="text-xl md:text-2xl font-bold">{analytics.totalResumes}</p>
               </div>
               <div class="h-10 w-10 md:h-12 md:w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <FileText class="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
+                <div class="text-blue-600">
+                  <LogoIcon size={34} />
+                </div>
               </div>
             </div>
           </CardContent>

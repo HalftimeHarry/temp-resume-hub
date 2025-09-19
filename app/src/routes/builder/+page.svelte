@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { currentUser, isAuthenticated, isLoading } from '$lib/stores/auth.js';
+	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges } from '$lib/stores/resumeBuilder.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye } from 'lucide-svelte';
+	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
+	import Logo from '$lib/components/ui/Logo.svelte';
 	
 	// Tab Components
 	import PersonalInfoTab from '$lib/components/builder/PersonalInfoTab.svelte';
@@ -61,6 +62,22 @@
 			console.error('Failed to publish:', error);
 		}
 	}
+
+	function handleBackToDashboard() {
+		console.log('🔄 Navigating to dashboard');
+		goto('/dashboard');
+	}
+
+	async function handleLogout() {
+		console.log('🔓 Attempting logout');
+		try {
+			const result = await auth.logout();
+			console.log('🔓 Logout result:', result);
+			goto('/');
+		} catch (error) {
+			console.error('Failed to logout:', error);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -81,7 +98,14 @@
 			<div class="container mx-auto px-4 py-4">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-3">
-						<FileText class="w-6 h-6 text-primary" />
+						<button 
+							class="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
+							on:click={handleBackToDashboard}
+						>
+							<ArrowLeft class="w-4 h-4" />
+							Dashboard
+						</button>
+						<Logo size="sm" showText={false} />
 						<div>
 							<h1 class="text-xl font-semibold">Resume Builder</h1>
 							<p class="text-sm text-muted-foreground">Create your professional resume step by step</p>
@@ -99,6 +123,18 @@
 						<Button size="sm" on:click={handlePublish}>
 							Publish Resume
 						</Button>
+						{#if $currentUser}
+							<div class="flex items-center gap-2 text-sm text-muted-foreground ml-4">
+								<User class="w-4 h-4" />
+								<span>{$currentUser.email}</span>
+							</div>
+							<button 
+								class="flex items-center justify-center p-2 text-gray-600 hover:bg-gray-100 rounded-md"
+								on:click={handleLogout}
+							>
+								<LogOut class="w-4 h-4" />
+							</button>
+						{/if}
 					</div>
 				</div>
 			</div>
