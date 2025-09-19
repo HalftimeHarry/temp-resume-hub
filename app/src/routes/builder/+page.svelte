@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
@@ -16,6 +16,7 @@
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
 
 	$: activeTab = $currentStep;
+	$: console.log('activeTab updated to:', activeTab);
 	$: progress = $completionProgress;
 	$: unsavedChanges = $hasUnsavedChanges;
 	$: user = $currentUser;
@@ -43,7 +44,10 @@
 	];
 
 	function handleTabChange(tabId: string) {
+		console.log('handleTabChange called with:', tabId);
+		console.log('Calling goToStep with:', tabId);
 		goToStep(tabId);
+		console.log('handleTabChange finished');
 	}
 
 	async function handleSave() {
@@ -310,23 +314,33 @@
 									<div class="space-y-2">
 										<div class="flex justify-between">
 											<span>Personal Information</span>
-											<span class="text-green-600">✅ Complete</span>
+											<span class={isStepComplete('personal') ? 'text-green-600' : 'text-yellow-600'}>
+												{isStepComplete('personal') ? '✅ Complete' : '⏳ In Progress'}
+											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Professional Summary</span>
-											<span class="text-green-600">✅ Complete</span>
+											<span class={isStepComplete('summary') ? 'text-green-600' : 'text-yellow-600'}>
+												{isStepComplete('summary') ? '✅ Complete' : '⏳ In Progress'}
+											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Work Experience</span>
-											<span class="text-yellow-600">⏳ In Progress</span>
+											<span class={isStepComplete('experience') ? 'text-green-600' : 'text-yellow-600'}>
+												{isStepComplete('experience') ? '✅ Complete' : '⏳ In Progress'}
+											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Education</span>
-											<span class="text-green-600">✅ Complete</span>
+											<span class={isStepComplete('education') ? 'text-green-600' : 'text-yellow-600'}>
+												{isStepComplete('education') ? '✅ Complete' : '⏳ In Progress'}
+											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Skills</span>
-											<span class="text-green-600">✅ Complete</span>
+											<span class={isStepComplete('skills') ? 'text-green-600' : 'text-yellow-600'}>
+												{isStepComplete('skills') ? '✅ Complete' : '⏳ In Progress'}
+											</span>
 										</div>
 									</div>
 								</div>

@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { isAuthenticated } from '$lib/stores/auth';
+  import Logo from '$lib/components/ui/Logo.svelte';
+  import * as Dialog from '$lib/components/ui/dialog';
   
   // Redirect authenticated users to dashboard
   onMount(() => {
@@ -26,6 +28,37 @@
   function handleViewTemplates() {
     goto('/templates');
   }
+  
+  // Modal states
+  let showTermsModal = false;
+  let showPrivacyModal = false;
+  let showContactModal = false;
+  
+  // Functions to open modals
+  function openTermsModal() {
+    showTermsModal = true;
+  }
+  
+  function openPrivacyModal() {
+    showPrivacyModal = true;
+  }
+  
+  function openContactModal() {
+    showContactModal = true;
+  }
+  
+  // Functions to close modals
+  function closeTermsModal() {
+    showTermsModal = false;
+  }
+  
+  function closePrivacyModal() {
+    showPrivacyModal = false;
+  }
+  
+  function closeContactModal() {
+    showContactModal = false;
+  }
 </script>
 
 <svelte:head>
@@ -39,12 +72,12 @@
     <div class="text-center" style="text-align: center;">
       <!-- Logo -->
       <div class="flex justify-center mb-8">
-        <img src="/logo.svg" alt="Digital Resume Hub" class="h-16" />
+        <img src="/logo.svg" alt="Digital Resume Hub" class="h-32" />
       </div>
       
-      <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6" style="font-size: 3rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">
+      <h1 class="text-8xl md:text-9xl font-bold text-gray-900 mb-6">
         Build Your Perfect
-        <span class="text-blue-600" style="color: #2563eb;">Resume</span>
+        <span class="text-blue-600">Resume</span>
       </h1>
       <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
         Create professional resumes in minutes with our intuitive builder. 
@@ -138,3 +171,73 @@
     </div>
   </div>
 </section>
+<!-- Footer Section -->
+<section class="py-8 bg-gray-100 border-t border-gray-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+    <div class="flex items-center mb-4 md:mb-0">
+      <div class="transform scale-300">
+        <Logo size="sm" showText={true} />
+      </div>
+      <span class="ml-2 text-gray-600">© 2025 Digital Resume Hub. All rights reserved.</span>
+    </div>
+    <div class="flex space-x-6">
+      <button onclick={openTermsModal} class="text-gray-600 hover:text-gray-900">Terms</button>
+      <button onclick={openPrivacyModal} class="text-gray-600 hover:text-gray-900">Privacy</button>
+      <button onclick={openContactModal} class="text-gray-600 hover:text-gray-900">Contact</button>
+    </div>
+  </div>
+</section>
+
+<!-- Terms Modal -->
+<Dialog.Root bind:open={showTermsModal}>
+  <Dialog.Content class="max-w-md">
+    <Dialog.Header>
+      <Dialog.Title>Terms of Service</Dialog.Title>
+      <Dialog.Description>Coming soon</Dialog.Description>
+    </Dialog.Header>
+    <div class="py-4">
+      <p class="text-gray-600">We're working on our terms of service. Please check back later.</p>
+    </div>
+    <Dialog.Footer>
+      <button onclick={closeTermsModal} class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Close
+      </button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<!-- Privacy Modal -->
+<Dialog.Root bind:open={showPrivacyModal}>
+  <Dialog.Content class="max-w-md">
+    <Dialog.Header>
+      <Dialog.Title>Privacy Policy</Dialog.Title>
+      <Dialog.Description>Coming soon</Dialog.Description>
+    </Dialog.Header>
+    <div class="py-4">
+      <p class="text-gray-600">We're working on our privacy policy. Please check back later.</p>
+    </div>
+    <Dialog.Footer>
+      <button onclick={closePrivacyModal} class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Close
+      </button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<!-- Contact Modal -->
+<Dialog.Root bind:open={showContactModal}>
+  <Dialog.Content class="max-w-md">
+    <Dialog.Header>
+      <Dialog.Title>Contact Us</Dialog.Title>
+      <Dialog.Description>Coming soon</Dialog.Description>
+    </Dialog.Header>
+    <div class="py-4">
+      <p class="text-gray-600">We're working on our contact information. Please check back later.</p>
+    </div>
+    <Dialog.Footer>
+      <button onclick={closeContactModal} class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Close
+      </button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

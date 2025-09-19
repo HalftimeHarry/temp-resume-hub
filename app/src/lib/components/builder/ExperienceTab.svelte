@@ -172,10 +172,10 @@
 	</div>
 
 	<div class="flex justify-between">
-		<Button variant="outline" on:click={onPrevious}>
+		<Button variant="outline" on:click={handlePrevious}>
 			Previous
 		</Button>
-		<Button disabled={!isValid} on:click={onNext}>
+		<Button disabled={!isValid} on:click={handleNext}>
 			Next: Education
 		</Button>
 	</div>

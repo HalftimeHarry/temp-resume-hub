@@ -77,8 +77,11 @@
   
   function createNewResume() {
     console.log('Create Resume button clicked!');
-    alert('Button clicked! Navigating to builder...');
-    goto('/builder');
+    try {
+      goto('/builder');
+    } catch (error) {
+      console.error('Error navigating to builder:', error);
+    }
   }
   
   function editResume(resumeId: string) {
@@ -323,10 +326,13 @@
               <FileText class="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes yet</h3>
               <p class="text-gray-600 mb-6">Create your first resume to get started</p>
-              <Button on:click={createNewResume}>
+              <button
+                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
+                on:click={createNewResume}
+              >
                 <Plus class="h-4 w-4 mr-2" />
                 Create Resume
-              </Button>
+              </button>
             {:else}
               <Search class="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes found</h3>

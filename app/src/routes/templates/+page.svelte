@@ -67,8 +67,8 @@
   }
   
   function useTemplate(template) {
-    // Pass template via URL params to avoid SSR issues
-    goto(`/builder?template=${template.id}&name=${encodeURIComponent(template.name)}&color=${template.color}`);
+    // Redirect to auth for non-authenticated users
+    goto('/auth/register');
   }
   
   function goHome() {

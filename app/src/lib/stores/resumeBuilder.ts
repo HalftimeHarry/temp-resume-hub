@@ -1,8 +1,8 @@
-import { writable, derived } from 'svelte/store';
-import type { 
-  ResumeBuilderData, 
-  BuilderStep, 
-  CharacterLimits, 
+import { writable, derived, get } from 'svelte/store';
+import type {
+  ResumeBuilderData,
+  BuilderStep,
+  CharacterLimits,
   PersonalInfo,
   Experience,
   Education,
@@ -11,6 +11,7 @@ import type {
   BuilderSettings
 } from '$lib/types/resume.js';
 import { generateId } from '$lib/utils.js';
+import { templateStore } from '$lib/stores/templates.js';
 
 // Character limits for different sections
 export const characterLimits: CharacterLimits = {
@@ -48,7 +49,7 @@ const defaultPersonalInfo: PersonalInfo = {
 const defaultSettings: BuilderSettings = {
   layout: '1-page',
   mode: 'simple',
-  template: 'modern',
+  template: 'default-template-id',
   colorScheme: 'blue',
   fontSize: 'medium',
   spacing: 'normal',
@@ -57,15 +58,56 @@ const defaultSettings: BuilderSettings = {
 };
 
 const defaultBuilderData: ResumeBuilderData = {
-  personalInfo: defaultPersonalInfo,
-  summary: '',
-  experience: [],
-  education: [],
-  skills: [],
+  personalInfo: {
+    fullName: 'DUSTIN DINSMORE',
+    email: 'ddinsmore8@gmail.com',
+    phone: '+16262223107',
+    location: 'San Diego, CA',
+    website: 'https://dustind.netlify.app/',
+    linkedin: 'https://www.linkedin.com/in/dustin-dinsmore-b38a47159/',
+    github: '',
+    summary: '',
+    profileImage: ''
+  },
+  summary: 'Recent graduate with experience in web development and a passion for creating user-friendly applications. Skilled in JavaScript, HTML, CSS, and modern frameworks. Eager to contribute to a dynamic team and continue learning new technologies.',
+  experience: [
+    {
+      id: 'exp1',
+      company: 'ABC Company',
+      position: 'Web Developer Intern',
+      location: 'San Diego, CA',
+      startDate: '2023-06',
+      endDate: '2023-09',
+      current: false,
+      description: 'Developed and maintained company website using modern web technologies. Collaborated with design team to implement responsive UI components.',
+      highlights: []
+    }
+  ],
+  education: [
+    {
+      id: 'edu1',
+      institution: 'San Diego State University',
+      degree: 'Bachelor of Science',
+      field: 'Computer Science',
+      location: 'San Diego, CA',
+      startDate: '2019-09',
+      endDate: '2023-05',
+      current: false,
+      gpa: '3.7/4.0',
+      honors: [],
+      description: ''
+    }
+  ],
+  skills: [
+    { id: 'skill1', name: 'JavaScript', level: 'intermediate', category: 'Technical' },
+    { id: 'skill2', name: 'HTML/CSS', level: 'intermediate', category: 'Technical' },
+    { id: 'skill3', name: 'Problem Solving', level: 'advanced', category: 'Soft Skills' },
+    { id: 'skill4', name: 'Team Collaboration', level: 'intermediate', category: 'Soft Skills' }
+  ],
   projects: [],
   settings: defaultSettings,
   currentStep: 'personal',
-  completedSteps: []
+  completedSteps: ['personal', 'summary', 'experience', 'education', 'skills']
 };
 
 // Stores
@@ -233,9 +275,20 @@ export function updateSettings(settings: Partial<BuilderSettings>) {
 }
 
 export function goToStep(stepId: string) {
-  if (builderSteps.find(step => step.id === stepId)) {
+  console.log('goToStep called with:', stepId);
+  const step = builderSteps.find(step => step.id === stepId);
+  if (step) {
+    console.log('Step found, updating stores');
     currentStep.set(stepId);
-    builderData.update(data => ({ ...data, currentStep: stepId }));
+    console.log('currentStep store updated to:', stepId);
+    builderData.update(data => ({
+      ...data,
+      currentStep: stepId
+    }));
+    console.log('builderData currentStep updated to:', stepId);
+    console.log('Stores updated');
+  } else {
+    console.log('Step not found');
   }
 }
 
@@ -297,9 +350,8 @@ export async function saveResume() {
       throw new Error('User not authenticated');
     }
 
-    let currentData: ResumeBuilderData;
-    const unsubscribeData = builderData.subscribe(data => currentData = data);
-    unsubscribeData();
+    // Get current data from the store
+    const currentData = get(builderData);
 
     // Create resume record in PocketBase
     const resumeData = {
@@ -314,7 +366,7 @@ export async function saveResume() {
         projects: currentData.projects,
         settings: currentData.settings
       },
-      template: currentData.settings.template,
+      template: currentData.settings.template || 'default-template-id',
       is_public: false
     };
 
@@ -347,9 +399,8 @@ export async function publishResume() {
       throw new Error('User not authenticated');
     }
 
-    let currentData: ResumeBuilderData;
-    const unsubscribeData = builderData.subscribe(data => currentData = data);
-    unsubscribeData();
+    // Get current data from the store
+    const currentData = get(builderData);
 
     // Generate a unique slug for the resume
     const slug = `${currentUser.username}-${currentData.personalInfo.fullName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume'}-${Date.now()}`;
@@ -367,7 +418,7 @@ export async function publishResume() {
         projects: currentData.projects,
         settings: currentData.settings
       },
-      template: currentData.settings.template,
+      template: currentData.settings.template || 'default-template-id',
       is_public: true,
       slug: slug
     };
