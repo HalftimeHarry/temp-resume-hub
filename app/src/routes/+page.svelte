@@ -37,6 +37,11 @@
 <section class="bg-gradient-to-br from-blue-50 to-indigo-100 py-20" style="background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); padding: 5rem 0;">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="max-width: 80rem; margin: 0 auto; padding: 0 1rem;">
     <div class="text-center" style="text-align: center;">
+      <!-- Logo -->
+      <div class="flex justify-center mb-8">
+        <img src="/logo.svg" alt="Digital Resume Hub" class="h-16" />
+      </div>
+      
       <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6" style="font-size: 3rem; font-weight: bold; color: #111827; margin-bottom: 1.5rem;">
         Build Your Perfect
         <span class="text-blue-600" style="color: #2563eb;">Resume</span>

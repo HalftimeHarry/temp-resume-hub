@@ -56,12 +56,12 @@
     resume.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  // Redirect to login if not authenticated
-  $: {
-    if (!$isAuthenticated && !isLoading) {
-      goto('/auth/login');
-    }
-  }
+  // Temporarily disable auth redirect for debugging
+  // $: {
+  //   if (!$isAuthenticated && !isLoading) {
+  //     goto('/auth/login');
+  //   }
+  // }
 
   onMount(async () => {
     // Only load data if authenticated
@@ -74,7 +74,9 @@
     isLoading = false;
   });
   
-  async function createNewResume() {
+  function createNewResume() {
+    console.log('Create Resume button clicked!');
+    alert('Button clicked! Navigating to builder...');
     goto('/builder');
   }
   
@@ -145,15 +147,20 @@
   <header class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p class="text-sm text-gray-600">Welcome back, {user?.name || 'User'}!</p>
+        <div class="flex items-center space-x-3">
+          <img src="/icon.svg" alt="Digital Resume Hub" class="h-8 w-8" />
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-sm text-gray-600">Welcome back, {user?.name || 'User'}!</p>
+          </div>
         </div>
         
-        <Button on:click={createNewResume}>
-          <Plus class="h-4 w-4 mr-2" />
-          New Resume
-        </Button>
+        <button 
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          on:click={createNewResume}
+        >
+          + New Resume
+        </button>
       </div>
     </div>
   </header>
