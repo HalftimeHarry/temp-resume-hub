@@ -11,6 +11,9 @@ const config = {
 		},
 		env: {
 			publicPrefix: 'PUBLIC_'
+		},
+		paths: {
+			base: ''
 		}
 	}
 };
