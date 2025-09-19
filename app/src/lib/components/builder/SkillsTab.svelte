@@ -80,7 +80,6 @@
 	];
 
 	export let onNext: () => void;
-	export let onPrevious: () => void;
 </script>
 
 <div class="space-y-6">
@@ -274,10 +273,10 @@
 	{/if}
 
 	<div class="flex justify-between">
-		<Button variant="outline" on:click={handlePrevious}>
+		<Button variant="outline" on:click={onPrevious}>
 			Previous
 		</Button>
-		<Button disabled={!isValid} on:click={handleNext}>
+		<Button disabled={!isValid} on:click={onNext}>
 			Next: Settings
 		</Button>
 	</div>

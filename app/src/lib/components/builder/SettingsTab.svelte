@@ -105,10 +105,10 @@
 	</div>
 
 	<div class="flex justify-between">
-		<Button variant="outline" on:click={handlePrevious}>
+		<Button variant="outline" on:click={onPrevious}>
 			Previous
 		</Button>
-		<Button on:click={handleNext}>
+		<Button on:click={onNext}>
 			Next: Preview
 		</Button>
 	</div>
