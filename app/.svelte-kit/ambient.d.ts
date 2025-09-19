@@ -45,6 +45,7 @@ declare module '$env/static/private' {
 	export const npm_config_local_prefix: string;
 	export const GITPOD_SVC: string;
 	export const COLOR: string;
+	export const _: string;
 	export const npm_config_prefix: string;
 	export const npm_config_npm_version: string;
 	export const PROMPT_DIRTRIM: string;
@@ -117,6 +118,7 @@ declare module '$env/dynamic/private' {
 		npm_config_local_prefix: string;
 		GITPOD_SVC: string;
 		COLOR: string;
+		_: string;
 		npm_config_prefix: string;
 		npm_config_npm_version: string;
 		PROMPT_DIRTRIM: string;

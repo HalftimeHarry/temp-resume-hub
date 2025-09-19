@@ -8,7 +8,7 @@
     const unsubscribe = isAuthenticated.subscribe(value => {
       if (value) {
         console.log('🔐 Auth Debug: User is authenticated, redirecting to dashboard');
-        goto('/dashboard-simple');
+        goto('/dashboard');
       }
     });
     

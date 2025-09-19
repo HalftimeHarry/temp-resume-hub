@@ -44,7 +44,7 @@
       
       if (result.success) {
         // Use window.location for redirect to ensure it works
-        window.location.href = '/dashboard-simple';
+        window.location.href = '/dashboard';
       } else {
         error = result.error || 'Registration failed';
       }

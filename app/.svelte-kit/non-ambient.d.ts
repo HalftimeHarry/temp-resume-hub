@@ -27,19 +27,28 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/dashboard" | "/r" | "/r/[token]" | "/test";
+		RouteId(): "/" | "/auth" | "/auth/login" | "/auth/register" | "/builder" | "/dashboard-simple" | "/dashboard" | "/resume" | "/resume/[slug]" | "/r" | "/r/[token]" | "/templates" | "/test";
 		RouteParams(): {
+			"/resume/[slug]": { slug: string };
 			"/r/[token]": { token: string }
 		};
 		LayoutParams(): {
-			"/": { token?: string };
+			"/": { slug?: string; token?: string };
+			"/auth": Record<string, never>;
+			"/auth/login": Record<string, never>;
+			"/auth/register": Record<string, never>;
+			"/builder": Record<string, never>;
+			"/dashboard-simple": Record<string, never>;
 			"/dashboard": Record<string, never>;
-			"/r": { token?: string };
+			"/resume": { slug?: string };
+			"/resume/[slug]": { slug: string };
+			"/r": { slug?: string; token?: string };
 			"/r/[token]": { token: string };
+			"/templates": Record<string, never>;
 			"/test": Record<string, never>
 		};
-		Pathname(): "/" | "/dashboard" | "/dashboard/" | "/r" | "/r/" | `/r/${string}` & {} | `/r/${string}/` & {} | "/test" | "/test/";
+		Pathname(): "/" | "/auth" | "/auth/" | "/auth/login" | "/auth/login/" | "/auth/register" | "/auth/register/" | "/builder" | "/builder/" | "/dashboard-simple" | "/dashboard-simple/" | "/dashboard" | "/dashboard/" | "/resume" | "/resume/" | `/resume/${string}` & {} | `/resume/${string}/` & {} | "/r" | "/r/" | `/r/${string}` & {} | `/r/${string}/` & {} | "/templates" | "/templates/" | "/test" | "/test/";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/favicon.png" | string & {};
+		Asset(): "/favicon.png" | "/manifest.json" | string & {};
 	}
 }

@@ -20,7 +20,7 @@
       
       if (result.success) {
         console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
-        window.location.href = '/dashboard-simple';
+        window.location.href = '/dashboard';
       } else {
         console.log('🔐 Login Debug: Login failed:', result.error);
         error = result.error || 'Login failed';

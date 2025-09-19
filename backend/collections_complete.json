@@ -1,0 +1,561 @@
+[
+    {
+        "id": "pbc_184785686",
+        "listRule": "",
+        "viewRule": "",
+        "createRule": "@request.auth.id != \"\" && @request.auth.collectionName = \"users\" && @request.auth.type = \"admin\"",
+        "updateRule": "@request.auth.id != \"\" && @request.auth.collectionName = \"users\" && @request.auth.type = \"admin\"",
+        "deleteRule": "@request.auth.id != \"\" && @request.auth.collectionName = \"users\" && @request.auth.type = \"admin\"",
+        "name": "templates",
+        "type": "base",
+        "fields": [
+            {
+                "autogeneratePattern": "[a-z0-9]{15}",
+                "hidden": false,
+                "id": "text3208210256",
+                "max": 15,
+                "min": 15,
+                "name": "id",
+                "pattern": "^[a-z0-9]+$",
+                "presentable": false,
+                "primaryKey": true,
+                "required": true,
+                "system": true,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384326",
+                "max": 100,
+                "min": 1,
+                "name": "name",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": true,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text2560465762",
+                "max": 50,
+                "min": 1,
+                "name": "slug",
+                "pattern": "^[a-zA-Z0-9-_]+$",
+                "presentable": false,
+                "primaryKey": false,
+                "required": true,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1843675174",
+                "max": 500,
+                "min": 0,
+                "name": "description",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "hidden": false,
+                "id": "file417780781",
+                "maxSelect": 1,
+                "maxSize": 2097152,
+                "mimeTypes": [
+                    "image/png",
+                    "image/jpeg"
+                ],
+                "name": "preview_image",
+                "presentable": false,
+                "protected": false,
+                "required": false,
+                "system": false,
+                "thumbs": [],
+                "type": "file"
+            },
+            {
+                "hidden": false,
+                "id": "select105650625",
+                "maxSelect": 1,
+                "name": "category",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "select",
+                "values": [
+                    "professional",
+                    "creative",
+                    "minimal",
+                    "modern",
+                    "academic"
+                ]
+            },
+            {
+                "hidden": false,
+                "id": "bool2667680333",
+                "name": "is_premium",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "bool"
+            },
+            {
+                "hidden": false,
+                "id": "json3565825916",
+                "maxSize": 0,
+                "name": "config",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "json"
+            },
+            {
+                "hidden": false,
+                "id": "autodate2990389176",
+                "name": "created",
+                "onCreate": true,
+                "onUpdate": false,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            },
+            {
+                "hidden": false,
+                "id": "autodate3332085495",
+                "name": "updated",
+                "onCreate": true,
+                "onUpdate": true,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            }
+        ],
+        "indexes": [
+            "CREATE UNIQUE INDEX `idx_slug_templates` ON `templates` (`slug`)"
+        ],
+        "system": false
+    },
+    {
+        "id": "pbc_184785687",
+        "listRule": "user = @request.auth.id",
+        "viewRule": "user = @request.auth.id || is_public = true",
+        "createRule": "user = @request.auth.id",
+        "updateRule": "user = @request.auth.id",
+        "deleteRule": "user = @request.auth.id",
+        "name": "resumes",
+        "type": "base",
+        "fields": [
+            {
+                "autogeneratePattern": "[a-z0-9]{15}",
+                "hidden": false,
+                "id": "text3208210257",
+                "max": 15,
+                "min": 15,
+                "name": "id",
+                "pattern": "^[a-z0-9]+$",
+                "presentable": false,
+                "primaryKey": true,
+                "required": true,
+                "system": true,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384327",
+                "max": 200,
+                "min": 1,
+                "name": "title",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": true,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384328",
+                "max": 50,
+                "min": 3,
+                "name": "slug",
+                "pattern": "^[a-zA-Z0-9-_]+$",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "cascadeDelete": true,
+                "collectionId": "_pb_users_auth_",
+                "displayFields": ["name", "email"],
+                "hidden": false,
+                "id": "relation1579384329",
+                "maxSelect": 1,
+                "minSelect": null,
+                "name": "user",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "relation"
+            },
+            {
+                "cascadeDelete": false,
+                "collectionId": "pbc_184785686",
+                "displayFields": ["name"],
+                "hidden": false,
+                "id": "relation1579384330",
+                "maxSelect": 1,
+                "minSelect": null,
+                "name": "template",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "relation"
+            },
+            {
+                "hidden": false,
+                "id": "json1579384331",
+                "maxSize": 0,
+                "name": "content",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "json"
+            },
+            {
+                "hidden": false,
+                "id": "bool1579384332",
+                "name": "is_public",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "bool"
+            },
+            {
+                "hidden": false,
+                "id": "number1579384333",
+                "max": null,
+                "min": 0,
+                "name": "view_count",
+                "onlyInt": false,
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "number"
+            },
+            {
+                "hidden": false,
+                "id": "date1579384334",
+                "max": "",
+                "min": "",
+                "name": "last_viewed",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "date"
+            },
+            {
+                "hidden": false,
+                "id": "autodate2990389177",
+                "name": "created",
+                "onCreate": true,
+                "onUpdate": false,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            },
+            {
+                "hidden": false,
+                "id": "autodate3332085496",
+                "name": "updated",
+                "onCreate": true,
+                "onUpdate": true,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            }
+        ],
+        "indexes": [
+            "CREATE UNIQUE INDEX `idx_user_slug_resumes` ON `resumes` (`user`, `slug`)",
+            "CREATE INDEX `idx_public_resumes` ON `resumes` (`is_public`)"
+        ],
+        "system": false
+    },
+    {
+        "id": "pbc_184785688",
+        "listRule": "resume.user = @request.auth.id",
+        "viewRule": "resume.user = @request.auth.id",
+        "createRule": "",
+        "updateRule": "",
+        "deleteRule": "resume.user = @request.auth.id",
+        "name": "resume_views",
+        "type": "base",
+        "fields": [
+            {
+                "autogeneratePattern": "[a-z0-9]{15}",
+                "hidden": false,
+                "id": "text3208210258",
+                "max": 15,
+                "min": 15,
+                "name": "id",
+                "pattern": "^[a-z0-9]+$",
+                "presentable": false,
+                "primaryKey": true,
+                "required": true,
+                "system": true,
+                "type": "text"
+            },
+            {
+                "cascadeDelete": true,
+                "collectionId": "pbc_184785687",
+                "displayFields": ["title"],
+                "hidden": false,
+                "id": "relation1579384335",
+                "maxSelect": 1,
+                "minSelect": null,
+                "name": "resume",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "relation"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384336",
+                "max": 45,
+                "min": 0,
+                "name": "viewer_ip",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384337",
+                "max": 500,
+                "min": 0,
+                "name": "user_agent",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "exceptDomains": null,
+                "hidden": false,
+                "id": "url1579384338",
+                "name": "referrer",
+                "onlyDomains": null,
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "url"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384339",
+                "max": 100,
+                "min": 0,
+                "name": "country",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "autogeneratePattern": "",
+                "hidden": false,
+                "id": "text1579384340",
+                "max": 100,
+                "min": 0,
+                "name": "city",
+                "pattern": "",
+                "presentable": false,
+                "primaryKey": false,
+                "required": false,
+                "system": false,
+                "type": "text"
+            },
+            {
+                "hidden": false,
+                "id": "select1579384341",
+                "maxSelect": 1,
+                "name": "device_type",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "select",
+                "values": [
+                    "desktop",
+                    "mobile",
+                    "tablet"
+                ]
+            },
+            {
+                "hidden": false,
+                "id": "number1579384342",
+                "max": null,
+                "min": 0,
+                "name": "view_duration",
+                "onlyInt": false,
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "number"
+            },
+            {
+                "hidden": false,
+                "id": "autodate2990389178",
+                "name": "created",
+                "onCreate": true,
+                "onUpdate": false,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            },
+            {
+                "hidden": false,
+                "id": "autodate3332085497",
+                "name": "updated",
+                "onCreate": true,
+                "onUpdate": true,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            }
+        ],
+        "indexes": [
+            "CREATE INDEX `idx_resume_resume_views` ON `resume_views` (`resume`)",
+            "CREATE INDEX `idx_created_resume_views` ON `resume_views` (`created`)"
+        ],
+        "system": false
+    },
+    {
+        "id": "pbc_184785689",
+        "listRule": "user = @request.auth.id",
+        "viewRule": "user = @request.auth.id",
+        "createRule": "user = @request.auth.id",
+        "updateRule": "user = @request.auth.id",
+        "deleteRule": "user = @request.auth.id",
+        "name": "user_settings",
+        "type": "base",
+        "fields": [
+            {
+                "autogeneratePattern": "[a-z0-9]{15}",
+                "hidden": false,
+                "id": "text3208210259",
+                "max": 15,
+                "min": 15,
+                "name": "id",
+                "pattern": "^[a-z0-9]+$",
+                "presentable": false,
+                "primaryKey": true,
+                "required": true,
+                "system": true,
+                "type": "text"
+            },
+            {
+                "cascadeDelete": true,
+                "collectionId": "_pb_users_auth_",
+                "displayFields": ["name"],
+                "hidden": false,
+                "id": "relation1579384343",
+                "maxSelect": 1,
+                "minSelect": null,
+                "name": "user",
+                "presentable": false,
+                "required": true,
+                "system": false,
+                "type": "relation"
+            },
+            {
+                "hidden": false,
+                "id": "select1579384344",
+                "maxSelect": 1,
+                "name": "theme",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "select",
+                "values": [
+                    "light",
+                    "dark",
+                    "auto"
+                ]
+            },
+            {
+                "hidden": false,
+                "id": "bool1579384345",
+                "name": "email_notifications",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "bool"
+            },
+            {
+                "hidden": false,
+                "id": "bool1579384346",
+                "name": "analytics_enabled",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "bool"
+            },
+            {
+                "hidden": false,
+                "id": "bool1579384347",
+                "name": "public_profile",
+                "presentable": false,
+                "required": false,
+                "system": false,
+                "type": "bool"
+            },
+            {
+                "hidden": false,
+                "id": "autodate2990389179",
+                "name": "created",
+                "onCreate": true,
+                "onUpdate": false,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            },
+            {
+                "hidden": false,
+                "id": "autodate3332085498",
+                "name": "updated",
+                "onCreate": true,
+                "onUpdate": true,
+                "presentable": false,
+                "system": false,
+                "type": "autodate"
+            }
+        ],
+        "indexes": [
+            "CREATE UNIQUE INDEX `idx_user_user_settings` ON `user_settings` (`user`)"
+        ],
+        "system": false
+    }
+]
