@@ -200,12 +200,24 @@
 
 <!-- Template Preview Modal -->
 {#if showModal && selectedTemplate}
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onclick={closeModal}>
-    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick={(e) => e.stopPropagation()}>
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" 
+    role="dialog" 
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    onclick={closeModal}
+    onkeydown={(e) => e.key === 'Escape' && closeModal()}
+  >
+    <div 
+      class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden" 
+      role="document"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => e.stopPropagation()}
+    >
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b">
         <div>
-          <h2 class="text-2xl font-bold">{selectedTemplate.name}</h2>
+          <h2 id="modal-title" class="text-2xl font-bold">{selectedTemplate.name}</h2>
           <p class="text-gray-600">{selectedTemplate.description}</p>
         </div>
         <button 
