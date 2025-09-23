@@ -256,13 +256,20 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
   const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const staticThumb = `/templates/${slug}.svg`;
 
+  const previewImages: string[] = Array.isArray(record.preview_images)
+    ? record.preview_images.map((img: string) => pb.getFileUrl(record, img))
+    : [];
+  const thumbnail = previewImages.length > 0
+    ? previewImages[0]
+    : (record.preview_image ? pb.getFileUrl(record, record.preview_image) : staticThumb);
+
   return {
     id: record.id,
     name: record.name,
     description: record.description,
     category: record.category,
-    thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : staticThumb,
-    previewImages: Array.isArray(record.preview_images) ? record.preview_images.map((img: string) => pb.getFileUrl(record, img)) : [],
+    thumbnail,
+    previewImages,
     settings,
     sections: [],
     starterData,
