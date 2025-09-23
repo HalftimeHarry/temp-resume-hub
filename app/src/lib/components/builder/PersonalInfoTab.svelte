@@ -6,28 +6,22 @@
 
 	$: personalInfo = $builderData.personalInfo;
 	
+	// Local fields bound to inputs; sync back to store when they change
+	let fullName = personalInfo.fullName || '';
+	let email = personalInfo.email || '';
+	let phone = personalInfo.phone || '';
+	let location = personalInfo.location || '';
+	let linkedin = personalInfo.linkedin || '';
+	let website = personalInfo.website || '';
+	
+	$: updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
+	
 	// More permissive phone validation: require at least 7 digits when provided
-	$: digitsPhone = (personalInfo.phone || '').replace(/\D/g, '');
-	$: phoneOk = personalInfo.phone ? digitsPhone.length >= 7 : true;
-	// Step validity: require name, email, location; phone is optional (warn only)
-	$: isValid = personalInfo.fullName.trim() !== '' &&
-				 personalInfo.email.trim() !== '' &&
-				 validateEmail(personalInfo.email);
-	$: console.log('PersonalInfoTab isValid:', isValid);
-	$: console.log('PersonalInfoTab isValid:', isValid);
-
-	$: {
-		if (isValid) {
-			markStepComplete('personal');
-		} else {
-			markStepIncomplete('personal');
-		}
-	}
-
-	function handleInput(field: string, value: string) {
-		updatePersonalInfo({ [field]: value });
-	}
-
+	$: digitsPhone = (phone || '').replace(/\D/g, '');
+	$: phoneOk = phone ? digitsPhone.length >= 7 : true;
+	// Step validity: require name, email; phone/location optional
+	$: isValid = fullName.trim() !== '' && email.trim() !== '' && validateEmail(email);
+	
 	export let onNext: () => void;
 
 	function handleNext() {
@@ -36,14 +30,7 @@
 		console.log('Next button clicked, isValid:', isValid);
 		console.log('onNext prop:', onNext);
 		if (isValid && onNext) {
-			console.log('Calling onNext');
-			try {
-				onNext();
-			} catch (error) {
-				console.error('Error calling onNext:', error);
-			}
-		} else {
-			console.log('Not calling onNext, isValid:', isValid, 'onNext exists:', !!onNext);
+			onNext();
 		}
 	}
 </script>
@@ -53,26 +40,24 @@
 		<div class="space-y-2">
 			<label for="fullName" class="text-sm font-medium">Full Name *</label>
 			<Input
-				id="fullName"
-				placeholder="John Doe"
-				value={personalInfo.fullName}
-				on:input={(e) => handleInput('fullName', e.target.value)}
-				required
+			id="fullName"
+			placeholder="John Doe"
+			bind:value={fullName}
+			required
 			/>
 		</div>
 
 		<div class="space-y-2">
 			<label for="email" class="text-sm font-medium">Email Address *</label>
 			<Input
-				id="email"
-				type="email"
-				placeholder="john.doe@email.com"
-				value={personalInfo.email}
-				on:input={(e) => handleInput('email', e.target.value)}
-				required
+			id="email"
+			type="email"
+			placeholder="john.doe@email.com"
+			bind:value={email}
+			required
 			/>
-			{#if personalInfo.email && !validateEmail(personalInfo.email)}
-				<p class="text-sm text-destructive">Please enter a valid email address</p>
+			{#if email && !validateEmail(email)}
+			 <p class="text-sm text-destructive">Please enter a valid email address</p>
 			{/if}
 		</div>
 	</div>
@@ -84,11 +69,10 @@
 			id="phone"
 			type="tel"
 			placeholder="(555) 123-4567"
-			value={personalInfo.phone || ''}
-			on:input={(e) => handleInput('phone', e.target.value)}
+			bind:value={phone}
 			/>
-			{#if personalInfo.phone && !phoneOk}
-				<p class="text-sm text-destructive">Please enter a valid phone number</p>
+			{#if phone && !phoneOk}
+			 <p class="text-sm text-destructive">Please enter a valid phone number</p>
 			{/if}
 		</div>
 
@@ -97,8 +81,7 @@
 			<Input
 			id="location"
 			placeholder="City, State"
-			value={personalInfo.location || ''}
-			on:input={(e) => handleInput('location', e.target.value)}
+			bind:value={location}
 			/>
 		</div>
 	</div>
@@ -107,20 +90,18 @@
 		<div class="space-y-2">
 			<label for="linkedin" class="text-sm font-medium">LinkedIn Profile</label>
 			<Input
-				id="linkedin"
-				placeholder="linkedin.com/in/johndoe"
-				value={personalInfo.linkedin || ''}
-				on:input={(e) => handleInput('linkedin', e.target.value)}
+			id="linkedin"
+			placeholder="linkedin.com/in/johndoe"
+			bind:value={linkedin}
 			/>
 		</div>
 
 		<div class="space-y-2">
 			<label for="website" class="text-sm font-medium">Portfolio/Website</label>
 			<Input
-				id="website"
-				placeholder="johndoe.com"
-				value={personalInfo.website || ''}
-				on:input={(e) => handleInput('website', e.target.value)}
+			id="website"
+			placeholder="johndoe.com"
+			bind:value={website}
 			/>
 		</div>
 	</div>
