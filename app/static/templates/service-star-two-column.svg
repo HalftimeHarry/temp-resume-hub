@@ -1,7 +1,18 @@
 <svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#FFF7ED"/>
-  <rect x="40" y="100" width="240" height="600" fill="#FED7AA"/>
-  <rect x="320" y="100" width="240" height="600" fill="#FED7AA"/>
-  <text x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial" font-size="28" fill="#9A3412">Service Star</text>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial" font-size="18" fill="#7C2D12">Two Column</text>
+  <rect width="600" height="800" fill="#FFF7ED"/>
+  <g transform="translate(50,40)">
+    <rect x="0" y="0" width="500" height="720" rx="8" fill="#FFFFFF" stroke="#FED7AA"/>
+    <rect x="0" y="0" width="500" height="60" rx="8" fill="#F97316"/>
+    <g transform="translate(24,84)">
+      <rect x="0" y="0" width="220" height="14" rx="4" fill="#F5D0B5"/>
+      <rect x="0" y="24" width="220" height="10" rx="4" fill="#FFE4D5"/>
+      <rect x="256" y="0" width="200" height="14" rx="4" fill="#F5D0B5"/>
+      <rect x="256" y="24" width="200" height="10" rx="4" fill="#FFE4D5"/>
+    </g>
+    <g transform="translate(24,160)">
+      <rect x="0" y="0" width="120" height="12" rx="4" fill="#F5D0B5"/>
+      <rect x="0" y="24" width="460" height="8" rx="4" fill="#FFE4D5"/>
+      <rect x="0" y="38" width="420" height="8" rx="4" fill="#FFE4D5"/>
+    </g>
+  </g>
 </svg>

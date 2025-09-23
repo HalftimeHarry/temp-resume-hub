@@ -1,6 +1,39 @@
 <svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#F3F4F6"/>
-  <circle cx="80" cy="80" r="40" fill="#D1D5DB"/>
-  <text x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial" font-size="28" fill="#111827">First Job Starter</text>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial" font-size="18" fill="#4B5563">Single Column + Image</text>
+  <rect width="600" height="800" fill="#F3F4F6"/>
+  <g transform="translate(50,40)">
+    <rect x="0" y="0" width="500" height="720" rx="8" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <!-- Accent bar (green) -->
+    <rect x="0" y="0" width="500" height="60" rx="8" fill="#10B981"/>
+    <!-- Avatar -->
+    <circle cx="64" cy="100" r="36" fill="#D1D5DB"/>
+    <!-- Name and contact to right of avatar -->
+    <rect x="120" y="84" width="300" height="16" rx="4" fill="#D1D5DB"/>
+    <rect x="120" y="106" width="210" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="336" y="106" width="120" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Summary -->
+    <rect x="24" y="150" width="120" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="172" width="452" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="188" width="420" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="204" width="380" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Experience -->
+    <rect x="24" y="244" width="140" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="268" width="300" height="12" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="286" width="260" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="304" width="420" height="8" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="318" width="380" height="8" rx="4" fill="#E5E7EB"/>
+
+    <!-- Education -->
+    <rect x="24" y="358" width="120" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="382" width="340" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="398" width="260" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Skills chips -->
+    <rect x="24" y="438" width="90" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="462" width="90" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="124" y="462" width="110" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="244" y="462" width="84" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="334" y="462" width="100" height="10" rx="6" fill="#E5E7EB"/>
+  </g>
 </svg>
