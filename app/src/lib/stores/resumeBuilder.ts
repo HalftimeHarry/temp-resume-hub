@@ -339,6 +339,7 @@ export async function saveResume() {
   try {
     const { pb } = await import('$lib/pocketbase');
     const { currentUser: userStore } = await import('$lib/stores/auth');
+    const { templateStore } = await import('$lib/stores/templates');
     
     let currentUser: any;
     const unsubscribe = userStore.subscribe(user => {
@@ -353,10 +354,21 @@ export async function saveResume() {
     // Get current data from the store
     const currentData = get(builderData);
 
+    // Get template name
+    let templateName = 'Untitled Template';
+    if (currentData.settings.template && currentData.settings.template !== 'default-template-id') {
+      try {
+        const template = await templateStore.getTemplate(currentData.settings.template);
+        templateName = template.name;
+      } catch (e) {
+        console.warn('Failed to fetch template name:', e);
+      }
+    }
+
     // Create resume record in PocketBase
     const resumeData = {
       user: currentUser.id,
-      title: `${currentData.personalInfo.fullName || 'Untitled'} Resume`,
+      title: `${currentUser.name || currentData.personalInfo.fullName || 'Untitled'} - ${templateName}`,
       content: {
         personalInfo: currentData.personalInfo,
         summary: currentData.summary,
@@ -388,6 +400,7 @@ export async function publishResume() {
   try {
     const { pb } = await import('$lib/pocketbase');
     const { currentUser: userStore } = await import('$lib/stores/auth');
+    const { templateStore } = await import('$lib/stores/templates');
     
     let currentUser: any;
     const unsubscribe = userStore.subscribe(user => {
@@ -402,13 +415,24 @@ export async function publishResume() {
     // Get current data from the store
     const currentData = get(builderData);
 
+    // Get template name
+    let templateName = 'Untitled Template';
+    if (currentData.settings.template && currentData.settings.template !== 'default-template-id') {
+      try {
+        const template = await templateStore.getTemplate(currentData.settings.template);
+        templateName = template.name;
+      } catch (e) {
+        console.warn('Failed to fetch template name:', e);
+      }
+    }
+
     // Generate a unique slug for the resume
     const slug = `${currentUser.username}-${currentData.personalInfo.fullName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume'}-${Date.now()}`;
 
     // Create or update resume record in PocketBase
     const resumeData = {
       user: currentUser.id,
-      title: `${currentData.personalInfo.fullName || 'Untitled'} Resume`,
+      title: `${currentUser.name || currentData.personalInfo.fullName || 'Untitled'} - ${templateName}`,
       content: {
         personalInfo: currentData.personalInfo,
         summary: currentData.summary,

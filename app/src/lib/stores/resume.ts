@@ -51,21 +51,18 @@ export const resumeStore = {
     try {
       const newResume: Partial<Resume> = {
         title,
-        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        personalInfo: {
-          fullName: '',
-          email: ''
+        user: pb.authStore.model?.id,
+        content: {
+          personalInfo: {
+            fullName: '',
+            email: ''
+          },
+          sections: getDefaultSections(),
+          settings: getDefaultSettings(templateId)
         },
-        sections: getDefaultSections(),
-        settings: getDefaultSettings(templateId),
-        isPublic: false,
-        isTemplate: false,
-        templateId,
-        tags: [],
-        metadata: {
-          version: '1.0',
-          exportFormats: ['pdf', 'docx']
-        }
+        template: templateId,
+        is_public: false,
+        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       };
 
       const record = await pb.collection('resumes').create(newResume);
@@ -98,7 +95,7 @@ export const resumeStore = {
       editorState.update(state => ({
         ...state,
         hasUnsavedChanges: false,
-        lastSaved: resume.updatedAt
+        lastSaved: resume.updated
       }));
 
       return resume;
@@ -129,7 +126,7 @@ export const resumeStore = {
       editorState.update(state => ({
         ...state,
         hasUnsavedChanges: false,
-        lastSaved: updatedResume.updatedAt
+        lastSaved: updatedResume.updated
       }));
     } catch (error) {
       console.error('Failed to save resume:', error);
@@ -167,13 +164,16 @@ export const resumeStore = {
   },
 
   // Update personal info
-  updatePersonalInfo(info: Partial<Resume['personalInfo']>): void {
+  updatePersonalInfo(info: any): void {
     currentResume.update(resume => {
       if (!resume) return resume;
       
       return {
         ...resume,
-        personalInfo: { ...resume.personalInfo, ...info }
+        content: {
+          ...resume.content,
+          personalInfo: { ...resume.content?.personalInfo, ...info }
+        }
       };
     });
     
@@ -191,13 +191,16 @@ export const resumeStore = {
         type,
         title: title || getDefaultSectionTitle(type),
         visible: true,
-        order: resume.sections.length,
+        order: resume.content?.sections?.length || 0,
         data: []
       };
       
       return {
         ...resume,
-        sections: [...resume.sections, newSection]
+        content: {
+          ...resume.content,
+          sections: [...(resume.content?.sections || []), newSection]
+        }
       };
     });
     
@@ -212,9 +215,12 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: resume.sections.map(section =>
-          section.id === sectionId ? { ...section, ...updates } : section
-        )
+        content: {
+          ...resume.content,
+          sections: (resume.content?.sections || []).map(section =>
+            section.id === sectionId ? { ...section, ...updates } : section
+          )
+        }
       };
     });
     
@@ -229,7 +235,10 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: resume.sections.filter(section => section.id !== sectionId)
+        content: {
+          ...resume.content,
+          sections: (resume.content?.sections || []).filter(section => section.id !== sectionId)
+        }
       };
     });
     
@@ -242,7 +251,7 @@ export const resumeStore = {
     currentResume.update(resume => {
       if (!resume) return resume;
       
-      const sectionsMap = new Map(resume.sections.map(s => [s.id, s]));
+      const sectionsMap = new Map((resume.content?.sections || []).map(s => [s.id, s]));
       const reorderedSections = sectionIds
         .map(id => sectionsMap.get(id))
         .filter(Boolean)
@@ -250,7 +259,10 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: reorderedSections
+        content: {
+          ...resume.content,
+          sections: reorderedSections
+        }
       };
     });
     
@@ -265,11 +277,14 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: resume.sections.map(section =>
-          section.id === sectionId
-            ? { ...section, data: [...section.data, { ...item, id: generateId() }] }
-            : section
-        )
+        content: {
+          ...resume.content,
+          sections: (resume.content?.sections || []).map(section =>
+            section.id === sectionId
+              ? { ...section, data: [...section.data, { ...item, id: generateId() }] }
+              : section
+          )
+        }
       };
     });
     
@@ -284,16 +299,19 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: resume.sections.map(section =>
-          section.id === sectionId
-            ? {
-                ...section,
-                data: section.data.map(item =>
-                  item.id === itemId ? { ...item, ...updates } : item
-                )
-              }
-            : section
-        )
+        content: {
+          ...resume.content,
+          sections: (resume.content?.sections || []).map(section =>
+            section.id === sectionId
+              ? {
+                  ...section,
+                  data: section.data.map(item =>
+                    item.id === itemId ? { ...item, ...updates } : item
+                  )
+                }
+              : section
+          )
+        }
       };
     });
     
@@ -308,11 +326,14 @@ export const resumeStore = {
       
       return {
         ...resume,
-        sections: resume.sections.map(section =>
-          section.id === sectionId
-            ? { ...section, data: section.data.filter(item => item.id !== itemId) }
-            : section
-        )
+        content: {
+          ...resume.content,
+          sections: (resume.content?.sections || []).map(section =>
+            section.id === sectionId
+              ? { ...section, data: section.data.filter(item => item.id !== itemId) }
+              : section
+          )
+        }
       };
     });
     
@@ -325,7 +346,7 @@ export const resumeStore = {
     try {
       const records = await pb.collection('resumes').getFullList({
         sort: '-updated',
-        filter: `userId = "${pb.authStore.model?.id}"`
+        filter: `user = "${pb.authStore.model?.id}"`
       });
       
       const resumes = records.map(mapRecordToResume);
@@ -367,26 +388,14 @@ export const resumeStore = {
 function mapRecordToResume(record: any): Resume {
   return {
     id: record.id,
-    userId: record.userId,
+    user: record.user,
     title: record.title,
     slug: record.slug,
-    personalInfo: record.personalInfo || { fullName: '', email: '' },
-    sections: record.sections || [],
-    settings: record.settings || getDefaultSettings(),
-    isPublic: record.isPublic || false,
-    isTemplate: record.isTemplate || false,
-    templateId: record.templateId,
-    createdAt: record.created,
-    updatedAt: record.updated,
-    lastViewedAt: record.lastViewedAt,
-    viewCount: record.viewCount || 0,
-    downloadCount: record.downloadCount || 0,
-    shareCount: record.shareCount || 0,
-    tags: record.tags || [],
-    metadata: record.metadata || {
-      version: '1.0',
-      exportFormats: ['pdf', 'docx']
-    }
+    content: record.content || {},
+    template: record.template,
+    is_public: record.is_public || false,
+    created: record.created,
+    updated: record.updated
   };
 }
 
@@ -419,7 +428,7 @@ function getDefaultSections(): ResumeSection[] {
   ];
 }
 
-function getDefaultSettings(templateId?: string): Resume['settings'] {
+function getDefaultSettings(templateId?: string): any {
   return {
     template: templateId || 'modern',
     colorScheme: 'blue',
