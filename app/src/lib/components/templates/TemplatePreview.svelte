@@ -157,6 +157,20 @@
       if (template) {
         sampleResume.settings = { ...sampleResume.settings, ...template.settings };
         selectedStyleIndex = 0;
+        // Fallback styles from catalog if none in template
+        if (!template.styles || template.styles.length === 0) {
+          try {
+            const catRes = await fetch('/templates/style-catalog.json');
+            if (catRes.ok) {
+              const cat = await catRes.json();
+              if (cat?.styles?.length) {
+                template = { ...template, styles: cat.styles };
+              }
+            }
+          } catch (e) {
+            console.warn('No style catalog found');
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load template:', error);

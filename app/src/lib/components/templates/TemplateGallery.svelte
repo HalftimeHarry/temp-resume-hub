@@ -130,6 +130,20 @@
           previewConfig = null;
         }
       }
+      // Fallback styles from catalog if none provided
+      if (!previewTemplateData.styles || previewTemplateData.styles.length === 0) {
+        try {
+          const catRes = await fetch('/templates/style-catalog.json');
+          if (catRes.ok) {
+            const cat = await catRes.json();
+            if (cat?.styles?.length) {
+              previewTemplateData.styles = cat.styles;
+            }
+          }
+        } catch (e) {
+          console.warn('No style catalog found');
+        }
+      }
     } catch (error) {
       console.error('Failed to load template preview:', error);
       toast.error('Failed to load template');
