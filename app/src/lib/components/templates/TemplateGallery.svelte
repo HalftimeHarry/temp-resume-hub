@@ -102,13 +102,26 @@
   let previewConfig: any = null;
   let selectedStyleIndex: number = 0;
 
-  // Map common style keys to PB preview_images array indices
-  const pbPreviewIndexByStyleKey: Record<string, number> = {
+  // Map common style keys to PB preview_images array indices (defaults)
+  const pbIndexMapDefault: Record<string, number> = {
     'single-column': 0,
     'two-column': 1,
     'two-page': 2,
     'with-image': 3
   };
+  // Per-template overrides (by slug)
+  const pbIndexOverrides: Record<string, Record<string, number>> = {
+    'first-job-starter': {
+      'single-column': 1,
+      'two-column': 2,
+      'with-image': 3
+    }
+  };
+  function getPBIndexForStyle(styleKey: string): number | undefined {
+    const slug = previewTemplateData?.name ? slugify(previewTemplateData.name) : '';
+    const map = (slug && pbIndexOverrides[slug]) || pbIndexMapDefault;
+    return map[styleKey];
+  }
   
   function slugify(name: string): string {
     return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -523,9 +536,9 @@
               {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
                 {#if previewTemplateData.styles[selectedStyleIndex]?.previewImage}
                   <img src={previewTemplateData.styles[selectedStyleIndex].previewImage} alt={previewTemplateData.name} class="w-full h-full object-cover" />
-                {:else if previewTemplateData.previewImages && previewTemplateData.styles[selectedStyleIndex]?.key && pbPreviewIndexByStyleKey[previewTemplateData.styles[selectedStyleIndex].key] !== undefined}
-                  {@const idx = pbPreviewIndexByStyleKey[previewTemplateData.styles[selectedStyleIndex].key]}
-                  {#if previewTemplateData.previewImages[idx]}
+                {:else if previewTemplateData.previewImages && previewTemplateData.styles[selectedStyleIndex]?.key && getPBIndexForStyle(previewTemplateData.styles[selectedStyleIndex].key) !== undefined}
+                  {@const idx = getPBIndexForStyle(previewTemplateData.styles[selectedStyleIndex].key)}
+                  {#if typeof idx === 'number' && previewTemplateData.previewImages[idx]}
                     <img src={previewTemplateData.previewImages[idx]} alt={previewTemplateData.name} class="w-full h-full object-cover" />
                   {:else}
                     <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />

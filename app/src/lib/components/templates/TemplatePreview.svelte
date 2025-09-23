@@ -32,12 +32,25 @@
   let currentImageIndex = 0;
   let selectedStyleIndex = 0;
 
-  const pbPreviewIndexByStyleKey: Record<string, number> = {
+  const pbIndexMapDefault: Record<string, number> = {
     'single-column': 0,
     'two-column': 1,
     'two-page': 2,
     'with-image': 3
   };
+  const pbIndexOverrides: Record<string, Record<string, number>> = {
+    'first-job-starter': {
+      'single-column': 1,
+      'two-column': 2,
+      'with-image': 3
+    }
+  };
+  function slugify(name: string): string { return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+  function getPBIndexForStyle(styleKey: string): number | undefined {
+    const slug = template?.name ? slugify(template.name) : '';
+    const map = (slug && pbIndexOverrides[slug]) || pbIndexMapDefault;
+    return map[styleKey];
+  }
   
   // Sample resume data for preview
   const sampleResume = {
@@ -475,9 +488,9 @@
                         alt={`${template.name} preview ${currentImageIndex + 1}`}
                         class="w-full h-full object-cover"
                       />
-                    {:else if template.styles && template.previewImages && template.styles[selectedStyleIndex]?.key && pbPreviewIndexByStyleKey[template.styles[selectedStyleIndex].key] !== undefined}
-                      {@const idx = pbPreviewIndexByStyleKey[template.styles[selectedStyleIndex].key]}
-                      {#if template.previewImages[idx]}
+                    {:else if template.styles && template.previewImages && template.styles[selectedStyleIndex]?.key && getPBIndexForStyle(template.styles[selectedStyleIndex].key) !== undefined}
+                      {@const idx = getPBIndexForStyle(template.styles[selectedStyleIndex].key)}
+                      {#if typeof idx === 'number' && template.previewImages[idx]}
                         <img 
                           src={template.previewImages[idx]} 
                           alt={`${template.name} preview by style`}
