@@ -12,6 +12,15 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	// Selected template/color display
 	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
 	$: selectedColorScheme = $builderData?.settings?.colorScheme || selectedTemplate?.settings?.colorScheme || '—';
+	const colorClassMap: Record<string, string> = {
+		blue: 'bg-blue-500',
+		green: 'bg-green-500',
+		purple: 'bg-purple-500',
+		orange: 'bg-orange-500',
+		teal: 'bg-teal-500',
+		black: 'bg-gray-800'
+	};
+	$: colorClass = colorClassMap[selectedColorScheme] || 'bg-gray-400';
 	
 	// Tab Components
 	import PersonalInfoTab from '$lib/components/builder/PersonalInfoTab.svelte';
@@ -234,7 +243,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							 <!-- Selected Template/Color info -->
 							  <div class="mt-3 text-xs text-muted-foreground">
 							    <div><span class="font-medium text-foreground">Template:</span> {selectedTemplate ? selectedTemplate.name : 'Not selected'}</div>
-											<div><span class="font-medium text-foreground">Color:</span> {selectedColorScheme}</div>
+											<div class="flex items-center gap-2">
+												<span class="font-medium text-foreground">Color:</span>
+												<span class={`inline-block w-3 h-3 rounded-full ${colorClass}`}></span>
+												<span>{selectedColorScheme}</span>
+											</div>
 										</div>
 									</div>
 								</div>
