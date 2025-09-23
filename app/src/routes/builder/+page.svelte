@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-import { builderData, currentStep } from '$lib/stores/resumeBuilder';
-import { get } from 'svelte/store';
+import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
