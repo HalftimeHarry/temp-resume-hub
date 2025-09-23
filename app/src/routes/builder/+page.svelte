@@ -9,6 +9,10 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	
+	// Selected template/color display
+	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
+	$: selectedColorScheme = $builderData?.settings?.colorScheme || selectedTemplate?.settings?.colorScheme || '—';
+	
 	// Tab Components
 	import PersonalInfoTab from '$lib/components/builder/PersonalInfoTab.svelte';
 	import SummaryTab from '$lib/components/builder/SummaryTab.svelte';
@@ -225,11 +229,16 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								<span>{progress}% Complete</span>
 							</div>
 							<div class="w-full bg-secondary rounded-full h-2">
-								<div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {progress}%"></div>
+							<div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {progress}%"></div>
 							</div>
-						</div>
-					</div>
-				</div>
+							 <!-- Selected Template/Color info -->
+							  <div class="mt-3 text-xs text-muted-foreground">
+							    <div><span class="font-medium text-foreground">Template:</span> {selectedTemplate ? selectedTemplate.name : 'Not selected'}</div>
+											<div><span class="font-medium text-foreground">Color:</span> {selectedColorScheme}</div>
+										</div>
+									</div>
+								</div>
+							</div>
 
 				<!-- Content Area -->
 				<div class="lg:col-span-3">
