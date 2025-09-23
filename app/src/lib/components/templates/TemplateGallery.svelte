@@ -183,9 +183,9 @@
       <CardContent>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label class="text-sm font-medium mb-2 block">Category</label>
+            <label for="category-filter" class="text-sm font-medium mb-2 block">Category</label>
             <Select value={$filters.category || ''} onValueChange={(value) => updateFilter('category', value || undefined)}>
-              <SelectTrigger>
+              <SelectTrigger id="category-filter">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -198,9 +198,9 @@
           </div>
           
           <div>
-            <label class="text-sm font-medium mb-2 block">Type</label>
+            <label for="type-filter" class="text-sm font-medium mb-2 block">Type</label>
             <Select value={$filters.isPremium?.toString() || ''} onValueChange={(value) => updateFilter('isPremium', value === 'true' ? true : value === 'false' ? false : undefined)}>
-              <SelectTrigger>
+              <SelectTrigger id="type-filter">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -212,9 +212,9 @@
           </div>
           
           <div>
-            <label class="text-sm font-medium mb-2 block">Rating</label>
+            <label for="rating-filter" class="text-sm font-medium mb-2 block">Rating</label>
             <Select value={$filters.rating?.toString() || ''} onValueChange={(value) => updateFilter('rating', value ? parseFloat(value) : undefined)}>
-              <SelectTrigger>
+              <SelectTrigger id="rating-filter">
                 <SelectValue placeholder="Any Rating" />
               </SelectTrigger>
               <SelectContent>
