@@ -8,6 +8,32 @@
     "sectionOrder": ["personal", "summary", "experience", "education", "skills", "references"]
   },
   "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal", "showProfileImage": false },
+      "previewImage": "/templates/hospitality-helper.svg",
+      "previewImages": ["/templates/hospitality-helper.svg"]
+    },
+    {
+      "key": "with-image",
+      "label": "Single Column + Image",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/hospitality-helper.svg",
+      "previewImages": ["/templates/hospitality-helper.svg"]
+    },
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact", "showProfileImage": false },
+      "previewImage": "/templates/hospitality-helper.svg",
+      "previewImages": ["/templates/hospitality-helper.svg"]
+    }
+  ],
   "starterData": {
     "personalInfo": {
       "fullName": "",
