@@ -5,12 +5,18 @@
 	import { Trash2, Plus } from 'lucide-svelte';
 
 	$: education = $builderData.education;
-	$: isValid = education.length > 0 && education.every(edu => 
-		edu.institution.trim() !== '' && 
-		edu.degree.trim() !== '' && 
+	$: isValid = education.length > 0 && education.every(edu =>
+		edu.institution?.trim() !== '' &&
+		edu.degree?.trim() !== '' &&
 		edu.field?.trim() !== '' &&
-		edu.startDate.trim() !== ''
+		edu.startDate?.trim() !== ''
 	);
+
+	// Debug logging
+	$: {
+		console.log('EducationTab: education updated', education);
+		console.log('EducationTab: isValid', isValid);
+	}
 
 	$: {
 		if (isValid) {
@@ -202,7 +208,7 @@
 		<Button variant="outline" on:click={onPrevious}>
 			Previous
 		</Button>
-		<Button disabled={!isValid} on:click={onNext}>
+		<Button on:click={onNext}>
 			Next: Skills
 		</Button>
 	</div>

@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  // Simplified imports for now
-  let userResumes = [];
+  import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
+  import { pb } from '$lib/pocketbase';
+  import { userResumes, resumeStore } from '$lib/stores/resume';
+  
   let userAnalytics = {
     totalResumes: 0,
     totalViews: 0,
     totalDownloads: 0,
     totalShares: 0
   };
-  import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
-  import { pb } from '$lib/pocketbase';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
@@ -77,22 +77,22 @@
   } = {};
   let importDebugText = '';
   
-  $: resumes = userResumes;
+  $: resumes = $userResumes;
   $: analytics = userAnalytics;
   $: user = $currentUser;
   
   // Filter resumes based on search query
-  $: filteredResumes = resumes.filter(resume => 
-    resume.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    resume.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  $: filteredResumes = resumes.filter(resume =>
+    (resume.title && resume.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (resume.content?.personalInfo && resume.content.personalInfo.fullName && resume.content.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  // Temporarily disable auth redirect for debugging
-  // $: {
-  //   if (!$isAuthenticated && !isLoading) {
-  //     goto('/auth/login');
-  //   }
-  // }
+  // Redirect to login if not authenticated
+  $: {
+    if (!$isAuthenticated && !isLoading) {
+      goto('/auth/login');
+    }
+  }
 
   onMount(async () => {
     // Only load data if authenticated
@@ -101,8 +101,21 @@
       return;
     }
 
-    // Simplified loading for now
-    isLoading = false;
+    try {
+      // Load user's resumes
+      const loadedResumes = await resumeStore.loadUserResumes();
+      
+      // Update analytics with real data
+      userAnalytics.totalResumes = loadedResumes.length;
+      userAnalytics.totalViews = loadedResumes.reduce((sum, resume) => sum + (resume.content?.viewCount || 0), 0);
+      userAnalytics.totalDownloads = loadedResumes.reduce((sum, resume) => sum + (resume.content?.downloadCount || 0), 0);
+      userAnalytics.totalShares = loadedResumes.reduce((sum, resume) => sum + (resume.content?.shareCount || 0), 0);
+    } catch (error) {
+      console.error('Failed to load resumes:', error);
+      toast.error('Failed to load resumes');
+    } finally {
+      isLoading = false;
+    }
   });
   
   function createNewResume() {
@@ -153,9 +166,12 @@
       // Copy data from original resume
       resumeStore.update({
         ...newResume,
-        personalInfo: resume.personalInfo,
-        sections: resume.sections,
-        settings: resume.settings
+        content: {
+          ...resume.content,
+          personalInfo: resume.content?.personalInfo,
+          sections: resume.content?.sections,
+          settings: resume.content?.settings
+        }
       });
       toast.success('Resume duplicated successfully');
     } catch (error) {
@@ -489,26 +505,26 @@
                     </div>
                     
                     <p class="text-sm text-gray-600 mb-4 {viewMode === 'list' ? 'line-clamp-1' : 'line-clamp-2'}">
-                      {resume.personalInfo.fullName || 'No name set'}
+                      {resume.content?.personalInfo?.fullName || 'No name set'}
                     </p>
                     
                     <div class="flex items-center justify-between {viewMode === 'list' ? 'mb-0' : 'mb-4'}">
                       <div class="flex items-center space-x-4 text-xs text-gray-500">
                         <div class="flex items-center space-x-1">
                           <Eye class="h-3 w-3" />
-                          <span>{resume.viewCount}</span>
+                          <span>{resume.content?.viewCount || 0}</span>
                         </div>
                         <div class="flex items-center space-x-1">
                           <Download class="h-3 w-3" />
-                          <span>{resume.downloadCount}</span>
+                          <span>{resume.content?.downloadCount || 0}</span>
                         </div>
                         <div class="flex items-center space-x-1">
                           <Share2 class="h-3 w-3" />
-                          <span>{resume.shareCount}</span>
+                          <span>{resume.content?.shareCount || 0}</span>
                         </div>
                       </div>
                       
-                      {#if resume.isPublic}
+                      {#if resume.content?.isPublic}
                         <Badge variant="default" class="text-xs">Public</Badge>
                       {:else}
                         <Badge variant="secondary" class="text-xs">Private</Badge>
@@ -517,7 +533,7 @@
                     
                     {#if viewMode === 'grid'}
                       <div class="text-xs text-gray-500 mb-4">
-                        Updated {formatDate(resume.updatedAt)}
+                        Updated {formatDate(resume.updated)}
                       </div>
                     {/if}
                   </div>

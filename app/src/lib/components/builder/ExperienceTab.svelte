@@ -7,12 +7,29 @@
 	import { generateId } from '$lib/utils.js';
 
 	$: experiences = $builderData.experience;
-	$: isValid = experiences.length > 0 && experiences.every(exp => 
-		exp.company.trim() !== '' && 
-		exp.position.trim() !== '' && 
-		exp.startDate.trim() !== '' &&
-		exp.description.trim() !== ''
+	$: isValid = experiences.length > 0 && experiences.every(exp =>
+		exp.company?.trim() !== '' &&
+		exp.position?.trim() !== '' &&
+		exp.startDate?.trim() !== '' &&
+		exp.description?.trim() !== ''
 	);
+
+	// Debug logging
+	$: {
+		console.log('ExperienceTab: experiences updated', experiences);
+		console.log('ExperienceTab: isValid', isValid);
+	}
+
+	$: {
+		console.log('ExperienceTab: Updating step completion status, isValid:', isValid);
+		if (isValid) {
+			console.log('ExperienceTab: Marking step as complete');
+			markStepComplete('experience');
+		} else {
+			console.log('ExperienceTab: Marking step as incomplete');
+			markStepIncomplete('experience');
+		}
+	}
 
 	$: {
 		if (isValid) {
@@ -175,7 +192,7 @@
 		<Button variant="outline" on:click={onPrevious}>
 			Previous
 		</Button>
-		<Button disabled={!isValid} on:click={onNext}>
+		<Button on:click={onNext}>
 			Next: Education
 		</Button>
 	</div>
