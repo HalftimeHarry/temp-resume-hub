@@ -6,12 +6,15 @@
 
 	$: personalInfo = $builderData.personalInfo;
 	
+	// More permissive phone validation: require at least 7 digits when provided
+	$: digitsPhone = (personalInfo.phone || '').replace(/\D/g, '');
+	$: phoneOk = personalInfo.phone ? digitsPhone.length >= 7 : true;
 	$: isValid = personalInfo.fullName.trim() !== '' &&
 				 personalInfo.email.trim() !== '' &&
-				 personalInfo.phone?.trim() !== '' &&
+				 (personalInfo.phone?.trim() !== '' ? phoneOk : true) &&
 				 personalInfo.location?.trim() !== '' &&
 				 validateEmail(personalInfo.email) &&
-				 (personalInfo.phone ? validatePhone(personalInfo.phone) : true);
+				 phoneOk;
 	$: console.log('PersonalInfoTab isValid:', isValid);
 	$: console.log('PersonalInfoTab isValid:', isValid);
 
@@ -87,7 +90,7 @@
 				on:input={(e) => handleInput('phone', e.target.value)}
 				required
 			/>
-			{#if personalInfo.phone && !validatePhone(personalInfo.phone)}
+			{#if personalInfo.phone && !phoneOk}
 				<p class="text-sm text-destructive">Please enter a valid phone number</p>
 			{/if}
 		</div>
