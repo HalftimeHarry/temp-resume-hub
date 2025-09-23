@@ -14,24 +14,24 @@
       "label": "Single Column",
       "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
       "settings": { "spacing": "normal", "showProfileImage": false },
-      "previewImage": "/templates/hospitality-helper.svg",
-      "previewImages": ["/templates/hospitality-helper.svg"]
+      "previewImage": "/templates/hospitality-helper-single.svg",
+      "previewImages": ["/templates/hospitality-helper-single.svg"]
     },
     {
       "key": "with-image",
       "label": "Single Column + Image",
       "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
       "settings": { "showProfileImage": true },
-      "previewImage": "/templates/hospitality-helper.svg",
-      "previewImages": ["/templates/hospitality-helper.svg"]
+      "previewImage": "/templates/hospitality-helper-with-image.svg",
+      "previewImages": ["/templates/hospitality-helper-with-image.svg"]
     },
     {
       "key": "two-column",
       "label": "Two Column",
       "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
       "settings": { "spacing": "compact", "showProfileImage": false },
-      "previewImage": "/templates/hospitality-helper.svg",
-      "previewImages": ["/templates/hospitality-helper.svg"]
+      "previewImage": "/templates/hospitality-helper-two-column.svg",
+      "previewImages": ["/templates/hospitality-helper-two-column.svg"]
     }
   ],
   "starterData": {

@@ -14,24 +14,24 @@
       "label": "Single Column",
       "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
       "settings": { "spacing": "normal" },
-      "previewImage": "/templates/first-job-starter.svg",
-      "previewImages": ["/templates/first-job-starter.svg"]
+      "previewImage": "/templates/first-job-starter-single.svg",
+      "previewImages": ["/templates/first-job-starter-single.svg"]
     },
     {
       "key": "with-image",
       "label": "Single Column + Image",
       "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
       "settings": { "showProfileImage": true },
-      "previewImage": "/templates/first-job-starter.svg",
-      "previewImages": ["/templates/first-job-starter.svg"]
+      "previewImage": "/templates/first-job-starter-with-image.svg",
+      "previewImages": ["/templates/first-job-starter-with-image.svg"]
     },
     {
       "key": "two-column",
       "label": "Two Column",
       "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
       "settings": { "spacing": "compact" },
-      "previewImage": "/templates/first-job-starter.svg",
-      "previewImages": ["/templates/first-job-starter.svg"]
+      "previewImage": "/templates/first-job-starter-two-column.svg",
+      "previewImages": ["/templates/first-job-starter-two-column.svg"]
     }
   ],
   "starterData": {

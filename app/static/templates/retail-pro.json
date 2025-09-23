@@ -14,24 +14,24 @@
       "label": "Two Column",
       "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
       "settings": { "spacing": "compact" },
-      "previewImage": "/templates/retail-pro.svg",
-      "previewImages": ["/templates/retail-pro.svg"]
+      "previewImage": "/templates/retail-pro-two-column.svg",
+      "previewImages": ["/templates/retail-pro-two-column.svg"]
     },
     {
       "key": "single-column",
       "label": "Single Column",
       "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
       "settings": { "spacing": "normal" },
-      "previewImage": "/templates/retail-pro.svg",
-      "previewImages": ["/templates/retail-pro.svg"]
+      "previewImage": "/templates/retail-pro-single.svg",
+      "previewImages": ["/templates/retail-pro-single.svg"]
     },
     {
       "key": "with-image",
       "label": "Two Column + Image",
       "styleConfig": { "columns": 2, "pages": 1, "withImage": true, "imagePosition": "top" },
       "settings": { "showProfileImage": true },
-      "previewImage": "/templates/retail-pro.svg",
-      "previewImages": ["/templates/retail-pro.svg"]
+      "previewImage": "/templates/retail-pro-with-image.svg",
+      "previewImages": ["/templates/retail-pro-with-image.svg"]
     }
   ],
   "starterData": {
