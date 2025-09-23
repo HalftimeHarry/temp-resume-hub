@@ -7,6 +7,7 @@
     "showProfileImage": false,
     "sectionOrder": ["personal", "summary", "experience", "education", "skills", "certifications"]
   },
+  "styleConfig": { "columns": 1, "pages": 2, "withImage": false },
   "starterData": {
     "personalInfo": {
       "fullName": "",

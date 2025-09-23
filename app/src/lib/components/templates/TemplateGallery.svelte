@@ -499,6 +499,15 @@
                 <Eye class="h-12 w-12 text-gray-400" />
               {/if}
             </div>
+            {#if previewTemplateData.styleConfig}
+              <div class="mt-2 text-xs text-gray-600 flex gap-3">
+                <span>{previewTemplateData.styleConfig.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
+                <span>•</span>
+                <span>{previewTemplateData.styleConfig.pages === 2 ? 'Two pages' : 'One page'}</span>
+                <span>•</span>
+                <span>{previewTemplateData.styleConfig.withImage ? 'Includes profile image' : 'No profile image'}</span>
+              </div>
+            {/if}
           </div>
 
           <!-- Details -->
@@ -541,13 +550,28 @@
               </div>
             </div>
 
+            {#if previewTemplateData.styleConfig}
+              <div class="grid grid-cols-3 gap-2">
+                <Badge variant="outline">{previewTemplateData.styleConfig.columns === 2 ? 'Two Columns' : 'Single Column'}</Badge>
+                <Badge variant="outline">{previewTemplateData.styleConfig.pages === 2 ? 'Two Pages' : 'One Page'}</Badge>
+                <Badge variant="outline">{previewTemplateData.styleConfig.withImage ? 'Profile Image' : 'No Image'}</Badge>
+              </div>
+            {/if}
+
             <div class="flex gap-2">
               <Button class="flex-1" on:click={() => {
                 try {
-                  if (previewTemplateData?.starterData || previewConfig?.starterData) {
-                    const draft = previewTemplateData?.starterData || previewConfig?.starterData;
-                    localStorage.setItem('builderDraft', JSON.stringify(draft));
+                  const draft = (previewTemplateData?.starterData || previewConfig?.starterData) ? { ...(previewTemplateData?.starterData || previewConfig?.starterData) } : {};
+                  // Map styleConfig to builder settings hints
+                  const sc = previewTemplateData?.styleConfig;
+                  if (sc) {
+                    draft.settings = {
+                      ...(draft.settings || {}),
+                      layout: sc.pages === 2 ? '2-page' : '1-page',
+                      showProfileImage: sc.withImage
+                    };
                   }
+                  localStorage.setItem('builderDraft', JSON.stringify(draft));
                 } catch (e) {
                   console.warn('Failed to store builder draft:', e);
                 }

@@ -249,6 +249,7 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
   const cfg = record?.config || {};
   const settings = cfg.settings || cfg || getDefaultTemplateSettings();
   const starterData = cfg.starterData || undefined;
+  const styleConfig = cfg.styleConfig || undefined;
 
   // Fallback thumbnail from static assets if PB image missing
   const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -264,6 +265,7 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
     settings,
     sections: [],
     starterData,
+    styleConfig,
     isPremium: record.is_premium || false,
     isPopular: false,
     createdBy: '',
