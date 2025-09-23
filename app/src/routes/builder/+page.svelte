@@ -4,6 +4,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
+	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
@@ -16,9 +17,12 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
 
-	// Prefill from template starter data if provided via localStorage
-	onMount(() => {
+	// Prefill from template starter data if provided via localStorage & ensure templates list loaded
+	onMount(async () => {
 		try {
+			if (!$allTemplates || $allTemplates.length === 0) {
+				await templateStore.loadTemplates();
+			}
 			const raw = localStorage.getItem('builderDraft');
 			if (raw) {
 				const draft = JSON.parse(raw);
@@ -36,7 +40,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 				localStorage.removeItem('builderDraft');
 			}
 		} catch (e) {
-			console.warn('Failed to load builderDraft:', e);
+			console.warn('Failed to initialize builder:', e);
 		}
 	});
 
@@ -277,19 +281,24 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									</div>
 								</div>
 
-								<!-- Template Selection -->
+											<!-- Template Selection (from database) -->
 								<div class="space-y-4">
-									<h3 class="text-lg font-semibold">Template Style</h3>
-									<div class="grid grid-cols-3 gap-4">
-										<button class="p-4 border-2 border-primary bg-primary/5 rounded-lg text-center">
-											<div class="font-medium">Modern</div>
-										</button>
-										<button class="p-4 border rounded-lg text-center hover:border-primary">
-											<div class="font-medium">Classic</div>
-										</button>
-										<button class="p-4 border rounded-lg text-center hover:border-primary">
-											<div class="font-medium">Minimal</div>
-										</button>
+									<h3 class="text-lg font-semibold">Choose a Template</h3>
+									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+										{#each $allTemplates as t}
+											<button class="p-3 border rounded-lg text-left hover:border-primary { $builderData.settings?.template === t.id ? 'border-primary bg-primary/5' : '' }" on:click={() => {
+												builderData.update(d => ({ ...d, settings: { ...d.settings, ...t.settings, template: t.id } }));
+											}}>
+												<div class="flex items-center gap-3">
+													<img src={t.thumbnail} alt={t.name} class="w-12 h-16 object-cover rounded border" />
+													<div>
+														<div class="font-medium">{t.name}</div>
+														<div class="text-xs text-muted-foreground line-clamp-1">{t.category}</div>
+													</div>
+												</div>
+												<div class="mt-2 text-xs text-blue-600 hover:underline" on:click|stopPropagation={() => goto(`/templates/${t.id}/preview`)}>Preview</div>
+											</button>
+										{/each}
 									</div>
 								</div>
 
