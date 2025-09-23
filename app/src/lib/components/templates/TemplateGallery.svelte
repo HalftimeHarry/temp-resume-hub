@@ -661,49 +661,45 @@
                 </div>
                 <p class="text-[11px] text-gray-500">These preferences will be applied in the builder after you click Use. They do not change this preview.</p>
               </div>
-            {:else}
-              <div class="space-y-2 p-3 border rounded-md bg-gray-50">
-                <div class="text-sm text-gray-700">Create an account to customize color and font.</div>
-                <Button on:click={() => goto('/auth/register?next=/builder')}>Create an account</Button>
-              </div>
             {/if}
 
             <div class="flex gap-2">
-              <Button class="flex-1" on:click={() => {
-                try {
-                  const draft = (previewTemplateData?.starterData || previewConfig?.starterData) ? { ...(previewTemplateData?.starterData || previewConfig?.starterData) } : {};
-                  // Map styleConfig to builder settings hints
-                  let sc = previewTemplateData?.styleConfig;
-                  if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.styleConfig) {
-                    sc = previewTemplateData.styles[selectedStyleIndex].styleConfig;
+              {#if $isAuthenticated}
+                <Button class="flex-1" on:click={() => {
+                  try {
+                    const draft = (previewTemplateData?.starterData || previewConfig?.starterData) ? { ...(previewTemplateData?.starterData || previewConfig?.starterData) } : {};
+                    // Map styleConfig to builder settings hints
+                    let sc = previewTemplateData?.styleConfig;
+                    if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.styleConfig) {
+                      sc = previewTemplateData.styles[selectedStyleIndex].styleConfig;
+                    }
+                    if (sc) {
+                      draft.settings = {
+                        ...(draft.settings || {}),
+                        layout: sc.pages === 2 ? '2-page' : '1-page',
+                        showProfileImage: sc.withImage
+                      };
+                    }
+                    // Also apply per-style settings override if present
+                    if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.settings) {
+                      draft.settings = { ...(draft.settings || {}), ...previewTemplateData.styles[selectedStyleIndex].settings };
+                    }
+                    // Apply builder preferences
+                    draft.settings = { ...(draft.settings || {}), colorScheme: selectedColor, fontFamily: selectedFont };
+                    localStorage.setItem('builderDraft', JSON.stringify(draft));
+                  } catch (e) {
+                    console.warn('Failed to store builder draft:', e);
                   }
-                  if (sc) {
-                    draft.settings = {
-                      ...(draft.settings || {}),
-                      layout: sc.pages === 2 ? '2-page' : '1-page',
-                      showProfileImage: sc.withImage
-                    };
-                  }
-                  // Also apply per-style settings override if present
-                  if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.settings) {
-                    draft.settings = { ...(draft.settings || {}), ...previewTemplateData.styles[selectedStyleIndex].settings };
-                  }
-                  // Apply builder preferences
-                  draft.settings = { ...(draft.settings || {}), colorScheme: selectedColor, fontFamily: selectedFont };
-                  localStorage.setItem('builderDraft', JSON.stringify(draft));
-                } catch (e) {
-                  console.warn('Failed to store builder draft:', e);
-                }
-                // Auth gate: require login before building
-                if (!$isAuthenticated) {
-                  goto('/auth/login?next=/builder');
-                } else {
                   goto('/builder');
-                }
-              }}>
-                <Download class="h-4 w-4 mr-2" />
-                Use This Template
-              </Button>
+                }}>
+                  <Download class="h-4 w-4 mr-2" />
+                  Use This Template
+                </Button>
+              {:else}
+                <Button class="flex-1" on:click={() => goto('/auth/register?next=/builder')}>
+                  Create an account
+                </Button>
+              {/if}
               <Dialog.Close asChild>
                 <button class="inline-flex items-center justify-center h-9 px-4 rounded-md border">Close</button>
               </Dialog.Close>
