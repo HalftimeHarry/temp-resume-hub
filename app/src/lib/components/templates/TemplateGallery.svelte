@@ -28,6 +28,7 @@
     List,
     Sparkles
   } from 'lucide-svelte';
+  import * as Dialog from '$lib/components/ui/dialog';
   import { toast } from 'svelte-sonner';
   
   export let showFeatured = true;
@@ -94,8 +95,23 @@
     }
   }
   
-  function previewTemplate(templateId: string) {
-    goto(`/templates/${templateId}/preview`);
+  // Modal preview state
+  let previewOpen = false;
+  let previewLoading = false;
+  let previewTemplateData: any = null;
+  
+  async function previewTemplate(templateId: string) {
+    try {
+      previewLoading = true;
+      previewOpen = true;
+      previewTemplateData = await templateStore.getTemplate(templateId);
+    } catch (error) {
+      console.error('Failed to load template preview:', error);
+      toast.error('Failed to load template');
+      previewOpen = false;
+    } finally {
+      previewLoading = false;
+    }
   }
   
   function formatUsageCount(count: number): string {
@@ -433,6 +449,96 @@
       </div>
     {/if}
   </div>
+  <!-- Preview Modal -->
+  <Dialog.Root bind:open={previewOpen}>
+    <Dialog.Content class="max-w-5xl w-full">
+      <Dialog.Header>
+        <Dialog.Title class="text-xl font-semibold">{previewTemplateData ? previewTemplateData.name : 'Loading template...'}</Dialog.Title>
+        <Dialog.Description>
+          {previewTemplateData ? previewTemplateData.category : ''}
+        </Dialog.Description>
+      </Dialog.Header>
+
+      {#if previewLoading}
+        <div class="space-y-4">
+          <Skeleton class="h-64 w-full" />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton class="h-24 w-full" />
+            <Skeleton class="h-24 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </div>
+      {:else if previewTemplateData}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Large preview image or placeholder -->
+          <div class="lg:col-span-2">
+            <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+              {#if previewTemplateData.thumbnail}
+                <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+              {:else}
+                <Eye class="h-12 w-12 text-gray-400" />
+              {/if}
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-gray-700">{previewTemplateData.description}</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              {#if previewTemplateData.isPremium}
+                <Badge class="bg-yellow-500 text-white">
+                  <Crown class="h-3 w-3 mr-1" />
+                  Premium
+                </Badge>
+              {/if}
+              {#if previewTemplateData.isPopular}
+                <Badge class="bg-blue-500 text-white">
+                  <Star class="h-3 w-3 mr-1" />
+                  Popular
+                </Badge>
+              {/if}
+              <Badge variant="outline">{previewTemplateData.category}</Badge>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-1">
+                  <Star class="h-4 w-4 text-yellow-400 fill-current" />
+                  <span>Rating</span>
+                </div>
+                <div class="text-lg font-semibold">{previewTemplateData.rating?.toFixed ? previewTemplateData.rating.toFixed(1) : '—'}</div>
+              </div>
+
+              <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-1">
+                  <Download class="h-4 w-4" />
+                  <span>Uses</span>
+                </div>
+                <div class="text-lg font-semibold">{formatUsageCount(previewTemplateData.usageCount || 0)}</div>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <Button class="flex-1" on:click={() => useTemplate(previewTemplateData.id)}>
+                <Download class="h-4 w-4 mr-2" />
+                Use This Template
+              </Button>
+              <Dialog.Close asChild>
+                <button class="inline-flex items-center justify-center h-9 px-4 rounded-md border">Close</button>
+              </Dialog.Close>
+            </div>
+          </div>
+        </div>
+      {:else}
+        <div class="text-center py-8">
+          <p class="text-gray-600">Template not found.</p>
+        </div>
+      {/if}
+    </Dialog.Content>
+  </Dialog.Root>
 </div>
 
 <style>
