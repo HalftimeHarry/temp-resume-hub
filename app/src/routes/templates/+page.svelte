@@ -91,7 +91,7 @@
         </div>
         <button 
           class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-          onclick={goHome}
+          on:click={goHome}
         >
           ← Back to Home
         </button>
@@ -103,7 +103,7 @@
   <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {#each templates as template}
-        <Card class="hover:shadow-lg transition-shadow cursor-pointer" onclick={() => selectTemplate(template)}>
+        <Card class="hover:shadow-lg transition-shadow cursor-pointer" on:click={() => selectTemplate(template)}>
           <CardHeader class="p-0">
             <div class="aspect-[3/4] bg-gradient-to-br from-slate-50 to-slate-100 rounded-t-lg p-4 relative overflow-hidden">
               <!-- Mock Resume Preview -->
@@ -167,7 +167,7 @@
               <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{template.category}</span>
               <button 
                 class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
-                onclick={(e) => {
+                on:click={(e) => {
                   e.stopPropagation();
                   useTemplate(template);
                 }}
@@ -188,7 +188,7 @@
           <p class="text-gray-600 mb-6">Create your account to access all templates and start building your professional resume.</p>
           <button 
             class="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
-            onclick={() => goto('/auth/register')}
+            on:click={() => goto('/auth/register')}
           >
             Get Started Free
           </button>
@@ -205,14 +205,14 @@
     role="dialog" 
     aria-modal="true"
     aria-labelledby="modal-title"
-    onclick={closeModal}
-    onkeydown={(e) => e.key === 'Escape' && closeModal()}
+    on:click={closeModal}
+    on:keydown={(e) => e.key === 'Escape' && closeModal()}
   >
     <div 
       class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden" 
       role="document"
-      onclick={(e) => e.stopPropagation()}
-      onkeydown={(e) => e.stopPropagation()}
+      on:click={(e) => e.stopPropagation()}
+      on:keydown={(e) => e.stopPropagation()}
     >
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b">
@@ -222,7 +222,7 @@
         </div>
         <button 
           class="text-gray-400 hover:text-gray-600 text-2xl font-bold w-8 h-8 flex items-center justify-center"
-          onclick={closeModal}
+          on:click={closeModal}
         >
           ×
         </button>
@@ -353,13 +353,13 @@
             <div class="space-y-3">
               <button 
                 class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
-                onclick={() => useTemplate(selectedTemplate)}
+                on:click={() => useTemplate(selectedTemplate)}
               >
                 Use This Template
               </button>
               <button 
                 class="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors"
-                onclick={closeModal}
+                on:click={closeModal}
               >
                 Continue Browsing
               </button>
