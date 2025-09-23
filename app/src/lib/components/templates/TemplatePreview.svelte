@@ -31,6 +31,13 @@
   let isUsing = false;
   let currentImageIndex = 0;
   let selectedStyleIndex = 0;
+
+  const pbPreviewIndexByStyleKey: Record<string, number> = {
+    'single-column': 0,
+    'two-column': 1,
+    'two-page': 2,
+    'with-image': 3
+  };
   
   // Sample resume data for preview
   const sampleResume = {
@@ -468,6 +475,21 @@
                         alt={`${template.name} preview ${currentImageIndex + 1}`}
                         class="w-full h-full object-cover"
                       />
+                    {:else if template.styles && template.previewImages && template.styles[selectedStyleIndex]?.key && pbPreviewIndexByStyleKey[template.styles[selectedStyleIndex].key] !== undefined}
+                      {@const idx = pbPreviewIndexByStyleKey[template.styles[selectedStyleIndex].key]}
+                      {#if template.previewImages[idx]}
+                        <img 
+                          src={template.previewImages[idx]} 
+                          alt={`${template.name} preview by style`}
+                          class="w-full h-full object-cover"
+                        />
+                      {:else}
+                        <img 
+                          src={template.previewImages[currentImageIndex]} 
+                          alt={`${template.name} preview ${currentImageIndex + 1}`}
+                          class="w-full h-full object-cover"
+                        />
+                      {/if}
                     {:else}
                       <img 
                         src={template.previewImages[currentImageIndex]} 

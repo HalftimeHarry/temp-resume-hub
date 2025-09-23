@@ -101,6 +101,14 @@
   let previewTemplateData: any = null;
   let previewConfig: any = null;
   let selectedStyleIndex: number = 0;
+
+  // Map common style keys to PB preview_images array indices
+  const pbPreviewIndexByStyleKey: Record<string, number> = {
+    'single-column': 0,
+    'two-column': 1,
+    'two-page': 2,
+    'with-image': 3
+  };
   
   function slugify(name: string): string {
     return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -515,6 +523,13 @@
               {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
                 {#if previewTemplateData.styles[selectedStyleIndex]?.previewImage}
                   <img src={previewTemplateData.styles[selectedStyleIndex].previewImage} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                {:else if previewTemplateData.previewImages && previewTemplateData.styles[selectedStyleIndex]?.key && pbPreviewIndexByStyleKey[previewTemplateData.styles[selectedStyleIndex].key] !== undefined}
+                  {@const idx = pbPreviewIndexByStyleKey[previewTemplateData.styles[selectedStyleIndex].key]}
+                  {#if previewTemplateData.previewImages[idx]}
+                    <img src={previewTemplateData.previewImages[idx]} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                  {:else}
+                    <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                  {/if}
                 {:else}
                   <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
                 {/if}
