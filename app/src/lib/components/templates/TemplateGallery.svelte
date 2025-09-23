@@ -65,13 +65,13 @@
     }
   }
   
-  function updateFilter(key: keyof typeof $filters, value: any) {
+  function updateFilter(key: keyof typeof filters, value: any) {
     templateFilters.update(f => ({ ...f, [key]: value }));
   }
   
   function clearFilters() {
     templateFilters.set({
-      sortBy: 'usageCount',
+      sortBy: 'createdAt',
       sortOrder: 'desc'
     });
     searchQuery = '';
@@ -99,40 +99,59 @@
   }
   
   function formatUsageCount(count: number): string {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}k`;
+      if (count >= 1000) {
+        return `${(count / 1000).toFixed(1)}k`;
+      }
+      return count.toString();
     }
-    return count.toString();
-  }
+    
+    function goToHome() {
+        console.log('Home button clicked, navigating to /');
+        // Use hard navigation to ensure all state is cleared and route guards re-evaluate
+        if (typeof window !== 'undefined') {
+          console.log('Redirecting to home page using window.location');
+          window.location.href = '/';
+        } else {
+          console.log('Using goto to redirect to home page');
+          goto('/');
+        }
+      }
 </script>
 
 <div class="space-y-6">
   <!-- Header -->
-  {#if !compact}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">Resume Templates</h1>
-        <p class="text-gray-600">Choose from professional templates to get started quickly</p>
+    {#if !compact}
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Resume Templates</h1>
+          <p class="text-gray-600">Choose from professional templates to get started quickly</p>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            on:click={goToHome}
+          >
+            Home
+          </Button>
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
+            on:click={() => viewMode = 'grid'}
+          >
+            <Grid3X3 class="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            on:click={() => viewMode = 'list'}
+          >
+            <List class="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-      
-      <div class="flex items-center space-x-2">
-        <Button
-          variant={viewMode === 'grid' ? 'default' : 'outline'}
-          size="sm"
-          on:click={() => viewMode = 'grid'}
-        >
-          <Grid3X3 class="h-4 w-4" />
-        </Button>
-        <Button
-          variant={viewMode === 'list' ? 'default' : 'outline'}
-          size="sm"
-          on:click={() => viewMode = 'list'}
-        >
-          <List class="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  {/if}
+    {/if}
   
   <!-- Search and Filters -->
   <div class="flex flex-col sm:flex-row gap-4">
@@ -160,13 +179,11 @@
         Filters
       </Button>
       
-      <Select value={$filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
+      <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
         <SelectTrigger class="w-40">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="usageCount">Most Popular</SelectItem>
-          <SelectItem value="rating">Highest Rated</SelectItem>
           <SelectItem value="createdAt">Newest</SelectItem>
           <SelectItem value="name">Name</SelectItem>
         </SelectContent>
@@ -184,7 +201,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label for="category-filter" class="text-sm font-medium mb-2 block">Category</label>
-            <Select value={$filters.category || ''} onValueChange={(value) => updateFilter('category', value || undefined)}>
+            <Select value={filters.category || ''} onValueChange={(value) => updateFilter('category', value || undefined)}>
               <SelectTrigger id="category-filter">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
@@ -199,7 +216,7 @@
           
           <div>
             <label for="type-filter" class="text-sm font-medium mb-2 block">Type</label>
-            <Select value={$filters.isPremium?.toString() || ''} onValueChange={(value) => updateFilter('isPremium', value === 'true' ? true : value === 'false' ? false : undefined)}>
+            <Select value={filters.isPremium?.toString() || ''} onValueChange={(value) => updateFilter('isPremium', value === 'true' ? true : value === 'false' ? false : undefined)}>
               <SelectTrigger id="type-filter">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
@@ -213,7 +230,7 @@
           
           <div>
             <label for="rating-filter" class="text-sm font-medium mb-2 block">Rating</label>
-            <Select value={$filters.rating?.toString() || ''} onValueChange={(value) => updateFilter('rating', value ? parseFloat(value) : undefined)}>
+            <Select value={filters.rating?.toString() || ''} onValueChange={(value) => updateFilter('rating', value ? parseFloat(value) : undefined)}>
               <SelectTrigger id="rating-filter">
                 <SelectValue placeholder="Any Rating" />
               </SelectTrigger>
@@ -297,12 +314,12 @@
               
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                  <div class="flex items-center space-x-1">
-                    <Star class="h-4 w-4 text-yellow-400 fill-current" />
-                    <span class="text-sm text-gray-600">{template.rating.toFixed(1)}</span>
-                  </div>
-                  <span class="text-sm text-gray-400">•</span>
-                  <span class="text-sm text-gray-600">{formatUsageCount(template.usageCount)} uses</span>
+                  {#if template.isPremium}
+                    <Badge class="bg-yellow-500 text-white">
+                      <Crown class="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  {/if}
                 </div>
                 
                 <Badge variant="outline">{template.category}</Badge>
@@ -398,25 +415,14 @@
               <h3 class="font-semibold text-gray-900 mb-1">{template.name}</h3>
               <p class="text-sm text-gray-600 mb-2 {viewMode === 'list' ? 'line-clamp-3' : 'line-clamp-2'}">{template.description}</p>
               
-              {#if template.tags.length > 0}
-                <div class="flex flex-wrap gap-1 mb-2">
-                  {#each template.tags.slice(0, 3) as tag}
-                    <Badge variant="secondary" class="text-xs">{tag}</Badge>
-                  {/each}
-                  {#if template.tags.length > 3}
-                    <Badge variant="secondary" class="text-xs">+{template.tags.length - 3}</Badge>
-                  {/if}
-                </div>
-              {/if}
-              
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                  <div class="flex items-center space-x-1">
-                    <Star class="h-4 w-4 text-yellow-400 fill-current" />
-                    <span class="text-sm text-gray-600">{template.rating.toFixed(1)}</span>
-                  </div>
-                  <span class="text-sm text-gray-400">•</span>
-                  <span class="text-sm text-gray-600">{formatUsageCount(template.usageCount)} uses</span>
+                  {#if template.isPremium}
+                    <Badge class="bg-yellow-500 text-white">
+                      <Crown class="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  {/if}
                 </div>
                 
                 <Badge variant="outline">{template.category}</Badge>

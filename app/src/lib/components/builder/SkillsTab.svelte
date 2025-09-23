@@ -80,7 +80,6 @@
 	];
 
 	export let onNext: () => void;
-	export let onPrevious: () => void;
 </script>
 
 <div class="space-y-6">
@@ -113,15 +112,15 @@
 			{#if technicalSkills.length > 0}
 				<div class="flex flex-wrap gap-2">
 					{#each technicalSkills as skill (skill.id)}
-						<Badge variant="secondary" class="flex items-center gap-1">
-							{skill.name}
-							<button 
-								on:click={() => removeSkill(skill.id)}
-								class="ml-1 hover:text-destructive"
-							>
-								<X class="w-3 h-3" />
-							</button>
-						</Badge>
+						<Badge variant="default" class="flex items-center gap-1">
+													{skill.name}
+													<button
+														on:click={() => removeSkill(skill.id)}
+														class="ml-1 hover:text-destructive"
+													>
+														<X class="w-3 h-3" />
+													</button>
+												</Badge>
 					{/each}
 				</div>
 			{/if}
@@ -168,15 +167,15 @@
 			{#if softSkills.length > 0}
 				<div class="flex flex-wrap gap-2">
 					{#each softSkills as skill (skill.id)}
-						<Badge variant="outline" class="flex items-center gap-1">
-							{skill.name}
-							<button 
-								on:click={() => removeSkill(skill.id)}
-								class="ml-1 hover:text-destructive"
-							>
-								<X class="w-3 h-3" />
-							</button>
-						</Badge>
+						<Badge variant="default" class="flex items-center gap-1">
+													{skill.name}
+													<button
+														on:click={() => removeSkill(skill.id)}
+														class="ml-1 hover:text-destructive"
+													>
+														<X class="w-3 h-3" />
+													</button>
+												</Badge>
 					{/each}
 				</div>
 			{/if}

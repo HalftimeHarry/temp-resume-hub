@@ -73,5 +73,80 @@
         "maxPages": 2,
         "spacing": "relaxed"
       }
+    },
+    {
+      "name": "First Job Starter",
+      "slug": "first-job-starter",
+      "description": "Perfect for teens and young adults applying for their first job. Highlights relevant skills and education.",
+      "category": "entry-level",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "blue",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "experience", "education", "skills", "volunteer"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Lifeguard Ready",
+      "slug": "lifeguard-ready",
+      "description": "Designed specifically for lifeguard positions. Emphasizes safety training, certifications, and responsibility.",
+      "category": "entry-level",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "blue",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "certifications", "experience", "education", "skills"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Hospitality Helper",
+      "slug": "hospitality-helper",
+      "description": "Great for hostess, server, or other hospitality positions. Highlights customer service skills and availability.",
+      "category": "entry-level",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "green",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "experience", "education", "skills", "availability"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Retail Pro",
+      "slug": "retail-pro",
+      "description": "Ideal for retail positions like cashier or sales associate. Emphasizes cash handling and customer service skills.",
+      "category": "entry-level",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "purple",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "experience", "education", "skills", "achievements"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
+    },
+    {
+      "name": "Service Star",
+      "slug": "service-star",
+      "description": "Perfect for gas station attendant, fast food worker, or similar service positions. Highlights reliability and work ethic.",
+      "category": "entry-level",
+      "is_premium": false,
+      "config": {
+        "layout": "single-column",
+        "colorScheme": "orange",
+        "fontFamily": "Inter",
+        "sections": ["personal", "summary", "experience", "education", "skills", "references"],
+        "maxPages": 1,
+        "spacing": "normal"
+      }
     }
 ]

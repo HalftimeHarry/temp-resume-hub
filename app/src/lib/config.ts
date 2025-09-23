@@ -1,11 +1,11 @@
-import { env } from '$env/dynamic/public';
+import { PUBLIC_POCKETBASE_URL, PUBLIC_APP_URL } from '$env/static/public';
 import { dev } from '$app/environment';
 
 // PocketBase configuration
-export const POCKETBASE_URL = env.PUBLIC_POCKETBASE_URL || 'http://localhost:8080';
+export const POCKETBASE_URL = PUBLIC_POCKETBASE_URL || 'http://localhost:8080';
 
 // App configuration
-export const APP_URL = env.PUBLIC_APP_URL || (dev ? 'http://localhost:5173' : 'https://digitalresumehub.com');
+export const APP_URL = PUBLIC_APP_URL || (dev ? 'http://localhost:5173' : 'https://res-build-hub.netlify.app');
 
 // API endpoints
 export const API_ENDPOINTS = {

@@ -2,11 +2,14 @@
 	import { builderData, updateSummary, markStepComplete, markStepIncomplete, characterLimits } from '$lib/stores/resumeBuilder.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { onMount, afterUpdate } from 'svelte';
 
 	$: summary = $builderData.summary;
 	$: maxLength = characterLimits.summary;
 	$: remainingChars = maxLength - summary.length;
 	$: isValid = summary.trim().length >= 50 && summary.length <= maxLength;
+	$: console.log('SummaryTab isValid:', isValid);
+	$: console.log('SummaryTab isValid:', isValid);
 
 	$: {
 		if (isValid) {
@@ -17,8 +20,19 @@
 	}
 
 	function handleInput(value: string) {
+		console.log('Summary input changed:', value);
 		updateSummary(value);
 	}
+
+	// Log when the component is mounted
+	onMount(() => {
+		console.log('SummaryTab mounted');
+	});
+
+	// Log when the component is updated
+	afterUpdate(() => {
+		console.log('SummaryTab updated');
+	});
 
 	const examples = [
 		"Recent Computer Science graduate with strong foundation in programming languages including Java and Python. Eager to apply problem-solving skills and learn new technologies in a collaborative team environment. Seeking an entry-level software developer position.",
@@ -28,6 +42,40 @@
 
 	export let onNext: () => void;
 	export let onPrevious: () => void;
+
+	function handleNext() {
+		console.log('Next clicked');
+		console.log('handleNext function called');
+		console.log('Next button clicked, isValid:', isValid);
+		console.log('onNext prop:', onNext);
+		if (isValid && onNext) {
+			console.log('Calling onNext');
+			try {
+				onNext();
+			} catch (error) {
+				console.error('Error calling onNext:', error);
+			}
+		} else {
+			console.log('Not calling onNext, isValid:', isValid, 'onNext exists:', !!onNext);
+		}
+	}
+
+	function handlePrevious() {
+		console.log('Clicked Previous');
+		console.log('handlePrevious function called');
+		console.log('Previous button clicked');
+		console.log('onPrevious prop:', onPrevious);
+		if (onPrevious) {
+			console.log('Calling onPrevious');
+			try {
+				onPrevious();
+			} catch (error) {
+				console.error('Error calling onPrevious:', error);
+			}
+		} else {
+			console.log('Not calling onPrevious, onPrevious exists:', !!onPrevious);
+		}
+	}
 </script>
 
 <div class="space-y-6">
@@ -85,10 +133,10 @@
 	</div>
 
 	<div class="flex justify-between">
-		<Button variant="outline" on:click={onPrevious}>
+		<Button variant="outline" on:click={handlePrevious}>
 			Previous
 		</Button>
-		<Button disabled={!isValid} on:click={onNext}>
+		<Button disabled={!isValid} on:click={handleNext}>
 			Next: Experience
 		</Button>
 	</div>

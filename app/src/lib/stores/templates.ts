@@ -10,8 +10,10 @@ export const userTemplates = writable<ResumeTemplate[]>([]);
 export const isLoadingTemplates = writable(false);
 
 // Filter and search
-export const templateFilters = writable<TemplateFilters>({
-  sortBy: 'usageCount',
+export const templateFilters = writable<Omit<TemplateFilters, 'isPopular' | 'tags' | 'rating' | 'usageCount' | 'sortBy'> & { sortBy: 'name' | 'createdAt' }>({
+  category: undefined,
+  isPremium: undefined,
+  sortBy: 'createdAt',
   sortOrder: 'desc'
 });
 
@@ -19,45 +21,48 @@ export const templateFilters = writable<TemplateFilters>({
 export const filteredTemplates = derived(
   [templates, templateFilters],
   ([$templates, $filters]) => {
-    let filtered = [...$templates];
-    
-    // Apply filters
-    if ($filters.category) {
-      filtered = filtered.filter(t => t.category === $filters.category);
-    }
-    
-    if ($filters.isPremium !== undefined) {
-      filtered = filtered.filter(t => t.isPremium === $filters.isPremium);
-    }
-    
-    if ($filters.isPopular !== undefined) {
-      filtered = filtered.filter(t => t.isPopular === $filters.isPopular);
-    }
-    
-    if ($filters.tags && $filters.tags.length > 0) {
-      filtered = filtered.filter(t => 
-        $filters.tags!.some(tag => t.tags.includes(tag))
-      );
-    }
-    
-    if ($filters.rating) {
-      filtered = filtered.filter(t => t.rating >= $filters.rating!);
-    }
-    
-    // Apply sorting
-    filtered.sort((a, b) => {
-      const aValue = a[$filters.sortBy];
-      const bValue = b[$filters.sortBy];
+      let filtered = [...$templates];
       
-      if ($filters.sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
+      // Apply filters
+      if ($filters.category) {
+        filtered = filtered.filter(t => t.category === $filters.category);
       }
-    });
-    
-    return filtered;
-  }
+      
+      if ($filters.isPremium !== undefined) {
+        filtered = filtered.filter(t => t.isPremium === $filters.isPremium);
+      }
+      
+      // Apply sorting
+      filtered.sort((a, b) => {
+        // Only sort by fields that exist in the templates collection
+        let aValue: any;
+        let bValue: any;
+        
+        switch ($filters.sortBy) {
+          case 'name':
+            aValue = a.name;
+            bValue = b.name;
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt).getTime();
+            bValue = new Date(b.createdAt).getTime();
+            break;
+          default:
+            // Default to sorting by name if an invalid sortBy is provided
+            aValue = a.name;
+            bValue = b.name;
+            break;
+        }
+        
+        if ($filters.sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+      
+      return filtered;
+    }
 );
 
 // Template operations
@@ -66,16 +71,15 @@ export const templateStore = {
   async loadTemplates(): Promise<ResumeTemplate[]> {
     isLoadingTemplates.set(true);
     try {
-      const records = await pb.collection('resume_templates').getFullList({
-        sort: '-usageCount',
-        expand: 'createdBy'
-      });
+      const records = await pb.collection('templates').getFullList({
+                    sort: '-created'
+                  });
       
       const templateList = records.map(mapRecordToTemplate);
       templates.set(templateList);
       
       // Set featured templates (popular and highly rated)
-      const featured = templateList.filter(t => t.isPopular || t.rating >= 4.5).slice(0, 6);
+      const featured = templateList.slice(0, 6);
       featuredTemplates.set(featured);
       
       return templateList;
@@ -90,10 +94,9 @@ export const templateStore = {
   // Load user's custom templates
   async loadUserTemplates(): Promise<ResumeTemplate[]> {
     try {
-      const records = await pb.collection('resume_templates').getFullList({
-        sort: '-created',
-        filter: `createdBy = "${pb.authStore.model?.id}"`
-      });
+      const records = await pb.collection('templates').getFullList({
+                    sort: '-created'
+                  });
       
       const templateList = records.map(mapRecordToTemplate);
       userTemplates.set(templateList);
@@ -107,9 +110,7 @@ export const templateStore = {
   // Get template by ID
   async getTemplate(id: string): Promise<ResumeTemplate> {
     try {
-      const record = await pb.collection('resume_templates').getOne(id, {
-        expand: 'createdBy'
-      });
+      const record = await pb.collection('templates').getOne(id);
       return mapRecordToTemplate(record);
     } catch (error) {
       console.error('Failed to get template:', error);
@@ -120,12 +121,9 @@ export const templateStore = {
   // Create new template
   async createTemplate(templateData: Partial<ResumeTemplate>): Promise<ResumeTemplate> {
     try {
-      const record = await pb.collection('resume_templates').create({
-        ...templateData,
-        createdBy: pb.authStore.model?.id,
-        usageCount: 0,
-        rating: 0
-      });
+      const record = await pb.collection('templates').create({
+              ...templateData
+            });
       
       const template = mapRecordToTemplate(record);
       
@@ -143,7 +141,7 @@ export const templateStore = {
   // Update template
   async updateTemplate(id: string, updates: Partial<ResumeTemplate>): Promise<ResumeTemplate> {
     try {
-      const record = await pb.collection('resume_templates').update(id, updates);
+      const record = await pb.collection('templates').update(id, updates);
       const template = mapRecordToTemplate(record);
       
       // Update stores
@@ -164,7 +162,7 @@ export const templateStore = {
   // Delete template
   async deleteTemplate(id: string): Promise<void> {
     try {
-      await pb.collection('resume_templates').delete(id);
+      await pb.collection('templates').delete(id);
       
       // Update stores
       templates.update(list => list.filter(t => t.id !== id));
@@ -177,56 +175,25 @@ export const templateStore = {
   
   // Increment usage count
   async incrementUsage(id: string): Promise<void> {
-    try {
-      const template = await templateStore.getTemplate(id);
-      await pb.collection('resume_templates').update(id, {
-        usageCount: template.usageCount + 1
-      });
-      
-      // Update local store
-      templates.update(list => 
-        list.map(t => t.id === id ? { ...t, usageCount: t.usageCount + 1 } : t)
-      );
-    } catch (error) {
-      console.error('Failed to increment usage:', error);
-    }
+    // Since there's no usageCount field in the templates collection, we can't increment it
+    // This function is kept for compatibility but doesn't perform any action
+    console.warn('incrementUsage called but usageCount field does not exist in templates collection');
   },
   
   // Rate template
   async rateTemplate(id: string, rating: number): Promise<void> {
-    try {
-      // In a real app, you'd calculate average rating from all user ratings
-      await pb.collection('template_ratings').create({
-        templateId: id,
-        userId: pb.authStore.model?.id,
-        rating
-      });
-      
-      // For now, just update the template rating (simplified)
-      const template = await templateStore.getTemplate(id);
-      const newRating = (template.rating + rating) / 2; // Simplified calculation
-      
-      await pb.collection('resume_templates').update(id, {
-        rating: newRating
-      });
-      
-      // Update local store
-      templates.update(list => 
-        list.map(t => t.id === id ? { ...t, rating: newRating } : t)
-      );
-    } catch (error) {
-      console.error('Failed to rate template:', error);
-      throw error;
-    }
+    // Since there's no rating field in the templates collection and no template_ratings collection,
+    // we can't rate templates. This function is kept for compatibility but doesn't perform any action
+    console.warn('rateTemplate called but rating field does not exist in templates collection');
   },
   
   // Search templates
   async searchTemplates(query: string): Promise<ResumeTemplate[]> {
     try {
-      const records = await pb.collection('resume_templates').getFullList({
-        filter: `name ~ "${query}" || description ~ "${query}" || tags ~ "${query}"`,
-        sort: '-usageCount'
-      });
+      const records = await pb.collection('templates').getFullList({
+                    filter: `name ~ "${query}" || description ~ "${query}"`,
+                    sort: '-created'
+                  });
       
       return records.map(mapRecordToTemplate);
     } catch (error) {
@@ -265,6 +232,10 @@ export const templateStore = {
       'academic',
       'executive',
       'entry-level',
+      'first-job',
+      'teen',
+      'student',
+      'beginner',
       'two-column',
       'single-page',
       'multi-page',
@@ -280,17 +251,17 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
     name: record.name,
     description: record.description,
     category: record.category,
-    thumbnail: record.thumbnail,
-    previewImages: record.previewImages || [],
-    settings: record.settings || getDefaultTemplateSettings(),
-    sections: record.sections || getDefaultTemplateSections(),
-    isPremium: record.isPremium || false,
-    isPopular: record.isPopular || false,
-    createdBy: record.createdBy,
+    thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : '',
+    previewImages: [],
+    settings: record.config || getDefaultTemplateSettings(),
+    sections: [],
+    isPremium: record.is_premium || false,
+    isPopular: false,
+    createdBy: '',
     createdAt: record.created,
-    usageCount: record.usageCount || 0,
-    rating: record.rating || 0,
-    tags: record.tags || []
+    usageCount: 0,
+    rating: 0,
+    tags: []
   };
 }
 

@@ -181,7 +181,8 @@ migrate((db) => {
             "creative",
             "minimal",
             "modern",
-            "academic"
+            "academic",
+            "entry-level"
           ]
         }
       },

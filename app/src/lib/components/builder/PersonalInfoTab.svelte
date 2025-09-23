@@ -6,12 +6,14 @@
 
 	$: personalInfo = $builderData.personalInfo;
 	
-	$: isValid = personalInfo.fullName.trim() !== '' && 
-				 personalInfo.email.trim() !== '' && 
-				 personalInfo.phone?.trim() !== '' && 
+	$: isValid = personalInfo.fullName.trim() !== '' &&
+				 personalInfo.email.trim() !== '' &&
+				 personalInfo.phone?.trim() !== '' &&
 				 personalInfo.location?.trim() !== '' &&
 				 validateEmail(personalInfo.email) &&
 				 (personalInfo.phone ? validatePhone(personalInfo.phone) : true);
+	$: console.log('PersonalInfoTab isValid:', isValid);
+	$: console.log('PersonalInfoTab isValid:', isValid);
 
 	$: {
 		if (isValid) {
@@ -26,6 +28,23 @@
 	}
 
 	export let onNext: () => void;
+
+	function handleNext() {
+		console.log('Next clicked');
+		console.log('handleNext function called');
+		console.log('Next button clicked, isValid:', isValid);
+		console.log('onNext prop:', onNext);
+		if (isValid && onNext) {
+			console.log('Calling onNext');
+			try {
+				onNext();
+			} catch (error) {
+				console.error('Error calling onNext:', error);
+			}
+		} else {
+			console.log('Not calling onNext, isValid:', isValid, 'onNext exists:', !!onNext);
+		}
+	}
 </script>
 
 <div class="space-y-6">
@@ -118,7 +137,7 @@
 	</div>
 
 	<div class="flex justify-end">
-		<Button disabled={!isValid} on:click={onNext}>
+		<Button disabled={!isValid} on:click={handleNext}>
 			Next: Summary
 		</Button>
 	</div>
