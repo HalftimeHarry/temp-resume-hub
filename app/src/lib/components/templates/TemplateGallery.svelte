@@ -198,11 +198,11 @@
         <CardTitle class="text-lg">Filters</CardTitle>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div id="category-select-container">
-            <label for="category-select" class="text-sm font-medium mb-2 block">Category</label>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label for="category-filter" class="text-sm font-medium mb-2 block">Category</label>
             <Select value={filters.category || ''} onValueChange={(value) => updateFilter('category', value || undefined)}>
-              <SelectTrigger id="category-select">
+              <SelectTrigger id="category-filter">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -214,16 +214,31 @@
             </Select>
           </div>
           
-          <div id="type-select-container">
-            <label for="type-select" class="text-sm font-medium mb-2 block">Type</label>
+          <div>
+            <label for="type-filter" class="text-sm font-medium mb-2 block">Type</label>
             <Select value={filters.isPremium?.toString() || ''} onValueChange={(value) => updateFilter('isPremium', value === 'true' ? true : value === 'false' ? false : undefined)}>
-              <SelectTrigger id="type-select">
+              <SelectTrigger id="type-filter">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Types</SelectItem>
                 <SelectItem value="false">Free</SelectItem>
                 <SelectItem value="true">Premium</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label for="rating-filter" class="text-sm font-medium mb-2 block">Rating</label>
+            <Select value={filters.rating?.toString() || ''} onValueChange={(value) => updateFilter('rating', value ? parseFloat(value) : undefined)}>
+              <SelectTrigger id="rating-filter">
+                <SelectValue placeholder="Any Rating" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any Rating</SelectItem>
+                <SelectItem value="4">4+ Stars</SelectItem>
+                <SelectItem value="4.5">4.5+ Stars</SelectItem>
+                <SelectItem value="5">5 Stars</SelectItem>
               </SelectContent>
             </Select>
           </div>
