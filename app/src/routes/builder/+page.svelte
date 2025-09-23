@@ -390,32 +390,32 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									<div class="space-y-2">
 										<div class="flex justify-between">
 											<span>Personal Information</span>
-											<span class={isStepComplete('personal') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('personal') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('personal') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('personal') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Professional Summary</span>
-											<span class={isStepComplete('summary') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('summary') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('summary') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('summary') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Work Experience</span>
-											<span class={isStepComplete('experience') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('experience') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('experience') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('experience') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Education</span>
-											<span class={isStepComplete('education') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('education') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('education') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('education') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Skills</span>
-											<span class={isStepComplete('skills') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('skills') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('skills') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('skills') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 									</div>
