@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { builderData, addSkill, removeSkill, markStepComplete, markStepIncomplete, characterLimits } from '$lib/stores/resumeBuilder.js';
+	import { templates as allTemplates } from '$lib/stores/templates.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -64,20 +65,45 @@
 		}
 	}
 
-	// Predefined skill suggestions
-	const technicalSuggestions = [
-		'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML/CSS', 'SQL', 'Git',
-		'Microsoft Office', 'Excel', 'PowerPoint', 'Photoshop', 'WordPress', 'Google Analytics'
+	// Predefined skill suggestions with template-aware overrides
+	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
+	$: templateName = (selectedTemplate?.name || '').toLowerCase();
+	
+	const technicalBase = [
+	 'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML/CSS', 'SQL', 'Git', 'Microsoft Office'
 	];
-
-	const softSuggestions = [
-		'Communication', 'Teamwork', 'Problem Solving', 'Leadership', 'Time Management',
-		'Critical Thinking', 'Adaptability', 'Customer Service', 'Project Management', 'Creativity'
+	const softBase = [
+	'Communication', 'Teamwork', 'Problem Solving', 'Leadership', 'Time Management', 'Customer Service'
 	];
-
-	const languageSuggestions = [
-		'Spanish', 'French', 'German', 'Mandarin', 'Japanese', 'Portuguese', 'Italian', 'Arabic'
-	];
+	const langBase = ['Spanish', 'French', 'German', 'Mandarin'];
+	
+	$: technicalSuggestions = (() => {
+	 if (templateName.includes('retail') || templateName.includes('service') || templateName.includes('star')) {
+			return ['POS Systems', 'Cash Handling', 'Merchandising', 'Inventory', 'Barcode Scanners', 'Stocking', 'Cleaning', 'Microsoft Office'];
+		}
+		if (templateName.includes('hospitality')) {
+			return ['POS Systems', 'Table Service', 'Scheduling', 'Food Safety', 'Reservations', 'Host/Server Tools'];
+		}
+		if (templateName.includes('lifeguard')) {
+			return ['CPR/First Aid', 'Water Safety', 'Rescue Techniques', 'Incident Reporting', 'Two-Way Radios'];
+		}
+		return technicalBase;
+	})();
+	
+	$: softSuggestions = (() => {
+		if (templateName.includes('retail') || templateName.includes('service') || templateName.includes('star')) {
+			return ['Customer Service', 'Communication', 'Reliability', 'Attention to Detail', 'Teamwork', 'Problem Solving'];
+		}
+		if (templateName.includes('hospitality')) {
+			return ['Customer Service', 'Multitasking', 'Communication', 'Teamwork', 'Adaptability'];
+		}
+		if (templateName.includes('lifeguard')) {
+			return ['Attention to Detail', 'Calm Under Pressure', 'Communication', 'Teamwork', 'Responsibility'];
+		}
+		return softBase;
+	})();
+	
+	$: languageSuggestions = langBase;
 
 	export let onNext: () => void;
 </script>
@@ -94,7 +120,7 @@
 		<div class="space-y-2">
 			<div class="flex gap-2">
 				<Input
-					placeholder="e.g., JavaScript, Python, React"
+					placeholder={templateName.includes('retail') || templateName.includes('service') || templateName.includes('star') ? 'e.g., POS Systems, Cash Handling, Merchandising' : templateName.includes('hospitality') ? 'e.g., POS Systems, Table Service, Reservations' : templateName.includes('lifeguard') ? 'e.g., CPR/First Aid, Water Safety' : 'e.g., JavaScript, Python, React'}
 					bind:value={newTechnicalSkill}
 					maxlength={characterLimits.skillName}
 					on:keypress={(e) => handleKeyPress(e, addTechnicalSkill)}
