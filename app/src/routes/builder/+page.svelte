@@ -3,7 +3,7 @@
 import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings } from '$lib/stores/resumeBuilder.js';
 	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
@@ -309,14 +309,14 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								<div class="space-y-4">
 									<h3 class="text-lg font-semibold">Resume Length</h3>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<button class="p-4 border-2 border-primary bg-primary/5 rounded-lg text-left">
+										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '1-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '1-page' })}>
 											<div class="font-medium mb-2">1 Page</div>
 											<p class="text-sm text-muted-foreground">
 												Perfect for entry-level positions. Concise and focused.
 											</p>
 										</button>
 										
-										<button class="p-4 border rounded-lg text-left hover:border-primary">
+										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '2-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '2-page' })}>
 											<div class="font-medium mb-2">2 Pages Max</div>
 											<p class="text-sm text-muted-foreground">
 												More space for experience and projects.
@@ -348,22 +348,22 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								<div class="space-y-4">
 									<h3 class="text-lg font-semibold">Color Scheme</h3>
 									<div class="grid grid-cols-4 gap-4">
-										<button class="p-3 border-2 border-primary bg-primary/5 rounded-lg text-center">
-											<div class="w-6 h-6 bg-blue-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Blue</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-green-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Green</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-purple-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Purple</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-gray-800 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Black</div>
-										</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'blue' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'blue' })}>
+									<div class="w-6 h-6 bg-blue-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Blue</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'green' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'green' })}>
+									<div class="w-6 h-6 bg-green-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Green</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'purple' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'purple' })}>
+									<div class="w-6 h-6 bg-purple-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Purple</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'black' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'black' })}>
+									<div class="w-6 h-6 bg-gray-800 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Black</div>
+									</button>
 									</div>
 								</div>
 							</div>
