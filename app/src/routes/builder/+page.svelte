@@ -17,6 +17,28 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
 
+	async function selectTemplate(t: any) {
+		try {
+			const full = await templateStore.getTemplate(t.id);
+			builderData.update(d => {
+				const sd = full.starterData || {};
+				return {
+					...d,
+					personalInfo: sd.personalInfo || d.personalInfo,
+					summary: sd.summary ?? d.summary,
+					experience: Array.isArray(sd.experience) && sd.experience.length ? sd.experience : d.experience,
+					education: Array.isArray(sd.education) && sd.education.length ? sd.education : d.education,
+					skills: Array.isArray(sd.skills) && sd.skills.length ? sd.skills : d.skills,
+					projects: Array.isArray(sd.projects) ? sd.projects : d.projects,
+					settings: { ...d.settings, ...(full.settings || {}), template: full.id }
+				};
+			});
+			currentStep.set('personal');
+		} catch (e) {
+			console.error('Failed to apply template:', e);
+		}
+	}
+
 	// Prefill from template starter data if provided via localStorage & ensure templates list loaded
 	onMount(async () => {
 		try {
@@ -286,9 +308,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									<h3 class="text-lg font-semibold">Choose a Template</h3>
 									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 										{#each $allTemplates as t}
-											<button class="p-3 border rounded-lg text-left hover:border-primary { $builderData.settings?.template === t.id ? 'border-primary bg-primary/5' : '' }" on:click={() => {
-												builderData.update(d => ({ ...d, settings: { ...d.settings, ...t.settings, template: t.id } }));
-											}}>
+											<button class="p-3 border rounded-lg text-left hover:border-primary { $builderData.settings?.template === t.id ? 'border-primary bg-primary/5' : '' }" on:click={() => selectTemplate(t)}>
 												<div class="flex items-center gap-3">
 													<img src={t.thumbnail} alt={t.name} class="w-12 h-16 object-cover rounded border" />
 													<div>
