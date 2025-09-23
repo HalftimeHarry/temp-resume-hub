@@ -27,6 +27,9 @@ export const handle: Handle = async ({ event, resolve }) => {
             avatar: pb.authStore.model.avatar
           };
         }
+      } else {
+        // Clear cookie if auth is not valid
+        event.cookies.delete('pb_auth', { path: '/' });
       }
     } catch (error) {
       // Clear invalid auth
@@ -35,9 +38,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
   
-  const response = await resolve(event);
-  
-  // Save auth state to cookie
+  // Save auth state to cookie before resolving the response
   if (pb.authStore.isValid) {
     event.cookies.set('pb_auth', pb.authStore.exportToCookie(), {
       path: '/',
@@ -47,6 +48,8 @@ export const handle: Handle = async ({ event, resolve }) => {
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
   }
+  
+  const response = await resolve(event);
   
   return response;
 };

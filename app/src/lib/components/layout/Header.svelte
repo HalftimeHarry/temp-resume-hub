@@ -71,9 +71,19 @@
   }
   
   async function handleLogout() {
+    console.log('Logout button clicked');
     try {
+      console.log('Calling authStore.logout()');
       await authStore.logout();
-      goto('/');
+      console.log('authStore.logout() completed');
+      // Use hard navigation to ensure all state is cleared and route guards re-evaluate
+      if (typeof window !== 'undefined') {
+        console.log('Redirecting to home page');
+        window.location.href = '/';
+      } else {
+        console.log('Using goto to redirect to home page');
+        goto('/');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -225,6 +235,22 @@
           </div>
         {/if}
       </div>
+
+      {#if user}
+        <!-- Visible email + logout for authenticated users -->
+        <div class="hidden md:flex items-center space-x-2">
+          <span class="text-sm text-gray-700">{user.email}</span>
+          <Button variant="outline" size="sm" on:click={handleLogout}>
+            <LogOut class="h-4 w-4 mr-1" />
+            Sign out
+          </Button>
+        </div>
+        <div class="md:hidden">
+          <Button variant="ghost" size="sm" class="h-9 w-9 p-0" title="Sign out" on:click={handleLogout}>
+            <LogOut class="h-4 w-4" />
+          </Button>
+        </div>
+      {/if}
       
       <!-- User Menu -->
       <div class="relative">

@@ -9,16 +9,26 @@
     totalDownloads: 0,
     totalShares: 0
   };
-  import { currentUser, isAuthenticated } from '$lib/stores/auth';
+  import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
+  import { pb } from '$lib/pocketbase';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
   import { Skeleton } from '$lib/components/ui/skeleton';
   import { Separator } from '$lib/components/ui/separator';
-  import { 
-    Plus, 
-    Search, 
+  import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+  } from '$lib/components/ui/dialog';
+  import {
+    Plus,
+    Search,
     Eye, 
     Download, 
     Share2, 
@@ -33,12 +43,15 @@
     Filter,
     Grid3X3,
     List,
-    Star
-  } from 'lucide-svelte';
+    Star,
+      LogOut,
+     User
+   } from 'lucide-svelte';
   import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
   import { toast } from 'svelte-sonner';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
+  import { POCKETBASE_URL } from '$lib/config';
   
   let searchQuery = '';
   let viewMode: 'grid' | 'list' = 'grid';
@@ -46,6 +59,23 @@
   let isLoading = true;
   let selectedResume: Resume | null = null;
   let showShareDialog = false;
+  let isImporting = false;
+  let showImportDialog = false;
+  let csvData = '';
+  let importDebug: {
+    startedAt?: string;
+    url?: string;
+    status?: number;
+    ok?: boolean;
+    bodySentBytes?: number;
+    result?: any;
+    error?: string;
+    pocketbaseAuth?: {
+      isValid: boolean;
+      model: any;
+    };
+  } = {};
+  let importDebugText = '';
   
   $: resumes = userResumes;
   $: analytics = userAnalytics;
@@ -78,13 +108,33 @@
   function createNewResume() {
     console.log('Create Resume button clicked!');
     try {
+      console.log('Navigating to /builder');
       goto('/builder');
+      console.log('Navigation to /builder initiated');
     } catch (error) {
       console.error('Error navigating to builder:', error);
     }
   }
-  
-  function editResume(resumeId: string) {
+
+  async function handleLogout() {
+    console.log('🔓 Logout button clicked!');
+    console.log('🔓 Attempting logout');
+    try {
+      const result = await authStore.logout();
+      console.log('🔓 Logout result:', result);
+      if (typeof window !== 'undefined') {
+        console.log('🔓 Redirecting to home page');
+        window.location.href = '/';
+      } else {
+        console.log('🔓 Using goto to redirect to home page');
+        goto('/');
+      }
+    } catch (error) {
+      console.error('Failed to logout:', error);
+    }
+  }
+   
+   function editResume(resumeId: string) {
     goto('/builder');
   }
   
@@ -126,6 +176,71 @@
     }
   }
   
+  async function importTemplatesFromCSV() {
+    if (!user || !csvData) {
+      console.log('Import failed: user or csvData missing', { user, csvDataLength: csvData?.length });
+      importDebug = {
+        error: 'Missing user or csvData',
+        pocketbaseAuth: { isValid: pb.authStore.isValid, model: pb.authStore.model }
+      };
+      importDebugText = JSON.stringify(importDebug, null, 2);
+      return;
+    }
+    
+    console.log('Starting template import for user:', user.id);
+    console.log('Current PocketBase auth state:', pb.authStore.isValid);
+    console.log('Current PocketBase model:', pb.authStore.model);
+    
+    isImporting = true;
+    importDebug = { startedAt: new Date().toISOString(), pocketbaseAuth: { isValid: pb.authStore.isValid, model: pb.authStore.model } };
+    try {
+      // Use the PocketBase URL directly
+      const url = `${POCKETBASE_URL}/api/import-templates/${user.id}`;
+      console.log('Sending request to:', url);
+      importDebug.url = url;
+      const body = JSON.stringify({ csvData });
+      importDebug.bodySentBytes = body.length;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(pb.authStore.token ? { 'Authorization': `Bearer ${pb.authStore.token}` } : {})
+        },
+        body
+      });
+      
+      importDebug.status = response.status;
+      importDebug.ok = response.ok;
+      console.log('Response status:', response.status);
+      const result = await response.json().catch(() => ({}));
+      importDebug.result = result;
+      console.log('Response data:', result);
+      
+      if (result.success) {
+        toast.success('Templates imported successfully!', {
+          description: result.message
+        });
+        showImportDialog = false;
+        csvData = '';
+      } else {
+        toast.error('Template import failed!', {
+          description: result.message
+        });
+      }
+    } catch (error) {
+      console.error('Failed to import templates:', error);
+      const msg = error instanceof Error ? error.message : String(error);
+      importDebug.error = msg;
+      toast.error('Failed to import templates', {
+        description: msg
+      });
+    } finally {
+      isImporting = false;
+      importDebugText = JSON.stringify(importDebug, null, 2);
+    }
+  }
+  
   function formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -159,12 +274,29 @@
           </div>
         </div>
         
-        <button 
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          on:click={createNewResume}
-        >
-          + New Resume
-        </button>
+        <div class="flex items-center space-x-2">
+          <button
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            on:click={createNewResume}
+          >
+            + New Resume
+          </button>
+          {#if user}
+            <div class="flex items-center gap-2 ml-2" on:click={() => console.log('User info area clicked!')}>
+              <div class="hidden md:flex items-center gap-1 text-sm text-gray-700">
+                <User class="h-4 w-4 text-gray-500" />
+                <span>{user.email}</span>
+              </div>
+              <button
+                class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"
+                title="Sign out"
+                on:click={handleLogout}
+              >
+                <LogOut class="h-4 w-4" />
+              </button>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
   </header>

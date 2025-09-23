@@ -97,7 +97,7 @@ export const auth = {
           // Extract field-specific errors
           const fieldErrors = [];
           for (const [field, fieldError] of Object.entries(data.data)) {
-            if (fieldError && typeof fieldError === 'object' && fieldError.message) {
+            if (fieldError && typeof fieldError === 'object' && 'message' in fieldError && typeof fieldError.message === 'string') {
               fieldErrors.push(`${field}: ${fieldError.message}`);
             }
           }
@@ -135,17 +135,31 @@ export const auth = {
 
   // Logout user
   async logout() {
+    console.log('authStore.logout() called');
     try {
+      console.log('Clearing PocketBase auth store');
       pb.authStore.clear();
+      console.log('PocketBase auth store cleared');
+      
+      // Also clear the cookie explicitly
+      if (typeof window !== 'undefined' && window.document) {
+        console.log('Clearing auth cookie');
+        document.cookie = 'pb_auth=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+        console.log('Auth cookie cleared');
+      }
+      
+      console.log('Setting currentUser to null');
       currentUser.set(null);
+      console.log('Setting isAuthenticated to false');
       isAuthenticated.set(false);
       
+      console.log('Logout completed successfully');
       return { success: true };
     } catch (error: any) {
       console.error('Logout error:', error);
-      return { 
-        success: false, 
-        error: error.message || 'Logout failed' 
+      return {
+        success: false,
+        error: error.message || 'Logout failed'
       };
     }
   },
