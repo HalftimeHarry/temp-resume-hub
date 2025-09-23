@@ -100,6 +100,7 @@
   let previewLoading = false;
   let previewTemplateData: any = null;
   let previewConfig: any = null;
+  let selectedStyleIndex: number = 0;
   
   function slugify(name: string): string {
     return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -110,6 +111,7 @@
       previewLoading = true;
       previewOpen = true;
       previewTemplateData = await templateStore.getTemplate(templateId);
+      selectedStyleIndex = 0;
       // Try to load static config JSON by slug
       if (previewTemplateData?.name) {
         const slug = slugify(previewTemplateData.name);
@@ -120,6 +122,9 @@
           previewTemplateData.starterData = previewConfig.starterData;
           if (previewConfig.settings) {
             previewTemplateData.settings = previewConfig.settings;
+          }
+          if (previewConfig.styles) {
+            previewTemplateData.styles = previewConfig.styles;
           }
         } else {
           previewConfig = null;
@@ -493,13 +498,37 @@
           <!-- Large preview image or placeholder -->
           <div class="lg:col-span-2">
             <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-              {#if previewTemplateData.thumbnail}
+              {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
+                {#if previewTemplateData.styles[selectedStyleIndex]?.previewImage}
+                  <img src={previewTemplateData.styles[selectedStyleIndex].previewImage} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                {:else}
+                  <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                {/if}
+              {:else if previewTemplateData.thumbnail}
                 <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
               {:else}
                 <Eye class="h-12 w-12 text-gray-400" />
               {/if}
             </div>
-            {#if previewTemplateData.styleConfig}
+            {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
+              <div class="mt-3 flex flex-wrap gap-2">
+                {#each previewTemplateData.styles as s, i}
+                  <button class="px-3 py-1 text-xs rounded border {i === selectedStyleIndex ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100'}" on:click={() => selectedStyleIndex = i}>
+                    {s.label}
+                  </button>
+                {/each}
+              </div>
+              <div class="mt-2 text-xs text-gray-600 flex gap-3">
+                {#if previewTemplateData.styles[selectedStyleIndex]?.styleConfig}
+                  {@const sc = previewTemplateData.styles[selectedStyleIndex].styleConfig}
+                  <span>{sc.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
+                  <span>•</span>
+                  <span>{sc.pages === 2 ? 'Two pages' : 'One page'}</span>
+                  <span>•</span>
+                  <span>{sc.withImage ? 'Includes profile image' : 'No profile image'}</span>
+                {/if}
+              </div>
+            {:else if previewTemplateData.styleConfig}
               <div class="mt-2 text-xs text-gray-600 flex gap-3">
                 <span>{previewTemplateData.styleConfig.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
                 <span>•</span>
@@ -563,13 +592,20 @@
                 try {
                   const draft = (previewTemplateData?.starterData || previewConfig?.starterData) ? { ...(previewTemplateData?.starterData || previewConfig?.starterData) } : {};
                   // Map styleConfig to builder settings hints
-                  const sc = previewTemplateData?.styleConfig;
+                  let sc = previewTemplateData?.styleConfig;
+                  if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.styleConfig) {
+                    sc = previewTemplateData.styles[selectedStyleIndex].styleConfig;
+                  }
                   if (sc) {
                     draft.settings = {
                       ...(draft.settings || {}),
                       layout: sc.pages === 2 ? '2-page' : '1-page',
                       showProfileImage: sc.withImage
                     };
+                  }
+                  // Also apply per-style settings override if present
+                  if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.settings) {
+                    draft.settings = { ...(draft.settings || {}), ...previewTemplateData.styles[selectedStyleIndex].settings };
                   }
                   localStorage.setItem('builderDraft', JSON.stringify(draft));
                 } catch (e) {

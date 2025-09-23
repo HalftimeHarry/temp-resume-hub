@@ -173,6 +173,15 @@ export interface TemplateStyleConfig {
   imagePosition?: 'left' | 'right' | 'top';
 }
 
+export interface TemplateStyleVariant {
+  key: string;
+  label: string;
+  styleConfig: TemplateStyleConfig;
+  settings?: Partial<ResumeSettings> & Partial<BuilderSettings> & { template?: string };
+  previewImage?: string;
+  previewImages?: string[];
+}
+
 export interface ResumeTemplate {
   id: string;
   name: string;
@@ -184,6 +193,7 @@ export interface ResumeTemplate {
   sections: Omit<ResumeSection, 'data'>[];
   starterData?: TemplateStarterData;
   styleConfig?: TemplateStyleConfig;
+  styles?: TemplateStyleVariant[];
   isPremium: boolean;
   isPopular: boolean;
   createdBy: string;

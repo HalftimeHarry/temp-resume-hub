@@ -250,6 +250,7 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
   const settings = cfg.settings || cfg || getDefaultTemplateSettings();
   const starterData = cfg.starterData || undefined;
   const styleConfig = cfg.styleConfig || undefined;
+  const styles = cfg.styles || undefined;
 
   // Fallback thumbnail from static assets if PB image missing
   const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -261,11 +262,12 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
     description: record.description,
     category: record.category,
     thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : staticThumb,
-    previewImages: [],
+    previewImages: Array.isArray(record.preview_images) ? record.preview_images.map((img: string) => pb.getFileUrl(record, img)) : [],
     settings,
     sections: [],
     starterData,
     styleConfig,
+    styles,
     isPremium: record.is_premium || false,
     isPopular: false,
     createdBy: '',
