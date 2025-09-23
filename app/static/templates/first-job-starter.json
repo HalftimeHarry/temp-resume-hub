@@ -1,0 +1,54 @@
+{
+  "settings": {
+    "template": "first-job-starter",
+    "colorScheme": "green",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "education", "skills", "experience"]
+  },
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Motivated student/graduate seeking an entry-level opportunity to develop skills and contribute to a team."
+    },
+    "summary": "Motivated student/graduate seeking an entry-level opportunity to develop skills and contribute to a team.",
+    "experience": [],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": ["Honor Roll"],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "Time Management", "level": "intermediate", "category": "Soft Skills" },
+      { "id": "", "name": "Communication", "level": "intermediate", "category": "Soft Skills" },
+      { "id": "", "name": "Basic Computer Skills", "level": "intermediate", "category": "Technical" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "first-job-starter",
+      "colorScheme": "green",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "education", "skills", "experience"]
+    }
+  }
+}

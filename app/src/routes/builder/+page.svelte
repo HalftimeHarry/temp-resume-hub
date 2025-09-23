@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+import { builderData, currentStep } from '$lib/stores/resumeBuilder';
+import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
@@ -14,6 +16,30 @@
 	import EducationTab from '$lib/components/builder/EducationTab.svelte';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
+
+	// Prefill from template starter data if provided via localStorage
+	onMount(() => {
+		try {
+			const raw = localStorage.getItem('builderDraft');
+			if (raw) {
+				const draft = JSON.parse(raw);
+				builderData.update(data => ({
+					...data,
+					personalInfo: draft.personalInfo || data.personalInfo,
+					summary: draft.summary ?? data.summary,
+					experience: Array.isArray(draft.experience) && draft.experience.length ? draft.experience : data.experience,
+					education: Array.isArray(draft.education) && draft.education.length ? draft.education : data.education,
+					skills: Array.isArray(draft.skills) && draft.skills.length ? draft.skills : data.skills,
+					projects: Array.isArray(draft.projects) ? draft.projects : data.projects,
+					settings: { ...data.settings, ...(draft.settings || {}) }
+				}));
+				currentStep.set('personal');
+				localStorage.removeItem('builderDraft');
+			}
+		} catch (e) {
+			console.warn('Failed to load builderDraft:', e);
+		}
+	});
 
 	$: activeTab = $currentStep;
 	$: console.log('activeTab updated to:', activeTab);

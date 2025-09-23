@@ -246,15 +246,24 @@ export const templateStore = {
 
 // Helper function to map PocketBase record to ResumeTemplate
 function mapRecordToTemplate(record: any): ResumeTemplate {
+  const cfg = record?.config || {};
+  const settings = cfg.settings || cfg || getDefaultTemplateSettings();
+  const starterData = cfg.starterData || undefined;
+
+  // Fallback thumbnail from static assets if PB image missing
+  const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const staticThumb = `/templates/${slug}.svg`;
+
   return {
     id: record.id,
     name: record.name,
     description: record.description,
     category: record.category,
-    thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : '',
+    thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : staticThumb,
     previewImages: [],
-    settings: record.config || getDefaultTemplateSettings(),
+    settings,
     sections: [],
+    starterData,
     isPremium: record.is_premium || false,
     isPopular: false,
     createdBy: '',

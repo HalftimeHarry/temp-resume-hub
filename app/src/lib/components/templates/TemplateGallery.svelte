@@ -99,12 +99,32 @@
   let previewOpen = false;
   let previewLoading = false;
   let previewTemplateData: any = null;
+  let previewConfig: any = null;
+  
+  function slugify(name: string): string {
+    return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
   
   async function previewTemplate(templateId: string) {
     try {
       previewLoading = true;
       previewOpen = true;
       previewTemplateData = await templateStore.getTemplate(templateId);
+      // Try to load static config JSON by slug
+      if (previewTemplateData?.name) {
+        const slug = slugify(previewTemplateData.name);
+        const res = await fetch(`/templates/${slug}.json`);
+        if (res.ok) {
+          previewConfig = await res.json();
+          // Attach to template for easy access
+          previewTemplateData.starterData = previewConfig.starterData;
+          if (previewConfig.settings) {
+            previewTemplateData.settings = previewConfig.settings;
+          }
+        } else {
+          previewConfig = null;
+        }
+      }
     } catch (error) {
       console.error('Failed to load template preview:', error);
       toast.error('Failed to load template');
@@ -522,7 +542,17 @@
             </div>
 
             <div class="flex gap-2">
-              <Button class="flex-1" on:click={() => useTemplate(previewTemplateData.id)}>
+              <Button class="flex-1" on:click={() => {
+                try {
+                  if (previewTemplateData?.starterData || previewConfig?.starterData) {
+                    const draft = previewTemplateData?.starterData || previewConfig?.starterData;
+                    localStorage.setItem('builderDraft', JSON.stringify(draft));
+                  }
+                } catch (e) {
+                  console.warn('Failed to store builder draft:', e);
+                }
+                goto('/builder');
+              }}>
                 <Download class="h-4 w-4 mr-2" />
                 Use This Template
               </Button>

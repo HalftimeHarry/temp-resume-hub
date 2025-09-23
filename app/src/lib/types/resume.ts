@@ -156,6 +156,16 @@ export interface Resume {
   };
 }
 
+export interface TemplateStarterData {
+  personalInfo?: PersonalInfo;
+  summary?: string;
+  experience?: Experience[];
+  education?: Education[];
+  skills?: Skill[];
+  projects?: Project[];
+  settings?: Partial<BuilderSettings> & Partial<ResumeSettings> & { template?: string };
+}
+
 export interface ResumeTemplate {
   id: string;
   name: string;
@@ -165,6 +175,7 @@ export interface ResumeTemplate {
   previewImages: string[];
   settings: ResumeSettings;
   sections: Omit<ResumeSection, 'data'>[];
+  starterData?: TemplateStarterData;
   isPremium: boolean;
   isPopular: boolean;
   createdBy: string;

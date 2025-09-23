@@ -1,0 +1,71 @@
+{
+  "settings": {
+    "template": "hospitality-helper",
+    "colorScheme": "purple",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "experience", "education", "skills", "references"]
+  },
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Personable hospitality worker with strong customer service and multitasking skills. Flexible schedule and team-oriented."
+    },
+    "summary": "Personable hospitality worker with strong customer service and multitasking skills.",
+    "experience": [
+      {
+        "id": "",
+        "company": "Sunset Bistro",
+        "position": "Host / Server Assistant",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": true,
+        "description": "Welcomed guests, managed waitlists, and supported servers during peak hours.",
+        "highlights": [
+          "Managed seating to minimize wait times",
+          "Assisted with bussing and table resets",
+          "Maintained upbeat and professional demeanor"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": [],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "Customer Service", "level": "advanced", "category": "Hospitality" },
+      { "id": "", "name": "Scheduling", "level": "intermediate", "category": "Operations" },
+      { "id": "", "name": "Teamwork", "level": "advanced", "category": "Soft Skills" },
+      { "id": "", "name": "Food Safety", "level": "beginner", "category": "Hospitality" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "hospitality-helper",
+      "colorScheme": "purple",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "experience", "education", "skills", "references"]
+    }
+  }
+}
