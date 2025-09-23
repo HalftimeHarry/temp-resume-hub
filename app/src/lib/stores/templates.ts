@@ -256,12 +256,19 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
   const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const staticThumb = `/templates/${slug}.svg`;
 
-  const previewImages: string[] = Array.isArray(record.preview_images)
-    ? record.preview_images.map((img: string) => pb.getFileUrl(record, img))
-    : [];
+  // Normalize preview images from PocketBase: support preview_images[] or multi-file preview_image
+  let previewImages: string[] = [];
+  if (Array.isArray(record.preview_images)) {
+    previewImages = record.preview_images.map((img: string) => pb.getFileUrl(record, img));
+  } else if (Array.isArray(record.preview_image)) {
+    previewImages = record.preview_image.map((img: string) => pb.getFileUrl(record, img));
+  }
+
   const thumbnail = previewImages.length > 0
     ? previewImages[0]
-    : (record.preview_image ? pb.getFileUrl(record, record.preview_image) : staticThumb);
+    : (typeof record.preview_image === 'string' && record.preview_image
+        ? pb.getFileUrl(record, record.preview_image)
+        : staticThumb);
 
   return {
     id: record.id,
