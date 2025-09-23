@@ -259,15 +259,15 @@ function mapRecordToTemplate(record: any): ResumeTemplate {
   // Normalize preview images from PocketBase: support preview_images[] or multi-file preview_image
   let previewImages: string[] = [];
   if (Array.isArray(record.preview_images)) {
-    previewImages = record.preview_images.map((img: string) => pb.getFileUrl(record, img));
+    previewImages = record.preview_images.map((img: string) => pb.files.getURL(record, img));
   } else if (Array.isArray(record.preview_image)) {
-    previewImages = record.preview_image.map((img: string) => pb.getFileUrl(record, img));
+    previewImages = record.preview_image.map((img: string) => pb.files.getURL(record, img));
   }
 
   const thumbnail = previewImages.length > 0
     ? previewImages[0]
     : (typeof record.preview_image === 'string' && record.preview_image
-        ? pb.getFileUrl(record, record.preview_image)
+        ? pb.files.getURL(record, record.preview_image)
         : staticThumb);
 
   return {
