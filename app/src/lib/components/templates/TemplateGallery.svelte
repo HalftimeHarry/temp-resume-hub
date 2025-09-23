@@ -29,6 +29,7 @@
     Sparkles
   } from 'lucide-svelte';
   import * as Dialog from '$lib/components/ui/dialog';
+  import { isAuthenticated } from '$lib/stores/auth';
   import { toast } from 'svelte-sonner';
   
   export let showFeatured = true;
@@ -101,6 +102,9 @@
   let previewTemplateData: any = null;
   let previewConfig: any = null;
   let selectedStyleIndex: number = 0;
+  // Builder options (do not affect preview)
+  let selectedColor: string = 'blue';
+  let selectedFont: string = 'Inter';
 
   // Map common style keys to PB preview_images array indices (defaults)
   const pbIndexMapDefault: Record<string, number> = {
@@ -629,6 +633,34 @@
               </div>
             {/if}
 
+            <!-- Builder options (do not affect preview) -->
+            <div class="space-y-2 p-3 border rounded-md bg-gray-50">
+              <div class="text-sm font-medium text-gray-700">Builder Options</div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs text-gray-600">Color</label>
+                  <select bind:value={selectedColor} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
+                    <option value="orange">Orange</option>
+                    <option value="teal">Teal</option>
+                    <option value="black">Black</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-gray-600">Font</label>
+                  <select bind:value={selectedFont} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Source Sans Pro">Source Sans Pro</option>
+                    <option value="Merriweather">Merriweather</option>
+                  </select>
+                </div>
+              </div>
+              <p class="text-[11px] text-gray-500">These preferences will be applied in the builder after you click Use. They do not change this preview.</p>
+            </div>
+
             <div class="flex gap-2">
               <Button class="flex-1" on:click={() => {
                 try {
@@ -649,11 +681,18 @@
                   if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.settings) {
                     draft.settings = { ...(draft.settings || {}), ...previewTemplateData.styles[selectedStyleIndex].settings };
                   }
+                  // Apply builder preferences
+                  draft.settings = { ...(draft.settings || {}), colorScheme: selectedColor, fontFamily: selectedFont };
                   localStorage.setItem('builderDraft', JSON.stringify(draft));
                 } catch (e) {
                   console.warn('Failed to store builder draft:', e);
                 }
-                goto('/builder');
+                // Auth gate: require login before building
+                if (!$isAuthenticated) {
+                  goto('/auth/login?next=/builder');
+                } else {
+                  goto('/builder');
+                }
               }}>
                 <Download class="h-4 w-4 mr-2" />
                 Use This Template
