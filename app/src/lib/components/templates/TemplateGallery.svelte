@@ -634,32 +634,39 @@
             {/if}
 
             <!-- Builder options (do not affect preview) -->
-            <div class="space-y-2 p-3 border rounded-md bg-gray-50">
-              <div class="text-sm font-medium text-gray-700">Builder Options</div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="text-xs text-gray-600">Color</label>
-                  <select bind:value={selectedColor} class="mt-1 w-full border rounded px-2 py-1 text-sm">
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="purple">Purple</option>
-                    <option value="orange">Orange</option>
-                    <option value="teal">Teal</option>
-                    <option value="black">Black</option>
-                  </select>
+            {#if $isAuthenticated}
+              <div class="space-y-2 p-3 border rounded-md bg-gray-50">
+                <div class="text-sm font-medium text-gray-700">Builder Options</div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-600">Color</label>
+                    <select bind:value={selectedColor} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="purple">Purple</option>
+                      <option value="orange">Orange</option>
+                      <option value="teal">Teal</option>
+                      <option value="black">Black</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-600">Font</label>
+                    <select bind:value={selectedFont} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                      <option value="Inter">Inter</option>
+                      <option value="Roboto">Roboto</option>
+                      <option value="Source Sans Pro">Source Sans Pro</option>
+                      <option value="Merriweather">Merriweather</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label class="text-xs text-gray-600">Font</label>
-                  <select bind:value={selectedFont} class="mt-1 w-full border rounded px-2 py-1 text-sm">
-                    <option value="Inter">Inter</option>
-                    <option value="Roboto">Roboto</option>
-                    <option value="Source Sans Pro">Source Sans Pro</option>
-                    <option value="Merriweather">Merriweather</option>
-                  </select>
-                </div>
+                <p class="text-[11px] text-gray-500">These preferences will be applied in the builder after you click Use. They do not change this preview.</p>
               </div>
-              <p class="text-[11px] text-gray-500">These preferences will be applied in the builder after you click Use. They do not change this preview.</p>
-            </div>
+            {:else}
+              <div class="space-y-2 p-3 border rounded-md bg-gray-50">
+                <div class="text-sm text-gray-700">Create an account to customize color and font.</div>
+                <Button on:click={() => goto('/auth/register?next=/builder')}>Create an account</Button>
+              </div>
+            {/if}
 
             <div class="flex gap-2">
               <Button class="flex-1" on:click={() => {
