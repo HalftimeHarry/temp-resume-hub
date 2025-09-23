@@ -4,9 +4,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { validateEmail, validatePhone } from '$lib/utils.js';
 
-	$: personalInfo = $builderData.personalInfo;
+	// Ensure we always have a defined object before reactive assignments run
+	let personalInfo = { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '' };
+	$: personalInfo = $builderData?.personalInfo ?? personalInfo;
 	
-	// Local fields bound to inputs; sync back to store when they change
+	// Local fields bound to inputs; initialize safely from the placeholder object
 	let fullName = personalInfo.fullName || '';
 	let email = personalInfo.email || '';
 	let phone = personalInfo.phone || '';
@@ -14,6 +16,17 @@
 	let linkedin = personalInfo.linkedin || '';
 	let website = personalInfo.website || '';
 	
+	// When the store personalInfo changes (e.g., after selecting a template), update local fields
+	$: if (personalInfo) {
+		fullName = personalInfo.fullName || '';
+		email = personalInfo.email || '';
+		phone = personalInfo.phone || '';
+		location = personalInfo.location || '';
+		linkedin = personalInfo.linkedin || '';
+		website = personalInfo.website || '';
+	}
+	
+	// Sync local fields back to the store
 	$: updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
 	
 	// More permissive phone validation: require at least 7 digits when provided
