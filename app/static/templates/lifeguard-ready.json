@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "template": "lifeguard-ready",
+    "colorScheme": "teal",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "experience", "education", "skills", "certifications"]
+  },
+  "styleConfig": { "columns": 1, "pages": 2, "withImage": false },
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal" },
+      "previewImage": "/templates/lifeguard-ready-single.svg",
+      "previewImages": ["/templates/lifeguard-ready-single.svg"]
+    },
+    {
+      "key": "two-page",
+      "label": "Two Pages",
+      "styleConfig": { "columns": 1, "pages": 2, "withImage": false },
+      "settings": { "spacing": "relaxed" },
+      "previewImage": "/templates/lifeguard-ready-two-page.svg",
+      "previewImages": ["/templates/lifeguard-ready-two-page.svg"]
+    },
+    {
+      "key": "with-image",
+      "label": "Single Column + Image",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/lifeguard-ready-with-image.svg",
+      "previewImages": ["/templates/lifeguard-ready-with-image.svg"]
+    }
+  ],
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Responsible lifeguard with CPR/First Aid certification and strong awareness of safety procedures."
+    },
+    "summary": "Responsible lifeguard with CPR/First Aid certification and strong safety awareness.",
+    "experience": [
+      {
+        "id": "",
+        "company": "City Pool",
+        "position": "Lifeguard",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": true,
+        "description": "Monitored swimmers, enforced pool rules, and responded to emergencies as needed.",
+        "highlights": [
+          "Maintained vigilant scanning and swimmer counts",
+          "Performed daily safety checks of equipment",
+          "Provided excellent customer interactions"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": [],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "CPR/First Aid", "level": "advanced", "category": "Certifications" },
+      { "id": "", "name": "Water Safety", "level": "advanced", "category": "Safety" },
+      { "id": "", "name": "Attention to Detail", "level": "advanced", "category": "Soft Skills" },
+      { "id": "", "name": "Communication", "level": "advanced", "category": "Soft Skills" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "lifeguard-ready",
+      "colorScheme": "teal",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "experience", "education", "skills", "certifications"]
+    }
+  }
+}

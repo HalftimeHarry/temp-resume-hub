@@ -1,0 +1,49 @@
+<svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="800" fill="#F3F4F6"/>
+  <g transform="translate(50,40)">
+    <!-- Page -->
+    <rect x="0" y="0" width="500" height="720" rx="8" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <!-- Accent bar (green) -->
+    <rect x="0" y="0" width="500" height="60" rx="8" fill="#10B981"/>
+    <!-- Name line -->
+    <rect x="24" y="84" width="320" height="16" rx="4" fill="#D1D5DB"/>
+    <!-- Contact chips -->
+    <rect x="24" y="110" width="180" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="214" y="110" width="140" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="364" y="110" width="112" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Summary -->
+    <rect x="24" y="150" width="120" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="172" width="452" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="188" width="420" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="204" width="380" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Experience section -->
+    <rect x="24" y="244" width="140" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="268" width="300" height="12" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="286" width="260" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="304" width="420" height="8" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="318" width="380" height="8" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="332" width="400" height="8" rx="4" fill="#E5E7EB"/>
+
+    <!-- Experience item 2 -->
+    <rect x="24" y="364" width="300" height="12" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="382" width="260" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="400" width="420" height="8" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="414" width="360" height="8" rx="4" fill="#E5E7EB"/>
+
+    <!-- Education -->
+    <rect x="24" y="454" width="120" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="478" width="340" height="10" rx="4" fill="#E5E7EB"/>
+    <rect x="24" y="494" width="260" height="10" rx="4" fill="#E5E7EB"/>
+
+    <!-- Skills -->
+    <rect x="24" y="534" width="90" height="12" rx="4" fill="#D1D5DB"/>
+    <rect x="24" y="558" width="90" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="124" y="558" width="110" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="244" y="558" width="84" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="334" y="558" width="100" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="24" y="576" width="100" height="10" rx="6" fill="#E5E7EB"/>
+    <rect x="134" y="576" width="88" height="10" rx="6" fill="#E5E7EB"/>
+  </g>
+</svg>

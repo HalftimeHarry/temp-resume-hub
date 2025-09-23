@@ -156,6 +156,32 @@ export interface Resume {
   };
 }
 
+export interface TemplateStarterData {
+  personalInfo?: PersonalInfo;
+  summary?: string;
+  experience?: Experience[];
+  education?: Education[];
+  skills?: Skill[];
+  projects?: Project[];
+  settings?: Partial<BuilderSettings> & Partial<ResumeSettings> & { template?: string };
+}
+
+export interface TemplateStyleConfig {
+  columns: 1 | 2;
+  pages: 1 | 2;
+  withImage: boolean;
+  imagePosition?: 'left' | 'right' | 'top';
+}
+
+export interface TemplateStyleVariant {
+  key: string;
+  label: string;
+  styleConfig: TemplateStyleConfig;
+  settings?: Partial<ResumeSettings> & Partial<BuilderSettings> & { template?: string };
+  previewImage?: string;
+  previewImages?: string[];
+}
+
 export interface ResumeTemplate {
   id: string;
   name: string;
@@ -165,6 +191,9 @@ export interface ResumeTemplate {
   previewImages: string[];
   settings: ResumeSettings;
   sections: Omit<ResumeSection, 'data'>[];
+  starterData?: TemplateStarterData;
+  styleConfig?: TemplateStyleConfig;
+  styles?: TemplateStyleVariant[];
   isPremium: boolean;
   isPopular: boolean;
   createdBy: string;

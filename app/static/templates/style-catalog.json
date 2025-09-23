@@ -1,0 +1,28 @@
+{
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal", "fontSize": "medium" }
+    },
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact", "fontSize": "small" }
+    },
+    {
+      "key": "with-image",
+      "label": "With Image (1 Page)",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true }
+    },
+    {
+      "key": "two-page",
+      "label": "Two Pages",
+      "styleConfig": { "columns": 1, "pages": 2, "withImage": false },
+      "settings": { "spacing": "relaxed" }
+    }
+  ]
+}

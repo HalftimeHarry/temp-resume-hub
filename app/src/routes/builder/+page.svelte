@@ -1,11 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings } from '$lib/stores/resumeBuilder.js';
+	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
+	
+	// Selected template/color display
+	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
+	$: selectedColorScheme = $builderData?.settings?.colorScheme || selectedTemplate?.settings?.colorScheme || '—';
+	const colorClassMap: Record<string, string> = {
+		blue: 'bg-blue-500',
+		green: 'bg-green-500',
+		purple: 'bg-purple-500',
+		orange: 'bg-orange-500',
+		teal: 'bg-teal-500',
+		black: 'bg-gray-800'
+	};
+	$: colorClass = colorClassMap[selectedColorScheme] || 'bg-gray-400';
 	
 	// Tab Components
 	import PersonalInfoTab from '$lib/components/builder/PersonalInfoTab.svelte';
@@ -14,6 +29,60 @@
 	import EducationTab from '$lib/components/builder/EducationTab.svelte';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
+
+	async function selectTemplate(t: any) {
+		try {
+			const full = await templateStore.getTemplate(t.id);
+			builderData.update(d => {
+				const sd = full.starterData || {};
+				return {
+					...d,
+					personalInfo: sd.personalInfo || d.personalInfo,
+					summary: sd.summary ?? d.summary,
+					experience: Array.isArray(sd.experience) && sd.experience.length ? sd.experience : d.experience,
+					education: Array.isArray(sd.education) && sd.education.length ? sd.education : d.education,
+					skills: Array.isArray(sd.skills) && sd.skills.length ? sd.skills : d.skills,
+					projects: Array.isArray(sd.projects) ? sd.projects : d.projects,
+					settings: { ...d.settings, ...(full.settings || {}), template: full.id }
+				};
+			});
+			currentStep.set('personal');
+		} catch (e) {
+			console.error('Failed to apply template:', e);
+		}
+	}
+
+	// Prefill from template starter data if provided via localStorage & ensure templates list loaded
+	onMount(async () => {
+		try {
+			if (!$allTemplates || $allTemplates.length === 0) {
+				await templateStore.loadTemplates();
+			}
+			const raw = localStorage.getItem('builderDraft');
+			if (raw) {
+				const draft = JSON.parse(raw);
+				builderData.update(data => ({
+					...data,
+					personalInfo: draft.personalInfo || data.personalInfo,
+					summary: draft.summary ?? data.summary,
+					experience: Array.isArray(draft.experience) && draft.experience.length ? draft.experience : data.experience,
+					education: Array.isArray(draft.education) && draft.education.length ? draft.education : data.education,
+					skills: Array.isArray(draft.skills) && draft.skills.length ? draft.skills : data.skills,
+					projects: Array.isArray(draft.projects) ? draft.projects : data.projects,
+					settings: { ...data.settings, ...(draft.settings || {}) }
+				}));
+				currentStep.set('personal');
+				localStorage.removeItem('builderDraft');
+			} else {
+				// Default to the first template if none selected yet
+				if ($allTemplates && $allTemplates.length > 0 && (!$builderData.settings?.template || $builderData.settings?.template === 'default-template-id')) {
+					await selectTemplate($allTemplates[0]);
+				}
+			}
+		} catch (e) {
+			console.warn('Failed to initialize builder:', e);
+		}
+	});
 
 	$: activeTab = $currentStep;
 	$: console.log('activeTab updated to:', activeTab);
@@ -174,11 +243,20 @@
 								<span>{progress}% Complete</span>
 							</div>
 							<div class="w-full bg-secondary rounded-full h-2">
-								<div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {progress}%"></div>
+							<div class="bg-primary h-2 rounded-full transition-all duration-300" style="width: {progress}%"></div>
 							</div>
-						</div>
-					</div>
-				</div>
+							 <!-- Selected Template/Color info -->
+							  <div class="mt-3 text-xs text-muted-foreground">
+							    <div><span class="font-medium text-foreground">Template:</span> {selectedTemplate ? selectedTemplate.name : 'Not selected'}</div>
+											<div class="flex items-center gap-2">
+												<span class="font-medium text-foreground">Color:</span>
+												<span class={`inline-block w-3 h-3 rounded-full ${colorClass}`}></span>
+												<span>{selectedColorScheme}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 
 				<!-- Content Area -->
 				<div class="lg:col-span-3">
@@ -236,14 +314,14 @@
 								<div class="space-y-4">
 									<h3 class="text-lg font-semibold">Resume Length</h3>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<button class="p-4 border-2 border-primary bg-primary/5 rounded-lg text-left">
+										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '1-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '1-page' })}>
 											<div class="font-medium mb-2">1 Page</div>
 											<p class="text-sm text-muted-foreground">
 												Perfect for entry-level positions. Concise and focused.
 											</p>
 										</button>
 										
-										<button class="p-4 border rounded-lg text-left hover:border-primary">
+										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '2-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '2-page' })}>
 											<div class="font-medium mb-2">2 Pages Max</div>
 											<p class="text-sm text-muted-foreground">
 												More space for experience and projects.
@@ -252,19 +330,22 @@
 									</div>
 								</div>
 
-								<!-- Template Selection -->
+											<!-- Template Selection (from database) -->
 								<div class="space-y-4">
-									<h3 class="text-lg font-semibold">Template Style</h3>
-									<div class="grid grid-cols-3 gap-4">
-										<button class="p-4 border-2 border-primary bg-primary/5 rounded-lg text-center">
-											<div class="font-medium">Modern</div>
-										</button>
-										<button class="p-4 border rounded-lg text-center hover:border-primary">
-											<div class="font-medium">Classic</div>
-										</button>
-										<button class="p-4 border rounded-lg text-center hover:border-primary">
-											<div class="font-medium">Minimal</div>
-										</button>
+									<h3 class="text-lg font-semibold">Choose a Template</h3>
+									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+										{#each $allTemplates as t}
+											<button class="p-3 border rounded-lg text-left hover:border-primary { $builderData.settings?.template === t.id ? 'border-primary bg-primary/5' : '' }" on:click={() => selectTemplate(t)}>
+												<div class="flex items-center gap-3">
+													<img src={t.thumbnail} alt={t.name} class="w-12 h-16 object-cover rounded border" />
+													<div>
+														<div class="font-medium">{t.name}</div>
+														<div class="text-xs text-muted-foreground line-clamp-1">{t.category}</div>
+													</div>
+												</div>
+												<div class="mt-2 text-xs text-blue-600 hover:underline" on:click|stopPropagation={() => goto(`/templates/${t.id}/preview`)}>Preview</div>
+											</button>
+										{/each}
 									</div>
 								</div>
 
@@ -272,22 +353,22 @@
 								<div class="space-y-4">
 									<h3 class="text-lg font-semibold">Color Scheme</h3>
 									<div class="grid grid-cols-4 gap-4">
-										<button class="p-3 border-2 border-primary bg-primary/5 rounded-lg text-center">
-											<div class="w-6 h-6 bg-blue-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Blue</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-green-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Green</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-purple-500 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Purple</div>
-										</button>
-										<button class="p-3 border rounded-lg text-center hover:border-primary">
-											<div class="w-6 h-6 bg-gray-800 rounded mx-auto mb-1"></div>
-											<div class="text-sm">Black</div>
-										</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'blue' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'blue' })}>
+									<div class="w-6 h-6 bg-blue-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Blue</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'green' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'green' })}>
+									<div class="w-6 h-6 bg-green-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Green</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'purple' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'purple' })}>
+									<div class="w-6 h-6 bg-purple-500 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Purple</div>
+									</button>
+									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'black' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'black' })}>
+									<div class="w-6 h-6 bg-gray-800 rounded mx-auto mb-1"></div>
+									<div class="text-sm">Black</div>
+									</button>
 									</div>
 								</div>
 							</div>
@@ -314,32 +395,32 @@
 									<div class="space-y-2">
 										<div class="flex justify-between">
 											<span>Personal Information</span>
-											<span class={isStepComplete('personal') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('personal') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('personal') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('personal') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Professional Summary</span>
-											<span class={isStepComplete('summary') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('summary') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('summary') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('summary') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Work Experience</span>
-											<span class={isStepComplete('experience') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('experience') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('experience') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('experience') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Education</span>
-											<span class={isStepComplete('education') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('education') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('education') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('education') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 										<div class="flex justify-between">
 											<span>Skills</span>
-											<span class={isStepComplete('skills') ? 'text-green-600' : 'text-yellow-600'}>
-												{isStepComplete('skills') ? '✅ Complete' : '⏳ In Progress'}
+											<span class={$isStepComplete('skills') ? 'text-green-600' : 'text-yellow-600'}>
+												{$isStepComplete('skills') ? '✅ Complete' : '⏳ In Progress'}
 											</span>
 										</div>
 									</div>

@@ -1,0 +1,23 @@
+<svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="800" fill="#FFF7ED"/>
+  <g transform="translate(50,40)">
+    <rect x="0" y="0" width="500" height="720" rx="8" fill="#FFFFFF" stroke="#FED7AA"/>
+    <!-- Accent bar (orange) -->
+    <rect x="0" y="0" width="500" height="60" rx="8" fill="#F97316"/>
+    <rect x="24" y="84" width="320" height="16" rx="4" fill="#F5D0B5"/>
+    <rect x="24" y="110" width="180" height="10" rx="4" fill="#FFE4D5"/>
+    <rect x="214" y="110" width="140" height="10" rx="4" fill="#FFE4D5"/>
+
+    <rect x="24" y="150" width="120" height="12" rx="4" fill="#F5D0B5"/>
+    <rect x="24" y="172" width="452" height="10" rx="4" fill="#FFE4D5"/>
+    <rect x="24" y="188" width="420" height="10" rx="4" fill="#FFE4D5"/>
+
+    <rect x="24" y="228" width="140" height="12" rx="4" fill="#F5D0B5"/>
+    <rect x="24" y="252" width="420" height="8" rx="4" fill="#FFE4D5"/>
+    <rect x="24" y="266" width="380" height="8" rx="4" fill="#FFE4D5"/>
+    <rect x="24" y="280" width="400" height="8" rx="4" fill="#FFE4D5"/>
+
+    <rect x="24" y="320" width="140" height="12" rx="4" fill="#F5D0B5"/>
+    <rect x="24" y="344" width="300" height="10" rx="4" fill="#FFE4D5"/>
+  </g>
+</svg>

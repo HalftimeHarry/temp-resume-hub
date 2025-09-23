@@ -246,15 +246,42 @@ export const templateStore = {
 
 // Helper function to map PocketBase record to ResumeTemplate
 function mapRecordToTemplate(record: any): ResumeTemplate {
+  const cfg = record?.config || {};
+  const settings = cfg.settings || cfg || getDefaultTemplateSettings();
+  const starterData = cfg.starterData || undefined;
+  const styleConfig = cfg.styleConfig || undefined;
+  const styles = cfg.styles || undefined;
+
+  // Fallback thumbnail from static assets if PB image missing
+  const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const staticThumb = `/templates/${slug}.svg`;
+
+  // Normalize preview images from PocketBase: support preview_images[] or multi-file preview_image
+  let previewImages: string[] = [];
+  if (Array.isArray(record.preview_images)) {
+    previewImages = record.preview_images.map((img: string) => pb.files.getURL(record, img));
+  } else if (Array.isArray(record.preview_image)) {
+    previewImages = record.preview_image.map((img: string) => pb.files.getURL(record, img));
+  }
+
+  const thumbnail = previewImages.length > 0
+    ? previewImages[0]
+    : (typeof record.preview_image === 'string' && record.preview_image
+        ? pb.files.getURL(record, record.preview_image)
+        : staticThumb);
+
   return {
     id: record.id,
     name: record.name,
     description: record.description,
     category: record.category,
-    thumbnail: record.preview_image ? pb.getFileUrl(record, record.preview_image) : '',
-    previewImages: [],
-    settings: record.config || getDefaultTemplateSettings(),
+    thumbnail,
+    previewImages,
+    settings,
     sections: [],
+    starterData,
+    styleConfig,
+    styles,
     isPremium: record.is_premium || false,
     isPopular: false,
     createdBy: '',

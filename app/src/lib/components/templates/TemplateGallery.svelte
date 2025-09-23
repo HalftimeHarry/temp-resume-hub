@@ -28,6 +28,8 @@
     List,
     Sparkles
   } from 'lucide-svelte';
+  import * as Dialog from '$lib/components/ui/dialog';
+  import { isAuthenticated } from '$lib/stores/auth';
   import { toast } from 'svelte-sonner';
   
   export let showFeatured = true;
@@ -94,8 +96,86 @@
     }
   }
   
-  function previewTemplate(templateId: string) {
-    goto(`/templates/${templateId}/preview`);
+  // Modal preview state
+  let previewOpen = false;
+  let previewLoading = false;
+  let previewTemplateData: any = null;
+  let previewConfig: any = null;
+  let selectedStyleIndex: number = 0;
+  // Builder options (do not affect preview)
+  let selectedColor: string = 'blue';
+  let selectedFont: string = 'Inter';
+
+  // Map common style keys to PB preview_images array indices (defaults)
+  const pbIndexMapDefault: Record<string, number> = {
+    'single-column': 0,
+    'two-column': 1,
+    'two-page': 2,
+    'with-image': 3
+  };
+  // Per-template overrides (by slug)
+  const pbIndexOverrides: Record<string, Record<string, number>> = {
+    'first-job-starter': {
+      'single-column': 1,
+      'two-column': 2,
+      'with-image': 3
+    }
+  };
+  function getPBIndexForStyle(styleKey: string): number | undefined {
+    const slug = previewTemplateData?.name ? slugify(previewTemplateData.name) : '';
+    const map = (slug && pbIndexOverrides[slug]) || pbIndexMapDefault;
+    return map[styleKey];
+  }
+  
+  function slugify(name: string): string {
+    return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+  
+  async function previewTemplate(templateId: string) {
+    try {
+      previewLoading = true;
+      previewOpen = true;
+      previewTemplateData = await templateStore.getTemplate(templateId);
+      selectedStyleIndex = 0;
+      // Try to load static config JSON by slug
+      if (previewTemplateData?.name) {
+        const slug = slugify(previewTemplateData.name);
+        const res = await fetch(`/templates/${slug}.json`);
+        if (res.ok) {
+          previewConfig = await res.json();
+          // Attach to template for easy access
+          previewTemplateData.starterData = previewConfig.starterData;
+          if (previewConfig.settings) {
+            previewTemplateData.settings = previewConfig.settings;
+          }
+          if (previewConfig.styles) {
+            previewTemplateData.styles = previewConfig.styles;
+          }
+        } else {
+          previewConfig = null;
+        }
+      }
+      // Fallback styles from catalog if none provided
+      if (!previewTemplateData.styles || previewTemplateData.styles.length === 0) {
+        try {
+          const catRes = await fetch('/templates/style-catalog.json');
+          if (catRes.ok) {
+            const cat = await catRes.json();
+            if (cat?.styles?.length) {
+              previewTemplateData.styles = cat.styles;
+            }
+          }
+        } catch (e) {
+          console.warn('No style catalog found');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load template preview:', error);
+      toast.error('Failed to load template');
+      previewOpen = false;
+    } finally {
+      previewLoading = false;
+    }
   }
   
   function formatUsageCount(count: number): string {
@@ -293,18 +373,18 @@
                 {/if}
               </div>
               
-              <!-- Actions -->
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div class="flex space-x-2">
-                  <Button size="sm" on:click={() => previewTemplate(template.id)}>
-                    <Eye class="h-4 w-4 mr-1" />
-                    Preview
-                  </Button>
-                  <Button size="sm" variant="secondary" on:click={() => useTemplate(template.id)}>
-                    <Download class="h-4 w-4 mr-1" />
-                    Use
-                  </Button>
-                </div>
+              <!-- Actions: entire overlay opens preview -->
+              <div
+              class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+              role="button"
+              tabindex="0"
+              on:click={() => previewTemplate(template.id)}
+              on:keydown={(e) => { if (e.key === 'Enter') previewTemplate(template.id) }}
+              >
+              <div class="text-white font-medium bg-black/30 rounded-md px-3 py-1 flex items-center gap-2">
+              <Eye class="h-4 w-4" />
+              <span>Preview</span>
+              </div>
               </div>
             </div>
             
@@ -396,17 +476,17 @@
                 {/if}
               </div>
               
-              <!-- Actions -->
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div class="flex space-x-2">
-                  <Button size="sm" on:click={() => previewTemplate(template.id)}>
-                    <Eye class="h-4 w-4 mr-1" />
-                    Preview
-                  </Button>
-                  <Button size="sm" variant="secondary" on:click={() => useTemplate(template.id)}>
-                    <Download class="h-4 w-4 mr-1" />
-                    Use
-                  </Button>
+              <!-- Actions: entire overlay opens preview -->
+              <div
+                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                role="button"
+                tabindex="0"
+                on:click={() => previewTemplate(template.id)}
+                on:keydown={(e) => { if (e.key === 'Enter') previewTemplate(template.id) }}
+              >
+                <div class="text-white font-medium bg-black/30 rounded-md px-3 py-1 flex items-center gap-2">
+                  <Eye class="h-4 w-4" />
+                  <span>Preview</span>
                 </div>
               </div>
             </div>
@@ -433,6 +513,206 @@
       </div>
     {/if}
   </div>
+  <!-- Preview Modal -->
+  <Dialog.Root bind:open={previewOpen}>
+    <Dialog.Content class="max-w-6xl w-[95vw]">
+      <Dialog.Header>
+        <Dialog.Title class="text-xl font-semibold">{previewTemplateData ? previewTemplateData.name : 'Loading template...'}</Dialog.Title>
+        <Dialog.Description>
+          {previewTemplateData ? previewTemplateData.category : ''}
+        </Dialog.Description>
+      </Dialog.Header>
+
+      {#if previewLoading}
+        <div class="space-y-4">
+          <Skeleton class="h-64 w-full" />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton class="h-24 w-full" />
+            <Skeleton class="h-24 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </div>
+      {:else if previewTemplateData}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Large preview image or placeholder -->
+          <div class="lg:col-span-2">
+            <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+              {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
+                {#if previewTemplateData.styles[selectedStyleIndex]?.previewImage}
+                  <img src={previewTemplateData.styles[selectedStyleIndex].previewImage} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                {:else if previewTemplateData.previewImages && previewTemplateData.styles[selectedStyleIndex]?.key && getPBIndexForStyle(previewTemplateData.styles[selectedStyleIndex].key) !== undefined}
+                  {@const idx = getPBIndexForStyle(previewTemplateData.styles[selectedStyleIndex].key)}
+                  {#if typeof idx === 'number' && previewTemplateData.previewImages[idx]}
+                    <img src={previewTemplateData.previewImages[idx]} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                  {:else}
+                    <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                  {/if}
+                {:else}
+                  <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+                {/if}
+              {:else if previewTemplateData.thumbnail}
+                <img src={previewTemplateData.thumbnail} alt={previewTemplateData.name} class="w-full h-full object-cover" />
+              {:else}
+                <Eye class="h-12 w-12 text-gray-400" />
+              {/if}
+            </div>
+            {#if previewTemplateData.styles && previewTemplateData.styles.length > 0}
+              <div class="mt-3 flex flex-wrap gap-2">
+                {#each previewTemplateData.styles as s, i}
+                  <button class="px-3 py-1 text-xs rounded border {i === selectedStyleIndex ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100'}" on:click={() => selectedStyleIndex = i}>
+                    {s.label}
+                  </button>
+                {/each}
+              </div>
+              <div class="mt-2 text-xs text-gray-600 flex gap-3">
+                {#if previewTemplateData.styles[selectedStyleIndex]?.styleConfig}
+                  {@const sc = previewTemplateData.styles[selectedStyleIndex].styleConfig}
+                  <span>{sc.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
+                  <span>•</span>
+                  <span>{sc.pages === 2 ? 'Two pages' : 'One page'}</span>
+                  <span>•</span>
+                  <span>{sc.withImage ? 'Includes profile image' : 'No profile image'}</span>
+                {/if}
+              </div>
+            {:else if previewTemplateData.styleConfig}
+              <div class="mt-2 text-xs text-gray-600 flex gap-3">
+                <span>{previewTemplateData.styleConfig.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
+                <span>•</span>
+                <span>{previewTemplateData.styleConfig.pages === 2 ? 'Two pages' : 'One page'}</span>
+                <span>•</span>
+                <span>{previewTemplateData.styleConfig.withImage ? 'Includes profile image' : 'No profile image'}</span>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Details -->
+          <div class="space-y-4">
+            <div>
+              <p class="text-gray-700">{previewTemplateData.description}</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              {#if previewTemplateData.isPremium}
+                <Badge class="bg-yellow-500 text-white">
+                  <Crown class="h-3 w-3 mr-1" />
+                  Premium
+                </Badge>
+              {/if}
+              {#if previewTemplateData.isPopular}
+                <Badge class="bg-blue-500 text-white">
+                  <Star class="h-3 w-3 mr-1" />
+                  Popular
+                </Badge>
+              {/if}
+              <Badge variant="outline">{previewTemplateData.category}</Badge>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-1">
+                  <Star class="h-4 w-4 text-yellow-400 fill-current" />
+                  <span>Rating</span>
+                </div>
+                <div class="text-lg font-semibold">{previewTemplateData.rating?.toFixed ? previewTemplateData.rating.toFixed(1) : '—'}</div>
+              </div>
+
+              <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-center space-x-1 text-sm text-gray-600 mb-1">
+                  <Download class="h-4 w-4" />
+                  <span>Uses</span>
+                </div>
+                <div class="text-lg font-semibold">{formatUsageCount(previewTemplateData.usageCount || 0)}</div>
+              </div>
+            </div>
+
+            {#if previewTemplateData.styleConfig}
+              <div class="grid grid-cols-3 gap-2">
+                <Badge variant="outline">{previewTemplateData.styleConfig.columns === 2 ? 'Two Columns' : 'Single Column'}</Badge>
+                <Badge variant="outline">{previewTemplateData.styleConfig.pages === 2 ? 'Two Pages' : 'One Page'}</Badge>
+                <Badge variant="outline">{previewTemplateData.styleConfig.withImage ? 'Profile Image' : 'No Image'}</Badge>
+              </div>
+            {/if}
+
+            <!-- Builder options (do not affect preview) -->
+            {#if $isAuthenticated}
+              <div class="space-y-2 p-3 border rounded-md bg-gray-50">
+                <div class="text-sm font-medium text-gray-700">Builder Options</div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs text-gray-600">Color</label>
+                    <select bind:value={selectedColor} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="purple">Purple</option>
+                      <option value="orange">Orange</option>
+                      <option value="teal">Teal</option>
+                      <option value="black">Black</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-xs text-gray-600">Font</label>
+                    <select bind:value={selectedFont} class="mt-1 w-full border rounded px-2 py-1 text-sm">
+                      <option value="Inter">Inter</option>
+                      <option value="Roboto">Roboto</option>
+                      <option value="Source Sans Pro">Source Sans Pro</option>
+                      <option value="Merriweather">Merriweather</option>
+                    </select>
+                  </div>
+                </div>
+                <p class="text-[11px] text-gray-500">These preferences will be applied in the builder after you click Use. They do not change this preview.</p>
+              </div>
+            {/if}
+
+            <div class="flex gap-2">
+              {#if $isAuthenticated}
+                <Button class="flex-1" on:click={() => {
+                  try {
+                    const draft = (previewTemplateData?.starterData || previewConfig?.starterData) ? { ...(previewTemplateData?.starterData || previewConfig?.starterData) } : {};
+                    // Map styleConfig to builder settings hints
+                    let sc = previewTemplateData?.styleConfig;
+                    if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.styleConfig) {
+                      sc = previewTemplateData.styles[selectedStyleIndex].styleConfig;
+                    }
+                    if (sc) {
+                      draft.settings = {
+                        ...(draft.settings || {}),
+                        layout: sc.pages === 2 ? '2-page' : '1-page',
+                        showProfileImage: sc.withImage
+                      };
+                    }
+                    // Also apply per-style settings override if present
+                    if (previewTemplateData?.styles && previewTemplateData.styles[selectedStyleIndex]?.settings) {
+                      draft.settings = { ...(draft.settings || {}), ...previewTemplateData.styles[selectedStyleIndex].settings };
+                    }
+                    // Apply builder preferences
+                    draft.settings = { ...(draft.settings || {}), colorScheme: selectedColor, fontFamily: selectedFont };
+                    localStorage.setItem('builderDraft', JSON.stringify(draft));
+                  } catch (e) {
+                    console.warn('Failed to store builder draft:', e);
+                  }
+                  goto('/builder');
+                }}>
+                  <Download class="h-4 w-4 mr-2" />
+                  Use This Template
+                </Button>
+              {:else}
+                <Button class="flex-1" on:click={() => goto('/auth/register?next=/builder')}>
+                  Create an account
+                </Button>
+              {/if}
+              <Dialog.Close asChild>
+                <button class="inline-flex items-center justify-center h-9 px-4 rounded-md border">Close</button>
+              </Dialog.Close>
+            </div>
+          </div>
+        </div>
+      {:else}
+        <div class="text-center py-8">
+          <p class="text-gray-600">Template not found.</p>
+        </div>
+      {/if}
+    </Dialog.Content>
+  </Dialog.Root>
 </div>
 
 <style>

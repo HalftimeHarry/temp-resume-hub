@@ -1,0 +1,44 @@
+{
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal", "fontSize": "medium" },
+      "previewImage": "/templates/example-single-column.svg",
+      "previewImages": [
+        "/templates/example-single-column.svg"
+      ]
+    },
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact", "fontSize": "small" },
+      "previewImage": "/templates/example-two-column.svg",
+      "previewImages": [
+        "/templates/example-two-column.svg"
+      ]
+    },
+    {
+      "key": "with-image",
+      "label": "With Image (1 Page)",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/example-with-image.svg",
+      "previewImages": [
+        "/templates/example-with-image.svg"
+      ]
+    },
+    {
+      "key": "two-page",
+      "label": "Two Pages",
+      "styleConfig": { "columns": 1, "pages": 2, "withImage": false },
+      "settings": { "spacing": "relaxed" },
+      "previewImage": "/templates/example-two-page.svg",
+      "previewImages": [
+        "/templates/example-two-page.svg"
+      ]
+    }
+  ]
+}

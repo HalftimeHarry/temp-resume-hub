@@ -1,0 +1,35 @@
+<svg width="600" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="800" fill="#F3F4F6"/>
+  <g transform="translate(50,40)">
+    <rect x="0" y="0" width="500" height="720" rx="8" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <!-- Accent bar (green) -->
+    <rect x="0" y="0" width="500" height="60" rx="8" fill="#10B981"/>
+
+    <!-- Columns -->
+    <g transform="translate(24,84)">
+      <!-- Left column -->
+      <rect x="0" y="0" width="220" height="14" rx="4" fill="#D1D5DB"/>
+      <rect x="0" y="24" width="220" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="0" y="40" width="200" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="0" y="70" width="160" height="12" rx="4" fill="#D1D5DB"/>
+      <rect x="0" y="94" width="200" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="0" y="110" width="180" height="10" rx="4" fill="#E5E7EB"/>
+
+      <!-- Right column -->
+      <rect x="256" y="0" width="200" height="14" rx="4" fill="#D1D5DB"/>
+      <rect x="256" y="24" width="200" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="256" y="40" width="180" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="256" y="70" width="160" height="12" rx="4" fill="#D1D5DB"/>
+      <rect x="256" y="94" width="200" height="10" rx="4" fill="#E5E7EB"/>
+      <rect x="256" y="110" width="190" height="10" rx="4" fill="#E5E7EB"/>
+    </g>
+
+    <!-- Section rows lower -->
+    <g transform="translate(24,260)">
+      <rect x="0" y="0" width="120" height="12" rx="4" fill="#D1D5DB"/>
+      <rect x="0" y="24" width="460" height="8" rx="4" fill="#E5E7EB"/>
+      <rect x="0" y="38" width="440" height="8" rx="4" fill="#E5E7EB"/>
+      <rect x="0" y="52" width="420" height="8" rx="4" fill="#E5E7EB"/>
+    </g>
+  </g>
+</svg>

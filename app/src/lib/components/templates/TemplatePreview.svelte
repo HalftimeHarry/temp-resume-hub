@@ -30,6 +30,27 @@
   let isLoading = true;
   let isUsing = false;
   let currentImageIndex = 0;
+  let selectedStyleIndex = 0;
+
+  const pbIndexMapDefault: Record<string, number> = {
+    'single-column': 0,
+    'two-column': 1,
+    'two-page': 2,
+    'with-image': 3
+  };
+  const pbIndexOverrides: Record<string, Record<string, number>> = {
+    'first-job-starter': {
+      'single-column': 1,
+      'two-column': 2,
+      'with-image': 3
+    }
+  };
+  function slugify(name: string): string { return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+  function getPBIndexForStyle(styleKey: string): number | undefined {
+    const slug = template?.name ? slugify(template.name) : '';
+    const map = (slug && pbIndexOverrides[slug]) || pbIndexMapDefault;
+    return map[styleKey];
+  }
   
   // Sample resume data for preview
   const sampleResume = {
@@ -155,6 +176,21 @@
       // Apply template settings to sample resume
       if (template) {
         sampleResume.settings = { ...sampleResume.settings, ...template.settings };
+        selectedStyleIndex = 0;
+        // Fallback styles from catalog if none in template
+        if (!template.styles || template.styles.length === 0) {
+          try {
+            const catRes = await fetch('/templates/style-catalog.json');
+            if (catRes.ok) {
+              const cat = await catRes.json();
+              if (cat?.styles?.length) {
+                template = { ...template, styles: cat.styles };
+              }
+            }
+          } catch (e) {
+            console.warn('No style catalog found');
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to load template:', error);
@@ -294,12 +330,28 @@
                 </CardTitle>
                 
                 <div class="flex items-center space-x-2">
-                  <Button size="sm" variant="outline" disabled>
-                    Desktop
-                  </Button>
-                  <Button size="sm" variant="ghost" disabled>
-                    Mobile
-                  </Button>
+                  {#if template?.styles && template.styles.length > 0}
+                    <div class="hidden lg:flex items-center gap-2">
+                      {#each template.styles as s, i}
+                        <button class="px-3 py-1 text-xs rounded border {i === selectedStyleIndex ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-100'}" on:click={() => {
+                          selectedStyleIndex = i;
+                          const sc = template.styles[i]?.styleConfig;
+                          const st = template.styles[i]?.settings;
+                          if (sc) {
+                            sampleResume.settings = {
+                              ...sampleResume.settings,
+                              showProfileImage: sc.withImage
+                            };
+                          }
+                          if (st) {
+                            sampleResume.settings = { ...sampleResume.settings, ...st };
+                          }
+                        }}>
+                          {s.label}
+                        </button>
+                      {/each}
+                    </div>
+                  {/if}
                 </div>
               </div>
             </CardHeader>
@@ -307,6 +359,16 @@
               <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
                 <ResumePreview resume={sampleResume} />
               </div>
+              {#if template?.styles && template.styles[selectedStyleIndex]?.styleConfig}
+                <div class="mt-2 text-xs text-gray-600 flex gap-3">
+                  {@const sc = template.styles[selectedStyleIndex].styleConfig}
+                  <span>{sc.columns === 2 ? 'Two-column layout' : 'Single-column layout'}</span>
+                  <span>•</span>
+                  <span>{sc.pages === 2 ? 'Two pages' : 'One page'}</span>
+                  <span>•</span>
+                  <span>{sc.withImage ? 'Includes profile image' : 'No profile image'}</span>
+                </div>
+              {/if}
             </CardContent>
           </Card>
         </div>
@@ -408,7 +470,7 @@
           </Card>
           
           <!-- Additional Images -->
-          {#if template.previewImages.length > 0}
+          {#if (template.styles && template.styles[selectedStyleIndex]?.previewImages && template.styles[selectedStyleIndex].previewImages.length) || template.previewImages.length > 0}
             <Card>
               <CardHeader>
                 <CardTitle>More Views</CardTitle>
@@ -420,22 +482,45 @@
                 <div class="space-y-3">
                   <!-- Current Image -->
                   <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden">
-                    <img 
-                      src={template.previewImages[currentImageIndex]} 
-                      alt={`${template.name} preview ${currentImageIndex + 1}`}
-                      class="w-full h-full object-cover"
-                    />
+                    {#if template.styles && template.styles[selectedStyleIndex]?.previewImages?.length}
+                      <img 
+                        src={template.styles[selectedStyleIndex].previewImages[currentImageIndex]} 
+                        alt={`${template.name} preview ${currentImageIndex + 1}`}
+                        class="w-full h-full object-cover"
+                      />
+                    {:else if template.styles && template.previewImages && template.styles[selectedStyleIndex]?.key && getPBIndexForStyle(template.styles[selectedStyleIndex].key) !== undefined}
+                      {@const idx = getPBIndexForStyle(template.styles[selectedStyleIndex].key)}
+                      {#if typeof idx === 'number' && template.previewImages[idx]}
+                        <img 
+                          src={template.previewImages[idx]} 
+                          alt={`${template.name} preview by style`}
+                          class="w-full h-full object-cover"
+                        />
+                      {:else}
+                        <img 
+                          src={template.previewImages[currentImageIndex]} 
+                          alt={`${template.name} preview ${currentImageIndex + 1}`}
+                          class="w-full h-full object-cover"
+                        />
+                      {/if}
+                    {:else}
+                      <img 
+                        src={template.previewImages[currentImageIndex]} 
+                        alt={`${template.name} preview ${currentImageIndex + 1}`}
+                        class="w-full h-full object-cover"
+                      />
+                    {/if}
                   </div>
                   
                   <!-- Image Navigation -->
-                  {#if template.previewImages.length > 1}
+                  {#if (template.styles && template.styles[selectedStyleIndex]?.previewImages?.length > 1) || template.previewImages.length > 1}
                     <div class="flex items-center justify-between">
                       <Button size="sm" variant="outline" on:click={prevImage}>
                         Previous
                       </Button>
                       
                       <span class="text-sm text-gray-600">
-                        {currentImageIndex + 1} of {template.previewImages.length}
+                        {currentImageIndex + 1} of {(template.styles && template.styles[selectedStyleIndex]?.previewImages?.length) || template.previewImages.length}
                       </span>
                       
                       <Button size="sm" variant="outline" on:click={nextImage}>
@@ -445,20 +530,35 @@
                   {/if}
                   
                   <!-- Thumbnail Navigation -->
-                  {#if template.previewImages.length > 1}
+                  {#if (template.styles && template.styles[selectedStyleIndex]?.previewImages?.length > 1) || template.previewImages.length > 1}
                     <div class="grid grid-cols-4 gap-2">
-                      {#each template.previewImages as image, index}
-                        <button
-                          class="aspect-[3/4] bg-gray-100 rounded border-2 overflow-hidden transition-all {currentImageIndex === index ? 'border-blue-500' : 'border-transparent hover:border-gray-300'}"
-                          on:click={() => currentImageIndex = index}
-                        >
-                          <img 
-                            src={image} 
-                            alt={`${template.name} thumbnail ${index + 1}`}
-                            class="w-full h-full object-cover"
-                          />
-                        </button>
-                      {/each}
+                      {#if template.styles && template.styles[selectedStyleIndex]?.previewImages?.length}
+                        {#each template.styles[selectedStyleIndex].previewImages as image, index}
+                          <button
+                            class="aspect-[3/4] bg-gray-100 rounded border-2 overflow-hidden transition-all {currentImageIndex === index ? 'border-blue-500' : 'border-transparent hover:border-gray-300'}"
+                            on:click={() => currentImageIndex = index}
+                          >
+                            <img 
+                              src={image} 
+                              alt={`${template.name} thumbnail ${index + 1}`}
+                              class="w-full h-full object-cover"
+                            />
+                          </button>
+                        {/each}
+                      {:else}
+                        {#each template.previewImages as image, index}
+                          <button
+                            class="aspect-[3/4] bg-gray-100 rounded border-2 overflow-hidden transition-all {currentImageIndex === index ? 'border-blue-500' : 'border-transparent hover:border-gray-300'}"
+                            on:click={() => currentImageIndex = index}
+                          >
+                            <img 
+                              src={image} 
+                              alt={`${template.name} thumbnail ${index + 1}`}
+                              class="w-full h-full object-cover"
+                            />
+                          </button>
+                        {/each}
+                      {/if}
                     </div>
                   {/if}
                 </div>

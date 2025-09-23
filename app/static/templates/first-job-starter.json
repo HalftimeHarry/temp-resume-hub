@@ -1,0 +1,81 @@
+{
+  "settings": {
+    "template": "first-job-starter",
+    "colorScheme": "green",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "education", "skills", "experience"]
+  },
+  "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal" },
+      "previewImage": "/templates/first-job-starter-single.svg",
+      "previewImages": ["/templates/first-job-starter-single.svg"]
+    },
+    {
+      "key": "with-image",
+      "label": "Single Column + Image",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/first-job-starter-with-image.svg",
+      "previewImages": ["/templates/first-job-starter-with-image.svg"]
+    },
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact" },
+      "previewImage": "/templates/first-job-starter-two-column.svg",
+      "previewImages": ["/templates/first-job-starter-two-column.svg"]
+    }
+  ],
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Motivated student/graduate seeking an entry-level opportunity to develop skills and contribute to a team."
+    },
+    "summary": "Motivated student/graduate seeking an entry-level opportunity to develop skills and contribute to a team.",
+    "experience": [],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": ["Honor Roll"],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "Time Management", "level": "intermediate", "category": "Soft Skills" },
+      { "id": "", "name": "Communication", "level": "intermediate", "category": "Soft Skills" },
+      { "id": "", "name": "Basic Computer Skills", "level": "intermediate", "category": "Technical" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "first-job-starter",
+      "colorScheme": "green",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "education", "skills", "experience"]
+    }
+  }
+}

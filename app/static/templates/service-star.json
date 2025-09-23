@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "template": "service-star",
+    "colorScheme": "orange",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "experience", "education", "skills", "references"]
+  },
+  "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+  "styles": [
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal" },
+      "previewImage": "/templates/service-star-single.svg",
+      "previewImages": ["/templates/service-star-single.svg"]
+    },
+    {
+      "key": "with-image",
+      "label": "Single Column + Image",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/service-star-with-image.svg",
+      "previewImages": ["/templates/service-star-with-image.svg"]
+    },
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact" },
+      "previewImage": "/templates/service-star-two-column.svg",
+      "previewImages": ["/templates/service-star-two-column.svg"]
+    }
+  ],
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Reliable and hardworking service professional with strong customer focus and a positive attitude. Comfortable in fast-paced environments and committed to teamwork and quality."
+    },
+    "summary": "Reliable and hardworking service professional with strong customer focus and a positive attitude.",
+    "experience": [
+      {
+        "id": "",
+        "company": "Local Gas & Mart",
+        "position": "Service Associate",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": true,
+        "description": "Provided courteous service, maintained clean work areas, and assisted customers with transactions.",
+        "highlights": [
+          "Handled cash register with 100% accuracy",
+          "Restocked shelves and maintained product displays",
+          "Resolved customer questions and issues promptly"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": [],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "Customer Service", "level": "advanced", "category": "Service" },
+      { "id": "", "name": "POS/Cash Handling", "level": "intermediate", "category": "Retail" },
+      { "id": "", "name": "Teamwork", "level": "advanced", "category": "Soft Skills" },
+      { "id": "", "name": "Reliability", "level": "advanced", "category": "Soft Skills" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "service-star",
+      "colorScheme": "orange",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "experience", "education", "skills", "references"]
+    }
+  }
+}

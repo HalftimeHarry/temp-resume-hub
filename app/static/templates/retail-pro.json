@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "template": "retail-pro",
+    "colorScheme": "blue",
+    "fontSize": "medium",
+    "spacing": "normal",
+    "showProfileImage": false,
+    "sectionOrder": ["personal", "summary", "experience", "education", "skills"]
+  },
+  "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+  "styles": [
+    {
+      "key": "two-column",
+      "label": "Two Column",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": false },
+      "settings": { "spacing": "compact" },
+      "previewImage": "/templates/retail-pro-two-column.svg",
+      "previewImages": ["/templates/retail-pro-two-column.svg"]
+    },
+    {
+      "key": "single-column",
+      "label": "Single Column",
+      "styleConfig": { "columns": 1, "pages": 1, "withImage": false },
+      "settings": { "spacing": "normal" },
+      "previewImage": "/templates/retail-pro-single.svg",
+      "previewImages": ["/templates/retail-pro-single.svg"]
+    },
+    {
+      "key": "with-image",
+      "label": "Two Column + Image",
+      "styleConfig": { "columns": 2, "pages": 1, "withImage": true, "imagePosition": "top" },
+      "settings": { "showProfileImage": true },
+      "previewImage": "/templates/retail-pro-with-image.svg",
+      "previewImages": ["/templates/retail-pro-with-image.svg"]
+    }
+  ],
+  "starterData": {
+    "personalInfo": {
+      "fullName": "",
+      "email": "",
+      "phone": "",
+      "location": "",
+      "website": "",
+      "linkedin": "",
+      "github": "",
+      "summary": "Friendly retail professional experienced in cash handling, merchandising, and customer assistance."
+    },
+    "summary": "Friendly retail professional experienced in cash handling, merchandising, and customer assistance.",
+    "experience": [
+      {
+        "id": "",
+        "company": "Neighborhood Market",
+        "position": "Cashier / Sales Associate",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": true,
+        "description": "Assisted customers, processed transactions, and maintained an organized storefront.",
+        "highlights": [
+          "Balanced cash drawer with zero discrepancies",
+          "Recommended products to increase add-on sales",
+          "Kept front area clean and welcoming"
+        ]
+      }
+    ],
+    "education": [
+      {
+        "id": "",
+        "institution": "",
+        "degree": "High School Diploma",
+        "field": "",
+        "location": "",
+        "startDate": "",
+        "endDate": "",
+        "current": false,
+        "gpa": "",
+        "honors": [],
+        "description": ""
+      }
+    ],
+    "skills": [
+      { "id": "", "name": "Cash Handling", "level": "advanced", "category": "Retail" },
+      { "id": "", "name": "Merchandising", "level": "intermediate", "category": "Retail" },
+      { "id": "", "name": "POS Systems", "level": "intermediate", "category": "Retail" },
+      { "id": "", "name": "Communication", "level": "advanced", "category": "Soft Skills" }
+    ],
+    "settings": {
+      "layout": "1-page",
+      "mode": "simple",
+      "template": "retail-pro",
+      "colorScheme": "blue",
+      "fontSize": "medium",
+      "spacing": "normal",
+      "showProfileImage": false,
+      "sectionOrder": ["personal", "summary", "experience", "education", "skills"]
+    }
+  }
+}

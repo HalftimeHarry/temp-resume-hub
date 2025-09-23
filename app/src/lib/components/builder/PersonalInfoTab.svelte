@@ -4,29 +4,37 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { validateEmail, validatePhone } from '$lib/utils.js';
 
-	$: personalInfo = $builderData.personalInfo;
+	// Ensure we always have a defined object before reactive assignments run
+	let personalInfo = { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '' };
+	$: personalInfo = $builderData?.personalInfo ?? personalInfo;
 	
-	$: isValid = personalInfo.fullName.trim() !== '' &&
-				 personalInfo.email.trim() !== '' &&
-				 personalInfo.phone?.trim() !== '' &&
-				 personalInfo.location?.trim() !== '' &&
-				 validateEmail(personalInfo.email) &&
-				 (personalInfo.phone ? validatePhone(personalInfo.phone) : true);
-	$: console.log('PersonalInfoTab isValid:', isValid);
-	$: console.log('PersonalInfoTab isValid:', isValid);
-
-	$: {
-		if (isValid) {
-			markStepComplete('personal');
-		} else {
-			markStepIncomplete('personal');
-		}
+	// Local fields bound to inputs; initialize safely from the placeholder object
+	let fullName = personalInfo.fullName || '';
+	let email = personalInfo.email || '';
+	let phone = personalInfo.phone || '';
+	let location = personalInfo.location || '';
+	let linkedin = personalInfo.linkedin || '';
+	let website = personalInfo.website || '';
+	
+	// When the store personalInfo changes (e.g., after selecting a template), update local fields
+	$: if (personalInfo) {
+		fullName = personalInfo.fullName || '';
+		email = personalInfo.email || '';
+		phone = personalInfo.phone || '';
+		location = personalInfo.location || '';
+		linkedin = personalInfo.linkedin || '';
+		website = personalInfo.website || '';
 	}
-
-	function handleInput(field: string, value: string) {
-		updatePersonalInfo({ [field]: value });
-	}
-
+	
+	// Sync local fields back to the store
+	$: updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
+	
+	// More permissive phone validation: require at least 7 digits when provided
+	$: digitsPhone = (phone || '').replace(/\D/g, '');
+	$: phoneOk = phone ? digitsPhone.length >= 7 : true;
+	// Step validity: require name, email; phone/location optional
+	$: isValid = fullName.trim() !== '' && email.trim() !== '' && validateEmail(email);
+	
 	export let onNext: () => void;
 
 	function handleNext() {
@@ -35,14 +43,7 @@
 		console.log('Next button clicked, isValid:', isValid);
 		console.log('onNext prop:', onNext);
 		if (isValid && onNext) {
-			console.log('Calling onNext');
-			try {
-				onNext();
-			} catch (error) {
-				console.error('Error calling onNext:', error);
-			}
-		} else {
-			console.log('Not calling onNext, isValid:', isValid, 'onNext exists:', !!onNext);
+			onNext();
 		}
 	}
 </script>
@@ -52,26 +53,24 @@
 		<div class="space-y-2">
 			<label for="fullName" class="text-sm font-medium">Full Name *</label>
 			<Input
-				id="fullName"
-				placeholder="John Doe"
-				value={personalInfo.fullName}
-				on:input={(e) => handleInput('fullName', e.target.value)}
-				required
+			id="fullName"
+			placeholder="John Doe"
+			bind:value={fullName}
+			required
 			/>
 		</div>
 
 		<div class="space-y-2">
 			<label for="email" class="text-sm font-medium">Email Address *</label>
 			<Input
-				id="email"
-				type="email"
-				placeholder="john.doe@email.com"
-				value={personalInfo.email}
-				on:input={(e) => handleInput('email', e.target.value)}
-				required
+			id="email"
+			type="email"
+			placeholder="john.doe@email.com"
+			bind:value={email}
+			required
 			/>
-			{#if personalInfo.email && !validateEmail(personalInfo.email)}
-				<p class="text-sm text-destructive">Please enter a valid email address</p>
+			{#if email && !validateEmail(email)}
+			 <p class="text-sm text-destructive">Please enter a valid email address</p>
 			{/if}
 		</div>
 	</div>
@@ -80,26 +79,22 @@
 		<div class="space-y-2">
 			<label for="phone" class="text-sm font-medium">Phone Number *</label>
 			<Input
-				id="phone"
-				type="tel"
-				placeholder="(555) 123-4567"
-				value={personalInfo.phone || ''}
-				on:input={(e) => handleInput('phone', e.target.value)}
-				required
+			id="phone"
+			type="tel"
+			placeholder="(555) 123-4567"
+			bind:value={phone}
 			/>
-			{#if personalInfo.phone && !validatePhone(personalInfo.phone)}
-				<p class="text-sm text-destructive">Please enter a valid phone number</p>
+			{#if phone && !phoneOk}
+			 <p class="text-sm text-destructive">Please enter a valid phone number</p>
 			{/if}
 		</div>
 
 		<div class="space-y-2">
 			<label for="location" class="text-sm font-medium">Location *</label>
 			<Input
-				id="location"
-				placeholder="City, State"
-				value={personalInfo.location || ''}
-				on:input={(e) => handleInput('location', e.target.value)}
-				required
+			id="location"
+			placeholder="City, State"
+			bind:value={location}
 			/>
 		</div>
 	</div>
@@ -108,20 +103,18 @@
 		<div class="space-y-2">
 			<label for="linkedin" class="text-sm font-medium">LinkedIn Profile</label>
 			<Input
-				id="linkedin"
-				placeholder="linkedin.com/in/johndoe"
-				value={personalInfo.linkedin || ''}
-				on:input={(e) => handleInput('linkedin', e.target.value)}
+			id="linkedin"
+			placeholder="linkedin.com/in/johndoe"
+			bind:value={linkedin}
 			/>
 		</div>
 
 		<div class="space-y-2">
 			<label for="website" class="text-sm font-medium">Portfolio/Website</label>
 			<Input
-				id="website"
-				placeholder="johndoe.com"
-				value={personalInfo.website || ''}
-				on:input={(e) => handleInput('website', e.target.value)}
+			id="website"
+			placeholder="johndoe.com"
+			bind:value={website}
 			/>
 		</div>
 	</div>
