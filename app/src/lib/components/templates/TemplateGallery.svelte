@@ -309,18 +309,18 @@
                 {/if}
               </div>
               
-              <!-- Actions -->
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div class="flex space-x-2">
-                  <Button size="sm" on:click={() => previewTemplate(template.id)}>
-                    <Eye class="h-4 w-4 mr-1" />
-                    Preview
-                  </Button>
-                  <Button size="sm" variant="secondary" on:click={() => useTemplate(template.id)}>
-                    <Download class="h-4 w-4 mr-1" />
-                    Use
-                  </Button>
-                </div>
+              <!-- Actions: entire overlay opens preview -->
+              <div
+              class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+              role="button"
+              tabindex="0"
+              on:click={() => previewTemplate(template.id)}
+              on:keydown={(e) => { if (e.key === 'Enter') previewTemplate(template.id) }}
+              >
+              <div class="text-white font-medium bg-black/30 rounded-md px-3 py-1 flex items-center gap-2">
+              <Eye class="h-4 w-4" />
+              <span>Preview</span>
+              </div>
               </div>
             </div>
             
@@ -412,17 +412,17 @@
                 {/if}
               </div>
               
-              <!-- Actions -->
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div class="flex space-x-2">
-                  <Button size="sm" on:click={() => previewTemplate(template.id)}>
-                    <Eye class="h-4 w-4 mr-1" />
-                    Preview
-                  </Button>
-                  <Button size="sm" variant="secondary" on:click={() => useTemplate(template.id)}>
-                    <Download class="h-4 w-4 mr-1" />
-                    Use
-                  </Button>
+              <!-- Actions: entire overlay opens preview -->
+              <div
+                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                role="button"
+                tabindex="0"
+                on:click={() => previewTemplate(template.id)}
+                on:keydown={(e) => { if (e.key === 'Enter') previewTemplate(template.id) }}
+              >
+                <div class="text-white font-medium bg-black/30 rounded-md px-3 py-1 flex items-center gap-2">
+                  <Eye class="h-4 w-4" />
+                  <span>Preview</span>
                 </div>
               </div>
             </div>
@@ -451,7 +451,7 @@
   </div>
   <!-- Preview Modal -->
   <Dialog.Root bind:open={previewOpen}>
-    <Dialog.Content class="max-w-5xl w-full">
+    <Dialog.Content class="max-w-6xl w-[95vw]">
       <Dialog.Header>
         <Dialog.Title class="text-xl font-semibold">{previewTemplateData ? previewTemplateData.name : 'Loading template...'}</Dialog.Title>
         <Dialog.Description>
