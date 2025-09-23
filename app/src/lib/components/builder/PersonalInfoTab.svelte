@@ -12,7 +12,6 @@
 	// Step validity: require name, email, location; phone is optional (warn only)
 	$: isValid = personalInfo.fullName.trim() !== '' &&
 				 personalInfo.email.trim() !== '' &&
-				 personalInfo.location?.trim() !== '' &&
 				 validateEmail(personalInfo.email);
 	$: console.log('PersonalInfoTab isValid:', isValid);
 	$: console.log('PersonalInfoTab isValid:', isValid);
@@ -82,12 +81,11 @@
 		<div class="space-y-2">
 			<label for="phone" class="text-sm font-medium">Phone Number *</label>
 			<Input
-				id="phone"
-				type="tel"
-				placeholder="(555) 123-4567"
-				value={personalInfo.phone || ''}
-				on:input={(e) => handleInput('phone', e.target.value)}
-				required
+			id="phone"
+			type="tel"
+			placeholder="(555) 123-4567"
+			value={personalInfo.phone || ''}
+			on:input={(e) => handleInput('phone', e.target.value)}
 			/>
 			{#if personalInfo.phone && !phoneOk}
 				<p class="text-sm text-destructive">Please enter a valid phone number</p>
@@ -97,11 +95,10 @@
 		<div class="space-y-2">
 			<label for="location" class="text-sm font-medium">Location *</label>
 			<Input
-				id="location"
-				placeholder="City, State"
-				value={personalInfo.location || ''}
-				on:input={(e) => handleInput('location', e.target.value)}
-				required
+			id="location"
+			placeholder="City, State"
+			value={personalInfo.location || ''}
+			on:input={(e) => handleInput('location', e.target.value)}
 			/>
 		</div>
 	</div>
