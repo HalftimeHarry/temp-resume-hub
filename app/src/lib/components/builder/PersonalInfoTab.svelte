@@ -9,12 +9,11 @@
 	// More permissive phone validation: require at least 7 digits when provided
 	$: digitsPhone = (personalInfo.phone || '').replace(/\D/g, '');
 	$: phoneOk = personalInfo.phone ? digitsPhone.length >= 7 : true;
+	// Step validity: require name, email, location; phone is optional (warn only)
 	$: isValid = personalInfo.fullName.trim() !== '' &&
 				 personalInfo.email.trim() !== '' &&
-				 (personalInfo.phone?.trim() !== '' ? phoneOk : true) &&
 				 personalInfo.location?.trim() !== '' &&
-				 validateEmail(personalInfo.email) &&
-				 phoneOk;
+				 validateEmail(personalInfo.email);
 	$: console.log('PersonalInfoTab isValid:', isValid);
 	$: console.log('PersonalInfoTab isValid:', isValid);
 
