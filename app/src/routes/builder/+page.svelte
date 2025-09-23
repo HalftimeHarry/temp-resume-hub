@@ -73,6 +73,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 				}));
 				currentStep.set('personal');
 				localStorage.removeItem('builderDraft');
+			} else {
+				// Default to the first template if none selected yet
+				if ($allTemplates && $allTemplates.length > 0 && (!$builderData.settings?.template || $builderData.settings?.template === 'default-template-id')) {
+					await selectTemplate($allTemplates[0]);
+				}
 			}
 		} catch (e) {
 			console.warn('Failed to initialize builder:', e);
