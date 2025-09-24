@@ -5,13 +5,13 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Trash2, Plus } from 'lucide-svelte';
 	import { generateId } from '$lib/utils.js';
+	import { afterUpdate } from 'svelte';
 
-	$: experiences = $builderData.experience;
-	$: isValid = experiences.length > 0 && experiences.every(exp =>
+	$: experiences = $builderData.experience || [];
+	$: isValid = experiences.length > 0 && experiences.some(exp =>
 		exp.company?.trim() !== '' &&
 		exp.position?.trim() !== '' &&
-		exp.startDate?.trim() !== '' &&
-		exp.description?.trim() !== ''
+		exp.startDate?.trim() !== ''
 	);
 
 	// Debug logging
@@ -31,13 +31,14 @@
 		}
 	}
 
-	$: {
+	// Ensure we update step completion status when component mounts
+	afterUpdate(() => {
 		if (isValid) {
 			markStepComplete('experience');
 		} else {
 			markStepIncomplete('experience');
 		}
-	}
+	});
 
 	function addNewExperience() {
 		addExperience({
@@ -169,7 +170,6 @@
 							maxlength={characterLimits.experienceDescription}
 							rows={3}
 							on:input={(e) => handleExperienceUpdate(experience.id, 'description', e.target.value)}
-							required
 						/>
 					</div>
 				</div>

@@ -35,6 +35,15 @@
 	// Step validity: require name, email; phone/location optional
 	$: isValid = fullName.trim() !== '' && email.trim() !== '' && validateEmail(email);
 	
+	// Update step completion status based on validation
+	$: {
+		if (isValid) {
+			markStepComplete('personal');
+		} else {
+			markStepIncomplete('personal');
+		}
+	}
+	
 	export let onNext: () => void;
 
 	function handleNext() {

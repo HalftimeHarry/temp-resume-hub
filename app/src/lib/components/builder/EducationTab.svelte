@@ -5,10 +5,9 @@
 	import { Trash2, Plus } from 'lucide-svelte';
 
 	$: education = $builderData.education;
-	$: isValid = education.length > 0 && education.every(edu =>
+	$: isValid = education.length > 0 && education.some(edu =>
 		edu.institution?.trim() !== '' &&
 		edu.degree?.trim() !== '' &&
-		edu.field?.trim() !== '' &&
 		edu.startDate?.trim() !== ''
 	);
 
@@ -18,6 +17,7 @@
 		console.log('EducationTab: isValid', isValid);
 	}
 
+	// Update step completion status based on validation
 	$: {
 		if (isValid) {
 			markStepComplete('education');
@@ -25,7 +25,7 @@
 			markStepIncomplete('education');
 		}
 	}
-
+	
 	function addNewEducation() {
 		addEducation({
 			institution: '',
@@ -120,7 +120,6 @@
 								placeholder="Computer Science"
 								value={edu.field || ''}
 								on:input={(e) => handleEducationUpdate(edu.id, 'field', e.target.value)}
-								required
 							/>
 						</div>
 						<div class="space-y-2">
@@ -184,7 +183,7 @@
 								id="honors-{edu.id}"
 								placeholder="Magna Cum Laude, Dean's List"
 								value={edu.honors?.join(', ') || ''}
-								on:input={(e) => handleEducationUpdate(edu.id, 'honors', e.target.value.split(',').map(h => h.trim()).filter(h => h))}
+								on:input={(e) => handleEducationUpdate(edu.id, 'honors', e.target.value ? e.target.value.split(',').map(h => h.trim()).filter(h => h) : [])}
 							/>
 						</div>
 					</div>

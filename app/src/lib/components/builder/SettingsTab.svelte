@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { builderData, updateSettings } from '$lib/stores/resumeBuilder.js';
+	import { builderData, updateSettings, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Layout, Palette } from 'lucide-svelte';
 
@@ -17,6 +17,9 @@
 		updateSettings({ colorScheme });
 	}
 
+	// Mark step as complete when component is loaded
+	$: markStepComplete('settings');
+	
 	export let onNext: () => void;
 	export let onPrevious: () => void;
 </script>

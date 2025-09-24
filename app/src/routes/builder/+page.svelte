@@ -3,7 +3,7 @@
 import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
 	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
@@ -29,23 +29,72 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import EducationTab from '$lib/components/builder/EducationTab.svelte';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
+	
+	// Preview Component
+	import ResumePreview from '$lib/components/resume/ResumePreview.svelte';
 
 	async function selectTemplate(t: any) {
 		try {
 			const full = await templateStore.getTemplate(t.id);
 			builderData.update(d => {
 				const sd = full.starterData || {};
+				// Populate as much data as possible from the template
 				return {
 					...d,
-					personalInfo: sd.personalInfo || d.personalInfo,
+					personalInfo: sd.personalInfo ? { ...d.personalInfo, ...sd.personalInfo } : d.personalInfo,
 					summary: sd.summary ?? d.summary,
-					experience: Array.isArray(sd.experience) && sd.experience.length ? sd.experience : d.experience,
-					education: Array.isArray(sd.education) && sd.education.length ? sd.education : d.education,
-					skills: Array.isArray(sd.skills) && sd.skills.length ? sd.skills : d.skills,
+					experience: Array.isArray(sd.experience) ? sd.experience : d.experience,
+					education: Array.isArray(sd.education) ? sd.education : d.education,
+					skills: Array.isArray(sd.skills) ? sd.skills : d.skills,
 					projects: Array.isArray(sd.projects) ? sd.projects : d.projects,
-					settings: { ...d.settings, ...(full.settings || {}), template: full.id }
+					settings: { ...d.settings, ...(sd.settings || {}), template: full.id }
 				};
 			});
+			
+			// Update step completion status based on the template data
+			const templateData = full.starterData || {};
+			
+			// Personal info step - check if we have basic info
+			if (templateData.personalInfo?.fullName?.trim() || templateData.personalInfo?.email?.trim()) {
+				markStepComplete('personal');
+			} else {
+				markStepIncomplete('personal');
+			}
+			
+			// Summary step - check if we have a summary
+			if (templateData.summary?.trim()) {
+				markStepComplete('summary');
+			} else {
+				markStepIncomplete('summary');
+			}
+			
+			// Experience step - check if we have at least one experience entry with basic info
+			if (Array.isArray(templateData.experience) && templateData.experience.some(exp =>
+				exp.company?.trim() ||
+				exp.position?.trim() ||
+				exp.description?.trim())) {
+				markStepComplete('experience');
+			} else {
+				markStepIncomplete('experience');
+			}
+			
+			// Education step - check if we have at least one education entry with basic info
+			if (Array.isArray(templateData.education) && templateData.education.some(edu =>
+				edu.institution?.trim() ||
+				edu.degree?.trim() ||
+				edu.description?.trim())) {
+				markStepComplete('education');
+			} else {
+				markStepIncomplete('education');
+			}
+			
+			// Skills step - check if we have at least one skill
+			if (Array.isArray(templateData.skills) && templateData.skills.some(skill => skill.name?.trim())) {
+				markStepComplete('skills');
+			} else {
+				markStepIncomplete('skills');
+			}
+			
 			currentStep.set('personal');
 		} catch (e) {
 			console.error('Failed to apply template:', e);
@@ -65,12 +114,50 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					...data,
 					personalInfo: draft.personalInfo || data.personalInfo,
 					summary: draft.summary ?? data.summary,
-					experience: Array.isArray(draft.experience) && draft.experience.length ? draft.experience : data.experience,
-					education: Array.isArray(draft.education) && draft.education.length ? draft.education : data.education,
+					experience: Array.isArray(draft.experience) && draft.experience.some(exp => exp.company?.trim() || exp.position?.trim()) ? draft.experience : data.experience,
+					education: Array.isArray(draft.education) && draft.education.some(edu => edu.institution?.trim() || edu.degree?.trim()) ? draft.education : data.education,
 					skills: Array.isArray(draft.skills) && draft.skills.length ? draft.skills : data.skills,
 					projects: Array.isArray(draft.projects) ? draft.projects : data.projects,
 					settings: { ...data.settings, ...(draft.settings || {}) }
 				}));
+				
+				// Update step completion status based on the loaded data
+				if (draft.personalInfo?.fullName && draft.personalInfo?.email) {
+					markStepComplete('personal');
+				} else {
+					markStepIncomplete('personal');
+				}
+				
+				if (draft.summary) {
+					markStepComplete('summary');
+				} else {
+					markStepIncomplete('summary');
+				}
+				
+				if (Array.isArray(draft.experience) && draft.experience.some(exp => 
+					exp.company?.trim() !== '' && 
+					exp.position?.trim() !== '' && 
+					exp.startDate?.trim() !== '')) {
+					markStepComplete('experience');
+				} else {
+					markStepIncomplete('experience');
+				}
+				
+				if (Array.isArray(draft.education) && draft.education.some(edu => 
+					edu.institution?.trim() !== '' && 
+					edu.degree?.trim() !== '' && 
+					edu.startDate?.trim() !== '')) {
+					markStepComplete('education');
+				} else {
+					markStepIncomplete('education');
+				}
+				
+				if (Array.isArray(draft.skills) && draft.skills.length >= 3) {
+					markStepComplete('skills');
+				} else {
+					markStepIncomplete('skills');
+				}
+				
 				currentStep.set('personal');
 				localStorage.removeItem('builderDraft');
 			} else {
@@ -100,6 +187,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 			console.log('🔐 Builder: Redirecting to login - not authenticated');
 			goto('/auth/login');
 		}
+	}
+	
+	// Mark Settings step as complete when navigating to Preview
+	$: if (activeTab === 'preview') {
+		markStepComplete('settings');
 	}
 
 	const tabs = [
@@ -227,7 +319,18 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 										{activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}"
 									on:click={() => handleTabChange(tab.id)}
 								>
-									<svelte:component this={tab.icon} class="w-4 h-4" />
+									<div class="relative">
+										<svelte:component this={tab.icon} class="w-4 h-4" />
+										{#if $isStepComplete(tab.id)}
+											<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+												<svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+												</svg>
+											</div>
+										{:else}
+											<div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full"></div>
+										{/if}
+									</div>
 									<div class="flex-1">
 										<div class="font-medium text-sm">{tab.label}</div>
 										<div class="text-xs opacity-75">{tab.description}</div>
@@ -377,7 +480,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								<Button variant="outline" on:click={() => handleTabChange('skills')}>
 									Previous
 								</Button>
-								<Button on:click={() => handleTabChange('preview')}>
+								<Button on:click={() => handleTabChange('preview')} disabled={!$isStepComplete('personal') || !$isStepComplete('summary') || !$isStepComplete('experience') || !$isStepComplete('education') || !$isStepComplete('skills')}>
 									Next: Preview
 								</Button>
 							</div>
@@ -426,37 +529,117 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									</div>
 								</div>
 
-								<!-- Preview Actions -->
-								<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-									<Button variant="outline" class="h-auto p-4 flex flex-col items-center gap-2">
-										<Eye class="w-6 h-6" />
-										<span>Preview Resume</span>
-									</Button>
+								{#if $isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills')}
+									<!-- Resume Preview -->
+									<div class="border rounded-lg overflow-hidden bg-white">
+										<div class="p-8">
+											<!-- Header -->
+											<div class="mb-8 text-center">
+												<h2 class="text-3xl font-bold mb-2">{$builderData.personalInfo.fullName}</h2>
+												<div class="flex flex-wrap justify-center gap-4 text-sm text-gray-600 mb-4">
+													{#if $builderData.personalInfo.email}
+														<span>{$builderData.personalInfo.email}</span>
+													{/if}
+													{#if $builderData.personalInfo.phone}
+														<span>{$builderData.personalInfo.phone}</span>
+													{/if}
+													{#if $builderData.personalInfo.location}
+														<span>{$builderData.personalInfo.location}</span>
+													{/if}
+												</div>
+												{#if $builderData.personalInfo.summary}
+													<p class="text-gray-700">{$builderData.personalInfo.summary}</p>
+												{/if}
+											</div>
 
-									<Button variant="outline" class="h-auto p-4 flex flex-col items-center gap-2">
-										<FileText class="w-6 h-6" />
-										<span>Download PDF</span>
-									</Button>
+											<!-- Experience -->
+											{#if $builderData.experience.length > 0}
+												<div class="mb-8">
+													<h3 class="text-xl font-bold mb-4 border-b pb-2">Work Experience</h3>
+													{#each $builderData.experience as exp}
+														<div class="mb-4">
+															<div class="flex justify-between">
+																<h4 class="font-bold">{exp.position}</h4>
+																<span class="text-sm text-gray-600">
+																	{exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+																</span>
+															</div>
+															<p class="text-primary">{exp.company}</p>
+															{#if exp.description}
+																<p class="text-gray-700 mt-2">{exp.description}</p>
+															{/if}
+														</div>
+													{/each}
+												</div>
+											{/if}
 
-									<Button class="h-auto p-4 flex flex-col items-center gap-2" on:click={handlePublish}>
-										<FileCheck class="w-6 h-6" />
-										<span>Publish Resume</span>
-									</Button>
-								</div>
+											<!-- Education -->
+											{#if $builderData.education.length > 0}
+												<div class="mb-8">
+													<h3 class="text-xl font-bold mb-4 border-b pb-2">Education</h3>
+													{#each $builderData.education as edu}
+														<div class="mb-4">
+															<div class="flex justify-between">
+																<h4 class="font-bold">{edu.degree}</h4>
+																<span class="text-sm text-gray-600">
+																	{edu.startDate} - {edu.current ? 'Present' : edu.endDate}
+																</span>
+															</div>
+															<p class="text-primary">{edu.institution}</p>
+															{#if edu.description}
+																<p class="text-gray-700 mt-2">{edu.description}</p>
+															{/if}
+														</div>
+													{/each}
+												</div>
+											{/if}
 
-								<div class="bg-green-50 border border-green-200 p-4 rounded-lg">
-									<h4 class="font-medium text-green-800 mb-2">🎉 Almost Ready!</h4>
-									<p class="text-sm text-green-700">
-										Complete the remaining sections and your resume will be ready to publish and share with employers.
-									</p>
-								</div>
+											<!-- Skills -->
+											{#if $builderData.skills.length > 0}
+												<div class="mb-8">
+													<h3 class="text-xl font-bold mb-4 border-b pb-2">Skills</h3>
+													<div class="flex flex-wrap gap-2 justify-center">
+														{#each $builderData.skills as skill}
+															<span class="px-3 py-1 bg-gray-100 rounded-full text-sm">
+																{skill.name}
+															</span>
+														{/each}
+													</div>
+												</div>
+											{/if}
+										</div>
+									</div>
+									
+									<!-- Preview Actions -->
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+										<Button variant="outline" class="h-auto p-4 flex flex-col items-center gap-2">
+											<FileText class="w-6 h-6" />
+											<span>Download PDF</span>
+										</Button>
+
+										<Button class="h-auto p-4 flex flex-col items-center gap-2" on:click={handlePublish}>
+											<FileCheck class="w-6 h-6" />
+											<span>Publish Resume</span>
+										</Button>
+									</div>
+								{:else}
+									<div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+										<h4 class="font-medium text-green-800 mb-2">🎉 Almost Ready!</h4>
+										<p class="text-sm text-green-700">
+											Complete the remaining sections and your resume will be ready to publish and share with employers.
+										</p>
+									</div>
+								{/if}
 							</div>
 
 							<div class="mt-8 flex justify-between">
 								<Button variant="outline" on:click={() => handleTabChange('settings')}>
 									Previous
 								</Button>
-								<Button on:click={handlePublish}>
+								<Button
+									on:click={handlePublish}
+									disabled={!($isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills'))}
+								>
 									Publish Resume
 								</Button>
 							</div>
