@@ -185,7 +185,8 @@ export const resumes = {
         user: pb.authStore.model?.id,
         content,
         template: template || 'default',
-        is_public: false
+        is_public: false,
+        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
       };
       
       const record = await pb.collection('resumes').create(data);
@@ -199,7 +200,13 @@ export const resumes = {
   // Update resume
   async updateResume(id: string, data: Partial<Resume>) {
     try {
-      const record = await pb.collection('resumes').update(id, data);
+      // If title is being updated, also update the slug
+      let updateData = { ...data };
+      if (data.title && typeof data.title === 'string') {
+        updateData.slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      }
+      
+      const record = await pb.collection('resumes').update(id, updateData);
       return { success: true, resume: convertToResume(record) };
     } catch (error) {
       console.error('Update resume error:', error);

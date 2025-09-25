@@ -105,7 +105,7 @@
     if (currentPath.startsWith('/templates')) return 'Templates';
     if (currentPath.startsWith('/analytics')) return 'Analytics';
     if (currentPath.startsWith('/settings')) return 'Settings';
-    return 'Digital Resume Hub';
+    return 'Dashboard';
   }
 </script>
 

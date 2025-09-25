@@ -89,56 +89,74 @@
         </h1>
         
         <!-- Contact Information -->
-        <div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mb-4">
+        <div class="space-y-1 text-sm text-gray-600 mb-4">
           {#if resume.personalInfo.email}
-            <div class="flex items-center space-x-1">
-              <Mail class="h-4 w-4" />
-              <span>{resume.personalInfo.email}</span>
+            <div class="flex items-start space-x-2">
+              <Mail class="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <span class="font-medium">Email:</span>
+                <span> {resume.personalInfo.email}</span>
+              </div>
             </div>
           {/if}
           
           {#if resume.personalInfo.phone}
-            <div class="flex items-center space-x-1">
-              <Phone class="h-4 w-4" />
-              <span>{resume.personalInfo.phone}</span>
+            <div class="flex items-start space-x-2">
+              <Phone class="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <span class="font-medium">Phone:</span>
+                <span> {resume.personalInfo.phone}</span>
+              </div>
             </div>
           {/if}
           
           {#if resume.personalInfo.location}
-            <div class="flex items-center space-x-1">
-              <MapPin class="h-4 w-4" />
-              <span>{resume.personalInfo.location}</span>
+            <div class="flex items-start space-x-2">
+              <MapPin class="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <span class="font-medium">Location:</span>
+                <span> {resume.personalInfo.location}</span>
+              </div>
             </div>
           {/if}
         </div>
         
         <!-- Links -->
         {#if resume.personalInfo.website || resume.personalInfo.linkedin || resume.personalInfo.github}
-          <div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-blue-600 mb-4">
+          <div class="space-y-1 text-sm text-blue-600 mb-4">
             {#if resume.personalInfo.website}
-              <div class="flex items-center space-x-1">
-                <Globe class="h-4 w-4" />
-                <a href={resume.personalInfo.website} target="_blank" rel="noopener noreferrer">
-                  {resume.personalInfo.website.replace(/^https?:\/\//, '')}
-                </a>
+              <div class="flex items-start space-x-2">
+                <Globe class="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span class="font-medium">Website:</span>
+                  <a href={resume.personalInfo.website} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {resume.personalInfo.website.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
               </div>
             {/if}
             
             {#if resume.personalInfo.linkedin}
-              <div class="flex items-center space-x-1">
-                <Linkedin class="h-4 w-4" />
-                <a href={resume.personalInfo.linkedin} target="_blank" rel="noopener noreferrer">
-                  LinkedIn
-                </a>
+              <div class="flex items-start space-x-2">
+                <Linkedin class="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span class="font-medium">LinkedIn:</span>
+                  <a href={resume.personalInfo.linkedin} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {resume.personalInfo.linkedin}
+                  </a>
+                </div>
               </div>
             {/if}
             
             {#if resume.personalInfo.github}
-              <div class="flex items-center space-x-1">
-                <Github class="h-4 w-4" />
-                <a href={resume.personalInfo.github} target="_blank" rel="noopener noreferrer">
-                  GitHub
-                </a>
+              <div class="flex items-start space-x-2">
+                <Github class="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <span class="font-medium">GitHub:</span>
+                  <a href={resume.personalInfo.github} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {resume.personalInfo.github}
+                  </a>
+                </div>
               </div>
             {/if}
           </div>

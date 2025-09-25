@@ -151,8 +151,10 @@
     goto('/builder');
   }
   
-  function viewResume(resumeId: string) {
-    goto(`/resume/${resumeId}`);
+  function viewResume(resume: Resume) {
+    // Use slug if available, otherwise fallback to ID
+    const identifier = resume.slug || resume.id;
+    goto(`/resume/${identifier}`);
   }
   
   function shareResume(resume: Resume) {
@@ -274,7 +276,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard - Digital Resume Hub</title>
+  <title>Dashboard</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
@@ -539,7 +541,7 @@
                   </div>
                   
                   <div class="flex items-center space-x-2 {viewMode === 'list' ? 'ml-4' : ''}">
-                    <Button variant="outline" size="sm" on:click={() => viewResume(resume.id)}>
+                    <Button variant="outline" size="sm" on:click={() => viewResume(resume)}>
                       <Eye class="h-4 w-4 mr-1" />
                       View
                     </Button>

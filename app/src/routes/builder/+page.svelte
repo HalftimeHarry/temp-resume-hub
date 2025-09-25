@@ -532,82 +532,30 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								{#if $isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills')}
 									<!-- Resume Preview -->
 									<div class="border rounded-lg overflow-hidden bg-white">
-										<div class="p-8">
-											<!-- Header -->
-											<div class="mb-8 text-center">
-												<h2 class="text-3xl font-bold mb-2">{$builderData.personalInfo.fullName}</h2>
-												<div class="flex flex-wrap justify-center gap-4 text-sm text-gray-600 mb-4">
-													{#if $builderData.personalInfo.email}
-														<span>{$builderData.personalInfo.email}</span>
-													{/if}
-													{#if $builderData.personalInfo.phone}
-														<span>{$builderData.personalInfo.phone}</span>
-													{/if}
-													{#if $builderData.personalInfo.location}
-														<span>{$builderData.personalInfo.location}</span>
-													{/if}
-												</div>
-												{#if $builderData.personalInfo.summary}
-													<p class="text-gray-700">{$builderData.personalInfo.summary}</p>
-												{/if}
-											</div>
-
-											<!-- Experience -->
-											{#if $builderData.experience.length > 0}
-												<div class="mb-8">
-													<h3 class="text-xl font-bold mb-4 border-b pb-2">Work Experience</h3>
-													{#each $builderData.experience as exp}
-														<div class="mb-4">
-															<div class="flex justify-between">
-																<h4 class="font-bold">{exp.position}</h4>
-																<span class="text-sm text-gray-600">
-																	{exp.startDate} - {exp.current ? 'Present' : exp.endDate}
-																</span>
-															</div>
-															<p class="text-primary">{exp.company}</p>
-															{#if exp.description}
-																<p class="text-gray-700 mt-2">{exp.description}</p>
-															{/if}
-														</div>
-													{/each}
-												</div>
-											{/if}
-
-											<!-- Education -->
-											{#if $builderData.education.length > 0}
-												<div class="mb-8">
-													<h3 class="text-xl font-bold mb-4 border-b pb-2">Education</h3>
-													{#each $builderData.education as edu}
-														<div class="mb-4">
-															<div class="flex justify-between">
-																<h4 class="font-bold">{edu.degree}</h4>
-																<span class="text-sm text-gray-600">
-																	{edu.startDate} - {edu.current ? 'Present' : edu.endDate}
-																</span>
-															</div>
-															<p class="text-primary">{edu.institution}</p>
-															{#if edu.description}
-																<p class="text-gray-700 mt-2">{edu.description}</p>
-															{/if}
-														</div>
-													{/each}
-												</div>
-											{/if}
-
-											<!-- Skills -->
-											{#if $builderData.skills.length > 0}
-												<div class="mb-8">
-													<h3 class="text-xl font-bold mb-4 border-b pb-2">Skills</h3>
-													<div class="flex flex-wrap gap-2 justify-center">
-														{#each $builderData.skills as skill}
-															<span class="px-3 py-1 bg-gray-100 rounded-full text-sm">
-																{skill.name}
-															</span>
-														{/each}
-													</div>
-												</div>
-											{/if}
-										</div>
+										<ResumePreview resume={{
+											id: 'preview',
+											title: 'Resume Preview',
+											user: '',
+											content: {
+												personalInfo: $builderData.personalInfo,
+												summary: $builderData.summary,
+												experience: $builderData.experience,
+												education: $builderData.education,
+												skills: $builderData.skills,
+												projects: $builderData.projects,
+												settings: $builderData.settings
+											},
+											template: $builderData.settings.template,
+											is_public: false,
+											created: new Date().toISOString(),
+											updated: new Date().toISOString(),
+											sections: [
+												{ id: 'experience', type: 'experience', title: 'Work Experience', visible: true, order: 0, data: $builderData.experience },
+												{ id: 'education', type: 'education', title: 'Education', visible: true, order: 1, data: $builderData.education },
+												{ id: 'skills', type: 'skills', title: 'Skills', visible: true, order: 2, data: $builderData.skills },
+												{ id: 'projects', type: 'projects', title: 'Projects', visible: $builderData.projects.length > 0, order: 3, data: $builderData.projects }
+											]
+										}} />
 									</div>
 									
 									<!-- Preview Actions -->
