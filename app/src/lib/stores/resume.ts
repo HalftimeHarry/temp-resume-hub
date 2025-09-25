@@ -2,7 +2,7 @@
 import { writable, derived, get } from 'svelte/store';
 import type { Resume, EditorState, FormState, ResumeSection } from '$lib/types/resume';
 import { pb } from '$lib/pocketbase';
-import { generateId, debounce } from '$lib/utils';
+import { generateId, debounce, generateSlug } from '$lib/utils';
 
 // Current resume being edited
 export const currentResume = writable<Resume | null>(null);
@@ -62,7 +62,7 @@ export const resumeStore = {
         },
         template: templateId,
         is_public: false,
-        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        slug: generateSlug(title)
       };
 
       const record = await pb.collection('resumes').create(newResume);
@@ -116,7 +116,7 @@ export const resumeStore = {
     try {
       const updateData = {
         ...resume,
-        updatedAt: new Date().toISOString()
+        updated: new Date().toISOString()
       };
 
       const record = await pb.collection('resumes').update(resume.id, updateData);
@@ -149,7 +149,13 @@ export const resumeStore = {
     currentResume.update(resume => {
       if (!resume) return resume;
       
-      const updated = { ...resume, ...updates };
+      // If title is being updated, also update the slug
+      let finalUpdates = { ...updates };
+      if (updates.title && typeof updates.title === 'string') {
+        finalUpdates.slug = generateSlug(updates.title);
+      }
+      
+      const updated = { ...resume, ...finalUpdates };
       
       editorState.update(state => ({
         ...state,

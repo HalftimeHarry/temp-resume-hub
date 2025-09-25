@@ -22,6 +22,14 @@ export function generateId(length?: number): string {
 	return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
+export function generateSlug(title: string): string {
+	return title
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
 export function debounce<T extends (...args: any[]) => any>(
 	func: T,
 	wait: number

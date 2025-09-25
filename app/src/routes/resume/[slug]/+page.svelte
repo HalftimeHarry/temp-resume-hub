@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { pb } from '$lib/pocketbase';
+	import { pb, resumes } from '$lib/pocketbase';
+	import Logo from '$lib/components/ui/Logo.svelte';
 	import type { Resume } from '$lib/types/resume.js';
 
 	let resume: Resume | null = null;
@@ -16,6 +17,76 @@
 		spacing: 'normal',
 		layout: 'single-column'
 	};
+
+	// Theme presets
+	const themePresets = [
+		{
+			name: 'professional',
+			label: 'Professional',
+			description: 'Clean and traditional layout',
+			settings: {
+				colorScheme: 'blue',
+				fontSize: 'medium',
+				spacing: 'normal',
+				layout: 'single-column'
+			}
+		},
+		{
+			name: 'modern',
+			label: 'Modern',
+			description: 'Contemporary two-column design',
+			settings: {
+				colorScheme: 'green',
+				fontSize: 'medium',
+				spacing: 'compact',
+				layout: 'two-column'
+			}
+		},
+		{
+			name: 'creative',
+			label: 'Creative',
+			description: 'Bold and expressive layout',
+			settings: {
+				colorScheme: 'purple',
+				fontSize: 'large',
+				spacing: 'relaxed',
+				layout: 'single-column'
+			}
+		},
+		{
+			name: 'minimal',
+			label: 'Minimal',
+			description: 'Simple and clean design',
+			settings: {
+				colorScheme: 'black',
+				fontSize: 'small',
+				spacing: 'compact',
+				layout: 'single-column'
+			}
+		},
+		{
+			name: 'bold',
+			label: 'Bold',
+			description: 'Striking and impactful layout',
+			settings: {
+				colorScheme: 'orange',
+				fontSize: 'large',
+				spacing: 'normal',
+				layout: 'two-column'
+			}
+		},
+		{
+			name: 'classic',
+			label: 'Classic',
+			description: 'Timeless with profile image',
+			settings: {
+				colorScheme: 'blue',
+				fontSize: 'medium',
+				spacing: 'relaxed',
+				layout: 'with-image'
+			}
+		}
+	];
 
 	// Color scheme options
 	const colorSchemes = [
@@ -48,6 +119,10 @@
 	];
 
 	$: slug = $page.params.slug;
+	
+	// Reactive dependencies for preview settings
+	// Create a single reactive dependency on the entire previewSettings object
+	$: previewSettingsDep = JSON.stringify(previewSettings);
 
 	onMount(async () => {
 		try {
@@ -73,57 +148,135 @@
 			console.error('❌ Failed to load resume:', err);
 			error = '❌ Resume not found or not public';
 		} finally {
+			// Initialize preview settings with resume styling if available
+			if (resume && resume.content?.styling) {
+				previewSettings = {
+					...previewSettings,
+					colorScheme: resume.content.styling.colorScheme || 'orange',
+					fontSize: resume.content.styling.fontSize || 'medium',
+					spacing: resume.content.styling.spacing || 'normal',
+					layout: resume.content.styling.layout || 'single-column'
+				};
+			}
 			loading = false;
 		}
 	});
 
-	function downloadPDF() {
+	function downloadPDF(): void {
 		// TODO: Implement PDF generation
 		alert('📄 PDF download will be implemented soon! 🚀');
 	}
 	
-	function updatePreviewSettings(setting: string, value: string) {
+	function updatePreviewSettings(setting: keyof typeof previewSettings, value: string) {
 		previewSettings = { ...previewSettings, [setting]: value };
 	}
 	
-	function applyStyling() {
+	function applyStyling(): void {
 		showStylingPanel = false;
-		// In a real implementation, this would update the resume with the new styling
-		alert(`✅ Styling applied: ${previewSettings.colorScheme} theme, ${previewSettings.fontSize} font, ${previewSettings.spacing} spacing, ${previewSettings.layout} layout 🎨`);
+		// Apply styling settings to resume preview (client-side only)
+		console.log('Applying styling settings to preview:', previewSettings);
+		
+		// Force reactivity by creating a new previewSettings object
+		// This should trigger the styling functions to re-run
+		previewSettings = { ...previewSettings };
+		
+		console.log('Preview styling applied successfully');
 	}
 	
-	function resetToDefault() {
+	async function saveStyling(): Promise<void> {
+		showStylingPanel = false;
+		// Save styling settings to server
+		console.log('Saving styling settings to server:', previewSettings);
+		
+		try {
+			const updatedContent = {
+				...resume.content,
+				styling: { ...previewSettings }
+			};
+			
+			console.log('Sending updated content to server:', updatedContent);
+			
+			const result = await resumes.updateResume(resume.id, { content: updatedContent });
+			console.log('Server response:', result);
+			
+			if (result.success) {
+				resume = result.resume;
+				// Update previewSettings to match the saved styling
+				if (resume.content?.styling) {
+					previewSettings = { ...resume.content.styling };
+				}
+				console.log('Styling saved successfully. Updated previewSettings:', previewSettings);
+				
+				// Refresh the page to ensure styling is properly applied
+				window.location.reload();
+			} else {
+				console.error(`❌ Failed to save styling: ${result.error}`);
+			}
+		} catch (error) {
+			console.error('Error saving styling:', error);
+		}
+	}
+	
+	function resetToDefault(): void {
 		previewSettings = {
 			colorScheme: 'orange',
 			fontSize: 'medium',
 			spacing: 'normal',
 			layout: 'single-column'
 		};
-		alert('🔄 Settings reset to default values! 🎨');
+		// No alert needed - styling is applied immediately to preview
+	}
+	
+	async function applyThemePreset(preset: typeof themePresets[0]) {
+		console.log('Applying theme preset:', preset);
+		// Update preview settings with proper reactivity
+		previewSettings = {
+			...previewSettings,
+			...preset.settings
+		};
+		console.log('Updated previewSettings:', previewSettings);
+		
+		// Don't close the panel immediately so user can see the preview changes
+		// and optionally click "Apply Style" to save the changes
+		
+		// Optionally provide visual feedback that preview has been updated
+		// For example, we could add a temporary message or change button state
 	}
 	
 	function getFontSizeClass() {
-		switch (previewSettings.fontSize) {
-			case 'small': return 'text-sm';
-			case 'large': return 'text-lg';
-			default: return 'text-base';
-		}
+		const result = ((): string => {
+			switch (previewSettings.fontSize) {
+				case 'small': return 'text-sm';
+				case 'large': return 'text-lg';
+				default: return 'text-base';
+			}
+		})();
+		console.log('getFontSizeClass called with:', previewSettings.fontSize, 'returning:', result);
+		return result;
 	}
 	
 	function getSpacingClass() {
-		switch (previewSettings.spacing) {
-			case 'compact': return 'space-y-4';
-			case 'relaxed': return 'space-y-10';
-			default: return 'space-y-6';
-		}
+		const result = ((): string => {
+			switch (previewSettings.spacing) {
+				case 'compact': return 'space-y-4';
+				case 'relaxed': return 'space-y-10';
+				default: return 'space-y-6';
+			}
+		})();
+		console.log('getSpacingClass called with:', previewSettings.spacing, 'returning:', result);
+		return result;
 	}
 	
 	function getSectionSpacingClass() {
-		switch (previewSettings.spacing) {
-			case 'compact': return 'mb-4';
-			case 'relaxed': return 'mb-10';
-			default: return 'mb-6';
-		}
+		const result = ((): string => {
+			switch (previewSettings.spacing) {
+				case 'compact': return 'mb-4';
+				case 'relaxed': return 'mb-10';
+				default: return 'mb-6';
+			}
+		})();
+		console.log('getSectionSpacingClass called with:', previewSettings.spacing, 'returning:', result);
+		return result;
 	}
 	
 	function getColorClasses() {
@@ -134,27 +287,33 @@
 			black: { primary: 'text-gray-800', secondary: 'bg-gray-100 text-gray-800' },
 			orange: { primary: 'text-orange-600', secondary: 'bg-orange-100 text-orange-800' }
 		};
-		return colors[previewSettings.colorScheme] || colors.blue;
+		const result = colors[previewSettings.colorScheme] || colors.blue;
+		console.log('getColorClasses called with:', previewSettings.colorScheme, 'returning:', result);
+		return result;
 	}
 	
 	function getLayoutClass() {
-		switch (previewSettings.layout) {
-			case 'two-column':
-				return 'grid grid-cols-1 md:grid-cols-2 gap-8';
-			case 'with-image':
-				return 'grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8';
-			default:
-				return '';
-		}
+		const result = ((): string => {
+			switch (previewSettings.layout) {
+				case 'two-column':
+					return 'grid grid-cols-1 md:grid-cols-2 gap-8';
+				case 'with-image':
+					return 'grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8';
+				default:
+					return '';
+			}
+		})();
+		console.log('getLayoutClass called with:', previewSettings.layout, 'returning:', result);
+		return result;
 	}
 </script>
 
 <svelte:head>
 	{#if resume}
-		<title>📄 {resume.title} - Digital Resume Hub</title>
-		<meta name="description" content="📄 Professional resume created with Digital Resume Hub" />
+		<title>📄 {resume.title} - Dashboard</title>
+		<meta name="description" content="📄 Professional resume created with Dashboard" />
 	{:else}
-		<title>📄 Resume - Digital Resume Hub</title>
+		<title>📄 Resume - Dashboard</title>
 	{/if}
 </svelte:head>
 
@@ -180,7 +339,10 @@
 			<div class="container mx-auto px-4 py-4">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-3">
-						<a href="/" class="text-primary hover:underline">← 🏠 Digital Resume Hub</a>
+						<a href="/" class={`flex items-center gap-2 hover:underline ${getColorClasses().primary}`}>
+							<Logo size="sm" showText={false} />
+							← Dashboard
+						</a>
 					</div>
 					<div class="flex items-center gap-2">
 						<button
@@ -235,7 +397,7 @@
 										{#if resume.content.personalInfo.linkedin}
 											<div class="flex items-center">
 												<span class="mr-2">🔗</span>
-												<a href="https://{resume.content.personalInfo.linkedin}" target="_blank" class="text-primary hover:underline">
+												<a href="https://{resume.content.personalInfo.linkedin}" target="_blank" class={`hover:underline ${getColorClasses().primary}`}>
 													LinkedIn
 												</a>
 											</div>
@@ -243,7 +405,7 @@
 										{#if resume.content.personalInfo.website}
 											<div class="flex items-center">
 												<span class="mr-2">🌐</span>
-												<a href="https://{resume.content.personalInfo.website}" target="_blank" class="text-primary hover:underline">
+												<a href="https://{resume.content.personalInfo.website}" target="_blank" class={`hover:underline ${getColorClasses().primary}`}>
 													Website
 												</a>
 											</div>
@@ -386,7 +548,7 @@
 		<footer class="bg-white border-t py-6">
 			<div class="container mx-auto px-4 text-center">
 				<p class="text-muted-foreground">
-					Created with ❤️ <a href="/" class="text-primary hover:underline">Digital Resume Hub</a>
+					Created with ❤️ <a href="/" class={`hover:underline ${getColorClasses().primary}`}>Dashboard</a>
 				</p>
 			</div>
 		</footer>
@@ -404,71 +566,61 @@
 						class="text-gray-500 hover:text-gray-700"
 						on:click={() => showStylingPanel = false}
 					>
-						❌
+						✕
 					</button>
 				</div>
 				
 				<div class="space-y-6">
-					<!-- Color Scheme -->
+					<!-- Theme Presets Only -->
 					<div>
-						<h3 class="font-medium mb-3">🎨 Color Scheme</h3>
+						<h3 class="font-medium mb-3">🎯 Choose a Theme</h3>
 						<div class="grid grid-cols-2 gap-3">
-							{#each colorSchemes as scheme}
+							{#each themePresets as preset}
 								<button
-									class="p-3 border rounded-lg text-center transition-all {previewSettings.colorScheme === scheme.name ? 'border-orange-600 ring-2 ring-orange-600/20' : 'border-gray-200'}"
-									on:click={() => updatePreviewSettings('colorScheme', scheme.name)}
+									class="p-3 border rounded-lg text-center transition-all hover:bg-gray-50 relative overflow-hidden"
+									on:click={() => applyThemePreset(preset)}
 								>
-									<div class="flex items-center justify-center gap-2 mb-2">
-										<div class="w-4 h-4 rounded-full" style="background-color: {scheme.primary}"></div>
-										<div class="w-4 h-4 rounded-full" style="background-color: {scheme.secondary}"></div>
+									<!-- Color preview bars -->
+									<div class="flex justify-center mb-2">
+										{#if preset.settings.colorScheme === 'blue'}
+											<div class="flex">
+												<div class="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
+												<div class="w-3 h-3 rounded-full bg-blue-700"></div>
+											</div>
+										{:else if preset.settings.colorScheme === 'green'}
+											<div class="flex">
+												<div class="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
+												<div class="w-3 h-3 rounded-full bg-green-700"></div>
+											</div>
+										{:else if preset.settings.colorScheme === 'purple'}
+											<div class="flex">
+												<div class="w-3 h-3 rounded-full bg-purple-500 mr-1"></div>
+												<div class="w-3 h-3 rounded-full bg-purple-700"></div>
+											</div>
+										{:else if preset.settings.colorScheme === 'black'}
+											<div class="flex">
+												<div class="w-3 h-3 rounded-full bg-gray-700 mr-1"></div>
+												<div class="w-3 h-3 rounded-full bg-gray-900"></div>
+											</div>
+										{:else if preset.settings.colorScheme === 'orange'}
+											<div class="flex">
+												<div class="w-3 h-3 rounded-full bg-orange-500 mr-1"></div>
+												<div class="w-3 h-3 rounded-full bg-orange-700"></div>
+											</div>
+										{/if}
 									</div>
-									<div class="text-sm">{scheme.label}</div>
-								</button>
-							{/each}
-						</div>
-					</div>
-					
-					<!-- Font Size -->
-					<div>
-						<h3 class="font-medium mb-3">🔤 Font Size</h3>
-						<div class="grid grid-cols-3 gap-2">
-							{#each fontSizes as size}
-								<button
-									class="p-2 border rounded-lg text-center transition-all {previewSettings.fontSize === size.name ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'}"
-									on:click={() => updatePreviewSettings('fontSize', size.name)}
-								>
-									<div class="text-sm">{size.label}</div>
-								</button>
-							{/each}
-						</div>
-					</div>
-					
-					<!-- Spacing -->
-					<div>
-						<h3 class="font-medium mb-3">📏 Spacing</h3>
-						<div class="grid grid-cols-3 gap-2">
-							{#each spacingOptions as spacing}
-								<button
-									class="p-2 border rounded-lg text-center transition-all {previewSettings.spacing === spacing.name ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'}"
-									on:click={() => updatePreviewSettings('spacing', spacing.name)}
-								>
-									<div class="text-sm">{spacing.label}</div>
-								</button>
-							{/each}
-						</div>
-					</div>
-					
-					<!-- Layout -->
-					<div>
-						<h3 class="font-medium mb-3">📋 Layout</h3>
-						<div class="grid grid-cols-1 gap-2">
-							{#each layoutOptions as layout}
-								<button
-									class="p-3 border rounded-lg text-left transition-all flex items-center gap-2 {previewSettings.layout === layout.name ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'}"
-									on:click={() => updatePreviewSettings('layout', layout.name)}
-								>
-									<span class="text-lg">{layout.icon}</span>
-									<span>{layout.label}</span>
+									<div class="font-medium text-sm mb-1">{preset.label}</div>
+									<div class="text-xs text-gray-600">{preset.description}</div>
+									<!-- Layout icon -->
+									<div class="absolute top-2 right-2 text-xs">
+										{#if preset.settings.layout === 'single-column'}
+											📄
+										{:else if preset.settings.layout === 'two-column'}
+											📑
+										{:else if preset.settings.layout === 'with-image'}
+											🖼️
+										{/if}
+									</div>
 								</button>
 							{/each}
 						</div>
@@ -493,20 +645,12 @@
 					>
 						🔄 Reset to Default
 					</button>
-					<div class="flex gap-2">
-						<button
-							class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-							on:click={() => showStylingPanel = false}
-						>
-							❌ Cancel
-						</button>
-						<button
-							class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-							on:click={applyStyling}
-						>
-							✅ Apply Style
-						</button>
-					</div>
+					<button
+						class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+						on:click={saveStyling}
+					>
+						🎨 Set Theme
+					</button>
 				</div>
 			</div>
 		</div>
