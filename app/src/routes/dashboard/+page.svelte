@@ -4,6 +4,7 @@
   import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
   import { pb } from '$lib/pocketbase';
   import { userResumes, resumeStore } from '$lib/stores/resume';
+  import { userProfile, isProfileComplete, profileCompletionPercentage } from '$lib/stores/userProfile';
   
   let userAnalytics = {
     totalResumes: 0,
@@ -44,10 +45,13 @@
     Grid3X3,
     List,
     Star,
-      LogOut,
-     User
+    LogOut,
+    User,
+    Settings,
+    Sparkles
    } from 'lucide-svelte';
   import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
+  import { AlertCircle, CheckCircle } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
@@ -292,9 +296,45 @@
           </div>
         </div>
         
-        <div class="flex items-center space-x-2">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+          <!-- Profile Completion Notification -->
+          {#if $userProfile}
+            {#if $profileCompletionPercentage < 85}
+              <div class="flex items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+                <AlertCircle class="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                <span class="text-amber-800 flex-1">
+                  Profile {$profileCompletionPercentage}% complete
+                </span>
+                <button 
+                  class="ml-2 text-amber-600 hover:text-amber-700 font-medium whitespace-nowrap"
+                  on:click={() => goto('/onboarding')}
+                >
+                  Complete now
+                </button>
+              </div>
+            {:else if $profileCompletionPercentage < 100}
+              <div class="flex items-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm w-full sm:w-auto">
+                <CheckCircle class="h-4 w-4 text-blue-600 mr-2 flex-shrink-0" />
+                <span class="text-blue-800 flex-1">
+                  Profile {$profileCompletionPercentage}% complete
+                </span>
+                <button 
+                  class="ml-2 text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
+                  on:click={() => goto('/onboarding')}
+                >
+                  Finish profile
+                </button>
+              </div>
+            {:else}
+              <div class="flex items-center bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm">
+                <CheckCircle class="h-4 w-4 text-green-600 mr-2" />
+                <span class="text-green-800">Profile 100% complete</span>
+              </div>
+            {/if}
+          {/if}
+          
           <button
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
             on:click={createNewResume}
           >
             + New Resume
@@ -305,6 +345,13 @@
                 <User class="h-4 w-4 text-gray-500" />
                 <span>{user.email}</span>
               </div>
+              <button
+                class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"
+                title="Settings"
+                on:click={() => goto('/settings')}
+              >
+                <Settings class="h-4 w-4" />
+              </button>
               <button
                 class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"
                 title="Sign out"
@@ -321,66 +368,167 @@
   
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Quick Stats -->
+    <!-- Quick Stats and Profile -->
     {#if !isLoading && analytics}
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-        <Card>
-          <CardContent class="p-4 md:p-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs md:text-sm font-medium text-gray-600">Total Resumes</p>
-                <p class="text-xl md:text-2xl font-bold">{analytics.totalResumes}</p>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6 md:mb-8">
+        <!-- Profile Card -->
+        <div class="lg:col-span-2">
+          <Card class="h-full">
+            <CardContent class="p-6">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                  <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">{user?.name || 'User'}</h3>
+                    <p class="text-sm text-gray-600">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  class="text-gray-400 hover:text-gray-600"
+                  on:click={() => goto('/onboarding')}
+                  title="Edit Profile"
+                >
+                  <Edit3 class="h-4 w-4" />
+                </button>
               </div>
-              <div class="h-10 w-10 md:h-12 md:w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <div class="text-blue-600">
-                  <LogoIcon size={34} />
+              
+              {#if $userProfile}
+                <div class="space-y-3">
+                  <!-- Profile Completion -->
+                  <div>
+                    <div class="flex items-center justify-between text-sm mb-2">
+                      <span class="text-gray-600">Profile Completion</span>
+                      <span class="font-medium {$profileCompletionPercentage >= 85 ? 'text-green-600' : $profileCompletionPercentage >= 50 ? 'text-blue-600' : 'text-amber-600'}">
+                        {$profileCompletionPercentage}%
+                      </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="h-2 rounded-full transition-all duration-300 {$profileCompletionPercentage >= 85 ? 'bg-green-500' : $profileCompletionPercentage >= 50 ? 'bg-blue-500' : 'bg-amber-500'}"
+                        style="width: {$profileCompletionPercentage}%"
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Profile Info -->
+                  <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span class="text-gray-500">Industry</span>
+                      <p class="font-medium text-gray-900 capitalize">
+                        {$userProfile.target_industry?.replace('_', ' ') || 'Not set'}
+                      </p>
+                    </div>
+                    <div>
+                      <span class="text-gray-500">Experience</span>
+                      <p class="font-medium text-gray-900 capitalize">
+                        {$userProfile.experience_level?.replace('_', ' ') || 'Not set'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Action Buttons -->
+                  <div class="flex gap-2 mt-3">
+                    {#if $profileCompletionPercentage < 100}
+                      <button
+                        class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                        on:click={() => goto('/onboarding')}
+                      >
+                        Complete Profile
+                      </button>
+                    {:else}
+                      <button
+                        class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                        on:click={() => goto('/onboarding')}
+                      >
+                        Edit Profile
+                      </button>
+                    {/if}
+                    <button
+                      class="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      on:click={() => goto('/templates')}
+                      title="View recommended templates"
+                    >
+                      <Star class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              {:else}
+                <div class="text-center py-4">
+                  <p class="text-gray-500 text-sm mb-3">No profile information yet</p>
+                  <button
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    on:click={() => goto('/onboarding')}
+                  >
+                    Create Profile
+                  </button>
+                </div>
+              {/if}
+            </CardContent>
+          </Card>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <Card>
+            <CardContent class="p-4 md:p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs md:text-sm font-medium text-gray-600">Total Resumes</p>
+                  <p class="text-xl md:text-2xl font-bold">{analytics.totalResumes}</p>
+                </div>
+                <div class="h-10 w-10 md:h-12 md:w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div class="text-blue-600">
+                    <LogoIcon size={34} />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent class="p-4 md:p-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-600">Total Views</p>
-                <p class="text-2xl font-bold">{formatNumber(analytics.totalViews)}</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent class="p-4 md:p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Total Views</p>
+                  <p class="text-2xl font-bold">{formatNumber(analytics.totalViews)}</p>
+                </div>
+                <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Eye class="h-6 w-6 text-green-600" />
+                </div>
               </div>
-              <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Eye class="h-6 w-6 text-green-600" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent class="p-4 md:p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Downloads</p>
+                  <p class="text-2xl font-bold">{formatNumber(analytics.totalDownloads)}</p>
+                </div>
+                <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Download class="h-6 w-6 text-purple-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent class="p-4 md:p-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-600">Downloads</p>
-                <p class="text-2xl font-bold">{formatNumber(analytics.totalDownloads)}</p>
+            </CardContent>
+          </Card>
+          
+          <Card class="md:col-span-3 lg:col-span-1">
+            <CardContent class="p-4 md:p-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600">Shares</p>
+                  <p class="text-2xl font-bold">{formatNumber(analytics.totalShares)}</p>
+                </div>
+                <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Share2 class="h-6 w-6 text-orange-600" />
+                </div>
               </div>
-              <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <Download class="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent class="p-4 md:p-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-600">Shares</p>
-                <p class="text-2xl font-bold">{formatNumber(analytics.totalShares)}</p>
-              </div>
-              <div class="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Share2 class="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     {/if}
     
@@ -495,43 +643,120 @@
               <Card class="group hover:shadow-lg transition-shadow {viewMode === 'list' ? 'flex' : ''}">
                 <CardContent class="p-6 {viewMode === 'list' ? 'flex-1 flex items-center justify-between' : ''}">
                   <div class="{viewMode === 'list' ? 'flex-1' : ''}">
-                    <div class="flex items-start justify-between mb-2">
-                      <h3 class="font-semibold text-gray-900 truncate {viewMode === 'list' ? 'text-lg' : ''}">{resume.title}</h3>
-                      {#if viewMode === 'grid'}
-                        <div class="relative">
-                          <Button variant="ghost" size="sm" class="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreHorizontal class="h-4 w-4" />
-                          </Button>
-                        </div>
-                      {/if}
+                    <!-- Header with title and status -->
+                    <div class="flex items-start justify-between mb-3">
+                      <div class="flex-1">
+                        <h3 class="font-semibold text-gray-900 truncate {viewMode === 'list' ? 'text-lg' : ''}">{resume.title}</h3>
+                        {#if resume.target_job}
+                          <p class="text-sm text-gray-600 mt-1">{resume.target_job}</p>
+                        {/if}
+                        {#if resume.target_company}
+                          <p class="text-xs text-gray-500">• {resume.target_company}</p>
+                        {/if}
+                      </div>
+                      
+                      <div class="flex items-center gap-2">
+                        <!-- Status Badge -->
+                        <Badge variant={resume.status === 'active' ? 'default' : resume.status === 'draft' ? 'secondary' : 'outline'} class="text-xs">
+                          {resume.status || 'draft'}
+                        </Badge>
+                        
+                        <!-- Version Badge -->
+                        {#if resume.version && resume.version > 1}
+                          <Badge variant="outline" class="text-xs">v{resume.version}</Badge>
+                        {/if}
+                      </div>
                     </div>
                     
-                    <p class="text-sm text-gray-600 mb-4 {viewMode === 'list' ? 'line-clamp-1' : 'line-clamp-2'}">
-                      {resume.content?.personalInfo?.fullName || 'No name set'}
-                    </p>
+                    <!-- Tags -->
+                    {#if resume.tags && resume.tags.length > 0}
+                      <div class="flex flex-wrap gap-1 mb-3">
+                        {#each resume.tags.slice(0, 3) as tag}
+                          <Badge variant="outline" class="text-xs px-2 py-0.5">{tag}</Badge>
+                        {/each}
+                        {#if resume.tags.length > 3}
+                          <Badge variant="outline" class="text-xs px-2 py-0.5">+{resume.tags.length - 3}</Badge>
+                        {/if}
+                      </div>
+                    {/if}
                     
+                    <!-- Progress Indicators -->
+                    {#if viewMode === 'grid'}
+                      <div class="space-y-2 mb-4">
+                        <!-- Completion Progress -->
+                        {#if resume.completion_percentage !== undefined}
+                          <div>
+                            <div class="flex justify-between text-xs mb-1">
+                              <span class="text-gray-600">Completion</span>
+                              <span class="font-medium">{resume.completion_percentage}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                class="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                                style="width: {resume.completion_percentage}%"
+                              ></div>
+                            </div>
+                          </div>
+                        {/if}
+                        
+                        <!-- Optimization Score -->
+                        {#if resume.optimization_score !== undefined && resume.optimization_score > 0}
+                          <div>
+                            <div class="flex justify-between text-xs mb-1">
+                              <span class="text-gray-600">Optimization</span>
+                              <span class="font-medium">{resume.optimization_score}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                class="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+                                style="width: {resume.optimization_score}%"
+                              ></div>
+                            </div>
+                          </div>
+                        {/if}
+                      </div>
+                    {/if}
+                    
+                    <!-- Analytics -->
                     <div class="flex items-center justify-between {viewMode === 'list' ? 'mb-0' : 'mb-4'}">
                       <div class="flex items-center space-x-4 text-xs text-gray-500">
                         <div class="flex items-center space-x-1">
                           <Eye class="h-3 w-3" />
-                          <span>{resume.content?.viewCount || 0}</span>
+                          <span>{resume.view_count || 0}</span>
                         </div>
                         <div class="flex items-center space-x-1">
                           <Download class="h-3 w-3" />
-                          <span>{resume.content?.downloadCount || 0}</span>
+                          <span>{resume.download_count || 0}</span>
                         </div>
                         <div class="flex items-center space-x-1">
                           <Share2 class="h-3 w-3" />
-                          <span>{resume.content?.shareCount || 0}</span>
+                          <span>{resume.share_count || 0}</span>
                         </div>
+                        
+                        <!-- Success Rate (if available) -->
+                        {#if resume.success_metrics?.success_rate && resume.success_metrics.success_rate > 0}
+                          <div class="flex items-center space-x-1 text-green-600">
+                            <TrendingUp class="h-3 w-3" />
+                            <span>{resume.success_metrics.success_rate}%</span>
+                          </div>
+                        {/if}
                       </div>
                       
-                      {#if resume.content?.isPublic}
+                      <!-- Privacy Badge -->
+                      {#if resume.is_public}
                         <Badge variant="default" class="text-xs">Public</Badge>
                       {:else}
                         <Badge variant="secondary" class="text-xs">Private</Badge>
                       {/if}
                     </div>
+                    
+                    <!-- Personalization Level -->
+                    {#if viewMode === 'grid' && resume.personalization_level && resume.personalization_level !== 'basic'}
+                      <div class="flex items-center gap-1 text-xs text-purple-600 mb-2">
+                        <Sparkles class="h-3 w-3" />
+                        <span class="capitalize">{resume.personalization_level.replace('_', ' ')}</span>
+                      </div>
+                    {/if}
                     
                     {#if viewMode === 'grid'}
                       <div class="text-xs text-gray-500 mb-4">
@@ -579,11 +804,20 @@
       
     {:else if activeTab === 'analytics'}
       <!-- Analytics Tab -->
-      <div class="text-center py-12">
-        <BarChart3 class="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Analytics Coming Soon</h3>
-        <p class="text-gray-600">Track your resume views, downloads, and engagement.</p>
-      </div>
+      {#await import('$lib/components/analytics/ResumeAnalyticsDashboard.svelte')}
+        <div class="text-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p class="text-gray-600">Loading analytics...</p>
+        </div>
+      {:then { default: ResumeAnalyticsDashboard }}
+        <ResumeAnalyticsDashboard {resumes} />
+      {:catch error}
+        <div class="text-center py-12">
+          <BarChart3 class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Analytics Unavailable</h3>
+          <p class="text-gray-600">Unable to load analytics. Please try again later.</p>
+        </div>
+      {/await}
       
     {:else if activeTab === 'templates'}
       <!-- Templates Tab -->

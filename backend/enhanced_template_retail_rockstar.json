@@ -1,0 +1,270 @@
+{
+  "name": "🏪 Retail Rockstar",
+  "slug": "retail-rockstar",
+  "description": "Perfect for cashier, sales associate, and customer service roles. Designed specifically for first-time job seekers entering the retail industry.",
+  "category": "entry-level",
+  "is_premium": false,
+  "config": {
+    "layout": "single-column",
+    "colorScheme": "blue",
+    "fontFamily": "Inter",
+    "sections": ["personal", "summary", "experience", "education", "skills"],
+    "maxPages": 1,
+    "spacing": "normal",
+    "headerStyle": "professional",
+    
+    "quickstarter": {
+      "metadata": {
+        "targetJobs": [
+          "Cashier",
+          "Sales Associate", 
+          "Customer Service Representative",
+          "Retail Associate",
+          "Store Associate",
+          "Front End Associate"
+        ],
+        "industry": "retail",
+        "experienceLevel": "entry",
+        "averageSalary": 25000,
+        "salaryRange": {
+          "min": 20000,
+          "max": 35000
+        },
+        "demandLevel": "high",
+        "successRate": 87,
+        "popularityScore": 94,
+        "timeToHire": "1-2 weeks",
+        "commonEmployers": [
+          "Target", "Walmart", "Best Buy", "Home Depot", 
+          "CVS", "Walgreens", "Macy's", "Local retailers"
+        ]
+      },
+      
+      "starterContent": {
+        "summaryTemplates": [
+          "Enthusiastic and reliable team player with strong customer service skills and attention to detail. Eager to contribute to a positive shopping experience while developing retail expertise in a fast-paced environment.",
+          
+          "Friendly and organized individual seeking to apply excellent communication skills and work ethic in a retail environment. Quick learner with a passion for helping customers and contributing to team success.",
+          
+          "Dedicated and punctual worker with natural people skills and ability to thrive in fast-paced environments. Committed to providing exceptional customer service and maintaining high standards of store presentation.",
+          
+          "Motivated team member with strong interpersonal skills and genuine enthusiasm for helping others. Ready to bring positive energy and reliability to a retail team while learning and growing in the industry."
+        ],
+        
+        "skillSuggestions": [
+          {
+            "name": "Customer Service",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "high",
+            "description": "Ability to help customers, answer questions, and resolve issues with a positive attitude"
+          },
+          {
+            "name": "Cash Handling",
+            "category": "technical", 
+            "level": "beginner",
+            "priority": "high",
+            "description": "Experience with processing payments, making change, and handling money accurately"
+          },
+          {
+            "name": "POS Systems",
+            "category": "technical",
+            "level": "beginner", 
+            "priority": "medium",
+            "description": "Familiarity with point-of-sale systems and electronic payment processing"
+          },
+          {
+            "name": "Team Collaboration",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "high",
+            "description": "Working effectively with colleagues to achieve common goals and support each other"
+          },
+          {
+            "name": "Communication",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "high", 
+            "description": "Clear verbal and written communication with customers and team members"
+          },
+          {
+            "name": "Problem Solving",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "medium",
+            "description": "Ability to think quickly and find solutions to customer concerns and workplace challenges"
+          },
+          {
+            "name": "Time Management",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "medium",
+            "description": "Managing multiple tasks efficiently while maintaining quality and meeting deadlines"
+          },
+          {
+            "name": "Inventory Management",
+            "category": "technical",
+            "level": "beginner",
+            "priority": "medium",
+            "description": "Understanding of stock organization, product placement, and basic inventory tracking"
+          },
+          {
+            "name": "Sales Techniques",
+            "category": "technical",
+            "level": "beginner",
+            "priority": "medium",
+            "description": "Basic understanding of upselling, cross-selling, and product recommendations"
+          },
+          {
+            "name": "Attention to Detail",
+            "category": "soft",
+            "level": "intermediate",
+            "priority": "medium",
+            "description": "Careful attention to accuracy in transactions, product information, and store presentation"
+          }
+        ],
+        
+        "experienceExamples": [
+          {
+            "id": "example-1",
+            "company": "[Previous Job/Volunteer Work]",
+            "position": "[Your Role - e.g., Volunteer, Babysitter, Team Member]",
+            "location": "[City, State]",
+            "startDate": "[Start Date]",
+            "endDate": "[End Date]",
+            "current": false,
+            "description": "Provided excellent customer service in fast-paced environment. Handled responsibilities with accuracy and maintained positive attitude during busy periods.",
+            "highlights": [
+              "Processed transactions/handled money with 100% accuracy",
+              "Maintained positive attitude during busy periods and high-stress situations", 
+              "Assisted customers with inquiries and provided helpful product recommendations",
+              "Collaborated effectively with team members to achieve daily goals and deadlines",
+              "Demonstrated reliability through consistent attendance and punctuality"
+            ]
+          },
+          {
+            "id": "example-2", 
+            "company": "[School/Community Organization]",
+            "position": "[Leadership Role - e.g., Class Representative, Club Officer, Team Captain]",
+            "location": "[City, State]",
+            "startDate": "[Start Date]",
+            "endDate": "[End Date]",
+            "current": false,
+            "description": "Demonstrated leadership and organizational skills while managing responsibilities and helping others achieve common goals.",
+            "highlights": [
+              "Led team of [number] members in achieving [specific goal or project]",
+              "Organized and coordinated [events/activities] with attention to detail",
+              "Communicated effectively with diverse groups of people",
+              "Managed time efficiently while balancing multiple responsibilities",
+              "Showed initiative in identifying and solving problems independently"
+            ]
+          }
+        ],
+        
+        "educationExamples": [
+          {
+            "id": "education-1",
+            "institution": "[High School Name]",
+            "degree": "High School Diploma",
+            "field": "General Studies",
+            "location": "[City, State]",
+            "startDate": "[Start Year]",
+            "endDate": "[Graduation Year]",
+            "current": false,
+            "gpa": "[GPA if 3.5 or higher]",
+            "honors": [
+              "Honor Roll",
+              "Perfect Attendance", 
+              "Student of the Month",
+              "Academic Achievement Award"
+            ],
+            "description": "Completed comprehensive high school education with focus on communication, teamwork, and customer service skills through various projects and activities."
+          }
+        ],
+        
+        "industryKeywords": [
+          "customer service", "cash handling", "POS systems", "inventory management",
+          "team collaboration", "sales", "retail", "customer satisfaction", 
+          "problem solving", "communication", "reliability", "punctuality",
+          "product knowledge", "store operations", "visual merchandising",
+          "upselling", "cross-selling", "customer relations", "teamwork",
+          "multitasking", "attention to detail", "positive attitude"
+        ],
+        
+        "actionVerbs": [
+          "Assisted", "Processed", "Maintained", "Collaborated", "Achieved",
+          "Provided", "Handled", "Organized", "Supported", "Delivered",
+          "Managed", "Coordinated", "Demonstrated", "Communicated", "Resolved",
+          "Contributed", "Ensured", "Exceeded", "Improved", "Implemented"
+        ]
+      },
+      
+      "guidance": {
+        "gettingStarted": [
+          "Highlight ANY customer service experience - even helping family friends, volunteering at events, or school projects where you helped others",
+          "Emphasize reliability and punctuality - these are the #1 qualities retail employers look for in entry-level candidates",
+          "Include any experience with money handling, even informal (family business, fundraising, collecting payments for school events)",
+          "Mention your availability and flexibility with scheduling - retail often needs weekend and evening coverage",
+          "Show enthusiasm for helping people and working in teams - retail is all about collaboration and customer satisfaction",
+          "Don't forget about school projects, sports teams, or clubs where you demonstrated teamwork and responsibility"
+        ],
+        
+        "commonMistakes": [
+          "Don't undersell volunteer work, school activities, or informal jobs - they show valuable skills and work ethic",
+          "Avoid focusing only on what you want to learn instead of what you can contribute to the team",
+          "Don't forget to mention your availability and willingness to work weekends, holidays, and flexible hours",
+          "Avoid generic statements like 'hard worker' - be specific about HOW you work hard with concrete examples",
+          "Don't leave out soft skills - they're often more important than technical skills for entry-level retail positions",
+          "Avoid making your resume too long - one page is perfect for entry-level retail positions"
+        ],
+        
+        "successTips": [
+          "Show genuine enthusiasm for helping customers and creating positive shopping experiences",
+          "Demonstrate reliability through specific examples (perfect attendance, meeting commitments, being on time)",
+          "Highlight any leadership roles, even informal ones (team captain, group project leader, helping train new volunteers)",
+          "Mention specific examples of going above and beyond for others (staying late to help, taking on extra responsibilities)",
+          "Include any multilingual abilities - extremely valuable in retail environments with diverse customers",
+          "Show you understand the importance of teamwork by giving examples of successful collaboration",
+          "Emphasize your ability to stay positive and helpful even during busy or stressful situations"
+        ],
+        
+        "interviewPrep": [
+          "Practice explaining why you want to work in retail specifically - show genuine interest in helping customers",
+          "Prepare 2-3 specific examples of times you helped someone or solved a problem, even in non-work situations",
+          "Be ready to discuss your availability and scheduling flexibility in detail",
+          "Think of thoughtful questions about company culture, training programs, and growth opportunities",
+          "Practice common retail scenarios: handling a difficult customer, working during a busy rush, collaborating with teammates",
+          "Prepare to explain how your school/volunteer experiences have prepared you for retail work",
+          "Practice describing your strengths with specific examples rather than just listing qualities"
+        ],
+        
+        "salaryNegotiation": [
+          "Research typical starting wages for retail in your area ($12-16/hour is common for entry-level)",
+          "Emphasize your reliability, availability, and enthusiasm rather than demanding higher pay initially",
+          "Ask about opportunities for raises based on performance and length of service",
+          "Inquire about employee discounts, flexible scheduling, and other benefits beyond just hourly wage",
+          "Show interest in learning and growing within the company - many retail managers started as associates",
+          "Be willing to start at entry-level pay to gain experience and prove your value"
+        ],
+        
+        "industryInsights": [
+          "Retail values reliability, positive attitude, and customer service skills over previous experience for entry-level positions",
+          "Customer service skills learned in retail are transferable to almost any industry and highly valued by employers",
+          "Many retail managers and corporate executives started in entry-level store positions - excellent growth potential",
+          "Peak hiring seasons (holidays, back-to-school) offer the most opportunities for new hires",
+          "Retail experience teaches valuable life skills: multitasking, handling pressure, working with diverse people, problem-solving",
+          "Part-time retail work can often accommodate school schedules and provide flexible income",
+          "Strong performance in retail can lead to quick promotions to shift leader, department lead, or assistant manager roles"
+        ],
+        
+        "careerProgression": [
+          "Entry-level Associate → Senior Associate → Team Lead → Department Supervisor → Assistant Manager → Store Manager",
+          "Many companies offer management training programs for high-performing associates",
+          "Retail experience opens doors to corporate roles in buying, merchandising, marketing, and operations",
+          "Customer service skills from retail are highly valued in sales, hospitality, healthcare, and business roles",
+          "Consider specializing in areas like visual merchandising, inventory management, or customer relations for advancement"
+        ]
+      }
+    }
+  }
+}

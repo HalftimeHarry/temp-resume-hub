@@ -83,6 +83,15 @@ export const auth = {
       // Auto-login after registration
       const authData = await pb.collection('users').authWithPassword(email, password);
       
+      // Create user profile after successful registration
+      try {
+        await this.createUserProfile(authData.record.id, name);
+        console.log('✅ User profile created successfully');
+      } catch (profileError) {
+        console.warn('⚠️ Failed to create user profile:', profileError);
+        // Don't fail registration if profile creation fails
+      }
+      
       currentUser.set(convertToUser(authData.record));
       isAuthenticated.set(true);
       
@@ -246,6 +255,70 @@ export const auth = {
         error: error.message || 'Auth refresh failed' 
       };
     }
+  },
+
+  // Create user profile after registration
+  async createUserProfile(userId: string, name: string) {
+    try {
+      // Parse name into first and last name
+      const nameParts = name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      const profileData = {
+        user: userId,
+        first_name: firstName,
+        last_name: lastName,
+        profile_completed: false,
+        onboarding_data: {
+          registration_date: new Date().toISOString(),
+          registration_source: 'web',
+          initial_name: name
+        }
+      };
+
+      const profile = await pb.collection('user_profiles').create(profileData);
+      console.log('✅ User profile created:', profile.id);
+      
+      return { success: true, profile };
+    } catch (error: any) {
+      console.error('❌ User profile creation error:', error);
+      
+      // If collection doesn't exist, that's expected during development
+      if (error.status === 404) {
+        console.warn('⚠️ user_profiles collection not found - run setup-user-profiles.js first');
+      }
+      
+      throw error;
+    }
+  },
+
+  // Load user profile data
+  async loadUserProfile(userId?: string) {
+    try {
+      const targetUserId = userId || pb.authStore.model?.id;
+      if (!targetUserId) {
+        return { success: false, error: 'No user ID provided' };
+      }
+
+      const profiles = await pb.collection('user_profiles').getFullList({
+        filter: `user = "${targetUserId}"`
+      });
+
+      if (profiles.length === 0) {
+        return { success: true, profile: null, message: 'No profile found' };
+      }
+
+      return { success: true, profile: profiles[0] };
+    } catch (error: any) {
+      console.error('❌ Error loading user profile:', error);
+      
+      if (error.status === 404) {
+        return { success: false, error: 'Profile system not available' };
+      }
+      
+      return { success: false, error: error.message || 'Failed to load profile' };
+    }
   }
 };
 
@@ -261,5 +334,7 @@ export const authStore = {
   confirmPasswordReset: auth.confirmPasswordReset,
   updateProfile: auth.updateProfile,
   checkUsernameAvailability: auth.checkUsernameAvailability,
-  refreshAuth: auth.refreshAuth
+  refreshAuth: auth.refreshAuth,
+  createUserProfile: auth.createUserProfile,
+  loadUserProfile: auth.loadUserProfile
 };

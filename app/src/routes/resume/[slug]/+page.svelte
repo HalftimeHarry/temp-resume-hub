@@ -11,14 +11,19 @@
 	
 	// Styling state
 	let showStylingPanel = false;
+	let showUpgradeModal = false;
 	let previewSettings = {
 		colorScheme: 'orange',
 		fontSize: 'medium',
 		spacing: 'normal',
-		layout: 'single-column'
+		layout: 'single-column',
+		headerStyle: 'professional'
 	};
+	
+	// Premium features - in a real app, this would come from user subscription status
+	let isPremiumUser = false;
 
-	// Theme presets
+	// Theme presets with enhanced styling
 	const themePresets = [
 		{
 			name: 'professional',
@@ -28,7 +33,8 @@
 				colorScheme: 'blue',
 				fontSize: 'medium',
 				spacing: 'normal',
-				layout: 'single-column'
+				layout: 'single-column',
+				headerStyle: 'professional'
 			}
 		},
 		{
@@ -39,7 +45,8 @@
 				colorScheme: 'green',
 				fontSize: 'medium',
 				spacing: 'compact',
-				layout: 'two-column'
+				layout: 'two-column',
+				headerStyle: 'modern'
 			}
 		},
 		{
@@ -50,7 +57,8 @@
 				colorScheme: 'purple',
 				fontSize: 'large',
 				spacing: 'relaxed',
-				layout: 'single-column'
+				layout: 'single-column',
+				headerStyle: 'creative'
 			}
 		},
 		{
@@ -61,7 +69,8 @@
 				colorScheme: 'black',
 				fontSize: 'small',
 				spacing: 'compact',
-				layout: 'single-column'
+				layout: 'single-column',
+				headerStyle: 'minimal'
 			}
 		},
 		{
@@ -72,7 +81,8 @@
 				colorScheme: 'orange',
 				fontSize: 'large',
 				spacing: 'normal',
-				layout: 'two-column'
+				layout: 'two-column',
+				headerStyle: 'bold'
 			}
 		},
 		{
@@ -83,7 +93,8 @@
 				colorScheme: 'blue',
 				fontSize: 'medium',
 				spacing: 'relaxed',
-				layout: 'with-image'
+				layout: 'with-image',
+				headerStyle: 'classic'
 			}
 		}
 	];
@@ -140,12 +151,12 @@
 					});
 					resume = record as Resume;
 				} catch (idError) {
-					console.error('❌ Failed to load resume by slug or ID:', slugError, idError);
+					console.error('Failed to load resume by slug or ID:', slugError, idError);
 					error = '❌ Resume not found or not public';
 				}
 			}
 		} catch (err) {
-			console.error('❌ Failed to load resume:', err);
+			console.error('Failed to load resume:', err);
 			error = '❌ Resume not found or not public';
 		} finally {
 			// Initialize preview settings with resume styling if available
@@ -155,7 +166,8 @@
 					colorScheme: resume.content.styling.colorScheme || 'orange',
 					fontSize: resume.content.styling.fontSize || 'medium',
 					spacing: resume.content.styling.spacing || 'normal',
-					layout: resume.content.styling.layout || 'single-column'
+					layout: resume.content.styling.layout || 'single-column',
+					headerStyle: resume.content.styling.headerStyle || 'professional'
 				};
 			}
 			loading = false;
@@ -210,7 +222,7 @@
 				// Refresh the page to ensure styling is properly applied
 				window.location.reload();
 			} else {
-				console.error(`❌ Failed to save styling: ${result.error}`);
+				console.error(`Failed to save styling: ${result.error}`);
 			}
 		} catch (error) {
 			console.error('Error saving styling:', error);
@@ -222,7 +234,8 @@
 			colorScheme: 'orange',
 			fontSize: 'medium',
 			spacing: 'normal',
-			layout: 'single-column'
+			layout: 'single-column',
+			headerStyle: 'professional'
 		};
 		// No alert needed - styling is applied immediately to preview
 	}
@@ -306,6 +319,77 @@
 		console.log('getLayoutClass called with:', previewSettings.layout, 'returning:', result);
 		return result;
 	}
+	
+	function getHeaderStyle() {
+		const headerStyle = previewSettings.headerStyle || 'professional';
+		const colors = getColorClasses();
+		
+		switch (headerStyle) {
+			case 'professional':
+				return {
+					containerClass: 'bg-gradient-to-r from-blue-50 to-blue-100 p-8 rounded-t-lg border-b-4 border-blue-500',
+					nameClass: `text-5xl font-bold mb-4 ${colors.primary}`,
+					contactClass: 'text-lg text-gray-700'
+				};
+			case 'modern':
+				return {
+					containerClass: 'bg-gradient-to-br from-green-50 via-white to-green-50 p-10 rounded-t-lg border-l-8 border-green-500',
+					nameClass: `text-6xl font-light mb-6 ${colors.primary} tracking-wide`,
+					contactClass: 'text-base text-gray-600 font-medium'
+				};
+			case 'creative':
+				return {
+					containerClass: 'bg-gradient-to-r from-purple-100 via-pink-50 to-purple-100 p-12 rounded-t-lg relative overflow-hidden',
+					nameClass: `text-6xl font-black mb-6 ${colors.primary} transform -skew-x-3`,
+					contactClass: 'text-lg text-gray-700 font-semibold'
+				};
+			case 'minimal':
+				return {
+					containerClass: 'bg-white p-6 border-b border-gray-200',
+					nameClass: `text-4xl font-thin mb-3 ${colors.primary} uppercase tracking-widest`,
+					contactClass: 'text-sm text-gray-500 uppercase tracking-wide'
+				};
+			case 'bold':
+				return {
+					containerClass: 'bg-gradient-to-r from-orange-500 to-red-500 text-white p-12 rounded-t-lg shadow-2xl',
+					nameClass: 'text-7xl font-black mb-6 text-white drop-shadow-lg',
+					contactClass: 'text-xl text-orange-100 font-bold'
+				};
+			case 'classic':
+				return {
+					containerClass: 'bg-gradient-to-b from-blue-50 to-white p-10 rounded-t-lg border-t-8 border-blue-600',
+					nameClass: `text-5xl font-serif mb-5 ${colors.primary} text-center`,
+					contactClass: 'text-lg text-gray-600 text-center font-medium'
+				};
+			default:
+				return {
+					containerClass: 'bg-gray-50 p-8 rounded-t-lg',
+					nameClass: `text-4xl font-bold mb-4 ${colors.primary}`,
+					contactClass: 'text-base text-gray-700'
+				};
+		}
+	}
+	
+	function getWatermarkStyle() {
+		const headerStyle = previewSettings.headerStyle || 'professional';
+		
+		switch (headerStyle) {
+			case 'professional':
+				return 'absolute top-4 right-4 opacity-20 transform rotate-12';
+			case 'modern':
+				return 'absolute top-6 right-6 opacity-15 transform -rotate-6';
+			case 'creative':
+				return 'absolute top-8 right-8 opacity-25 transform rotate-45 scale-75';
+			case 'minimal':
+				return 'absolute top-2 right-2 opacity-10 transform rotate-0 scale-50';
+			case 'bold':
+				return 'absolute top-6 right-6 opacity-30 transform -rotate-12 scale-90';
+			case 'classic':
+				return 'absolute top-4 right-4 opacity-20 transform rotate-0 scale-75';
+			default:
+				return 'absolute top-4 right-4 opacity-20 transform rotate-12';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -345,6 +429,14 @@
 						</a>
 					</div>
 					<div class="flex items-center gap-2">
+						<!-- Demo Premium Toggle (for testing) -->
+						<button
+							class={`px-3 py-2 text-sm rounded-lg transition-colors ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
+							on:click={() => isPremiumUser = !isPremiumUser}
+							title="Demo: Toggle Premium Status"
+						>
+							{isPremiumUser ? '✨ Premium' : '🆓 Free'}
+						</button>
 						<button
 							class="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors"
 							on:click={() => showStylingPanel = true}
@@ -369,26 +461,34 @@
 					<!-- Left column for two-column layout -->
 					<div class={previewSettings.layout === 'two-column' ? 'md:pr-8 md:border-r md:border-gray-200' : ''}>
 						{#if resume.content?.personalInfo}
-							<!-- Personal Info -->
-							<div class={getSectionSpacingClass()}>
-								<h1 class={`text-4xl font-bold mb-2 ${getColorClasses().primary} ${getFontSizeClass()}`}>{resume.content.personalInfo.fullName}</h1>
-								<div class="flex flex-wrap gap-6 mb-2">
+							<!-- Enhanced Personal Info Header -->
+							<div class={`${getHeaderStyle().containerClass} relative ${getSectionSpacingClass()}`}>
+								<!-- Logo Watermark (only for free users) -->
+								{#if !isPremiumUser}
+									<div class={getWatermarkStyle()}>
+										<img src="/logo.svg" alt="Resume Hub" class="w-16 h-16 opacity-50" />
+										<div class="text-xs text-gray-400 mt-1 text-center font-bold">FREE</div>
+									</div>
+								{/if}
+								
+								<h1 class={getHeaderStyle().nameClass}>{resume.content.personalInfo.fullName}</h1>
+								<div class="flex flex-wrap gap-6 mb-4">
 									{#if resume.content.personalInfo.email}
 										<div class="flex items-center">
 											<span class="mr-2">📧</span>
-											<span class="text-gray-700">{resume.content.personalInfo.email}</span>
+											<span class={getHeaderStyle().contactClass}>{resume.content.personalInfo.email}</span>
 										</div>
 									{/if}
 									{#if resume.content.personalInfo.phone}
 										<div class="flex items-center">
 											<span class="mr-2">📞</span>
-											<span class="text-gray-700">{resume.content.personalInfo.phone}</span>
+											<span class={getHeaderStyle().contactClass}>{resume.content.personalInfo.phone}</span>
 										</div>
 									{/if}
 									{#if resume.content.personalInfo.location}
 										<div class="flex items-center">
 											<span class="mr-2">📍</span>
-											<span class="text-gray-700">{resume.content.personalInfo.location}</span>
+											<span class={getHeaderStyle().contactClass}>{resume.content.personalInfo.location}</span>
 										</div>
 									{/if}
 								</div>
@@ -397,7 +497,7 @@
 										{#if resume.content.personalInfo.linkedin}
 											<div class="flex items-center">
 												<span class="mr-2">🔗</span>
-												<a href="https://{resume.content.personalInfo.linkedin}" target="_blank" class={`hover:underline ${getColorClasses().primary}`}>
+												<a href="https://{resume.content.personalInfo.linkedin}" target="_blank" class={`hover:underline ${getHeaderStyle().contactClass}`}>
 													LinkedIn
 												</a>
 											</div>
@@ -405,7 +505,7 @@
 										{#if resume.content.personalInfo.website}
 											<div class="flex items-center">
 												<span class="mr-2">🌐</span>
-												<a href="https://{resume.content.personalInfo.website}" target="_blank" class={`hover:underline ${getColorClasses().primary}`}>
+												<a href="https://{resume.content.personalInfo.website}" target="_blank" class={`hover:underline ${getHeaderStyle().contactClass}`}>
 													Website
 												</a>
 											</div>
@@ -432,7 +532,7 @@
 						{#if resume.content?.summary}
 							<!-- Summary -->
 							<div class={getSectionSpacingClass()}>
-								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>Professional Summary</h2>
+								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>📝 Professional Summary</h2>
 								<p class={`text-gray-700 leading-relaxed ${getFontSizeClass()}`}>{resume.content.summary}</p>
 							</div>
 						{/if}
@@ -443,7 +543,7 @@
 						{#if resume.content?.experience && resume.content.experience.length > 0}
 							<!-- Experience -->
 							<div class={getSectionSpacingClass()}>
-								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>Work Experience</h2>
+								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>💼 Work Experience</h2>
 								<div class="space-y-6">
 									{#each resume.content.experience as exp}
 										<div class="mb-4">
@@ -468,7 +568,7 @@
 						{#if resume.content?.education && resume.content.education.length > 0}
 							<!-- Education -->
 							<div class={getSectionSpacingClass()}>
-								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>Education</h2>
+								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>🎓 Education</h2>
 								<div class="space-y-4">
 									{#each resume.content.education as edu}
 										<div class="mb-4">
@@ -496,7 +596,7 @@
 						{#if resume.content?.skills && resume.content.skills.length > 0}
 							<!-- Skills -->
 							<div class={getSectionSpacingClass()}>
-								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>Skills</h2>
+								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>🛠️ Skills</h2>
 								<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 									{#each ['technical', 'soft', 'language'] as category}
 										{#if resume.content.skills.filter(skill => skill.category === category).length > 0}
@@ -519,7 +619,7 @@
 						{#if resume.content?.projects && resume.content.projects.length > 0}
 							<!-- Projects -->
 							<div class={getSectionSpacingClass()}>
-								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>Projects</h2>
+								<h2 class={`text-2xl font-bold mb-4 pb-2 border-b-2 ${getColorClasses().primary}`}>🚀 Projects</h2>
 								<div class="space-y-4">
 									{#each resume.content.projects as project}
 										<div class="mb-4">
@@ -635,7 +735,29 @@
 							<div>📏 Spacing: <span class="capitalize">{previewSettings.spacing}</span></div>
 							<div>📋 Layout: <span class="capitalize">{previewSettings.layout.replace('-', ' ')}</span></div>
 						</div>
+						<div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+							💡 Emojis are always enabled for a fun, engaging resume!
+						</div>
 					</div>
+					
+					<!-- Premium Features -->
+					{#if !isPremiumUser}
+						<div class="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-lg border border-orange-200">
+							<h4 class="font-medium mb-2 text-orange-800">✨ Premium Features</h4>
+							<div class="text-sm text-orange-700 mb-3">
+								• Remove watermark<br>
+								• Advanced themes<br>
+								• Custom colors<br>
+								• Priority support
+							</div>
+							<button
+								class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all font-semibold"
+								on:click={() => showUpgradeModal = true}
+							>
+								🚀 Upgrade to Premium
+							</button>
+						</div>
+					{/if}
 				</div>
 				
 				<div class="flex justify-between mt-6">
@@ -650,6 +772,69 @@
 						on:click={saveStyling}
 					>
 						🎨 Set Theme
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Premium Upgrade Modal -->
+{#if showUpgradeModal}
+	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+		<div class="bg-white rounded-lg max-w-md w-full">
+			<div class="p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-xl font-bold">🚀 Upgrade to Premium</h2>
+					<button
+						class="text-gray-500 hover:text-gray-700"
+						on:click={() => showUpgradeModal = false}
+					>
+						✕
+					</button>
+				</div>
+				
+				<div class="space-y-4">
+					<div class="text-center">
+						<div class="text-4xl mb-4">✨</div>
+						<h3 class="text-lg font-semibold mb-2">Remove Watermark & Get More</h3>
+						<p class="text-gray-600 mb-4">Unlock premium features for professional resumes</p>
+					</div>
+					
+					<div class="bg-gray-50 p-4 rounded-lg">
+						<h4 class="font-medium mb-2">Premium Features Include:</h4>
+						<ul class="text-sm space-y-1 text-gray-700">
+							<li>✅ Remove watermark completely</li>
+							<li>✅ 10+ additional premium themes</li>
+							<li>✅ Custom color schemes</li>
+							<li>✅ Advanced layout options</li>
+							<li>✅ Priority customer support</li>
+							<li>✅ Export to multiple formats</li>
+						</ul>
+					</div>
+					
+					<div class="text-center">
+						<div class="text-2xl font-bold text-orange-600 mb-2">$9.99/month</div>
+						<div class="text-sm text-gray-500 mb-4">Cancel anytime</div>
+					</div>
+				</div>
+				
+				<div class="flex gap-3 mt-6">
+					<button
+						class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+						on:click={() => showUpgradeModal = false}
+					>
+						Maybe Later
+					</button>
+					<button
+						class="flex-1 px-4 py-2 text-sm bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 font-semibold"
+						on:click={() => {
+							// In a real app, this would redirect to payment processing
+							alert(`$🚀 Redirecting to payment... (Demo only)`);
+							showUpgradeModal = false;
+						}}
+					>
+						🚀 Upgrade Now
 					</button>
 				</div>
 			</div>

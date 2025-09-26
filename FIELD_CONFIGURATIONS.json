@@ -1,0 +1,247 @@
+{
+  "collection_name": "user_profiles",
+  "collection_type": "base",
+  "fields": [
+    {
+      "name": "user",
+      "type": "relation",
+      "required": true,
+      "options": {
+        "collectionId": "users",
+        "cascadeDelete": true,
+        "maxSelect": 1,
+        "displayFields": ["email"]
+      },
+      "note": "Link to users collection - REQUIRED"
+    },
+    {
+      "name": "first_name",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 50
+      }
+    },
+    {
+      "name": "last_name",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 50
+      }
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 20
+      }
+    },
+    {
+      "name": "location",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 100
+      }
+    },
+    {
+      "name": "linkedin_url",
+      "type": "url",
+      "required": false
+    },
+    {
+      "name": "portfolio_url",
+      "type": "url",
+      "required": false
+    },
+    {
+      "name": "target_industry",
+      "type": "select",
+      "required": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "technology",
+          "healthcare",
+          "finance",
+          "retail",
+          "education",
+          "manufacturing",
+          "hospitality",
+          "marketing",
+          "sales",
+          "consulting",
+          "nonprofit",
+          "government",
+          "media",
+          "real_estate",
+          "construction",
+          "transportation",
+          "energy",
+          "agriculture",
+          "legal",
+          "other"
+        ]
+      },
+      "note": "IMPORTANT: Add all values in the list above"
+    },
+    {
+      "name": "experience_level",
+      "type": "select",
+      "required": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "entry",
+          "junior",
+          "mid",
+          "senior",
+          "executive",
+          "student",
+          "career_change"
+        ]
+      },
+      "note": "IMPORTANT: Add all values in the list above"
+    },
+    {
+      "name": "target_job_titles",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 500
+      }
+    },
+    {
+      "name": "key_skills",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 1000
+      }
+    },
+    {
+      "name": "career_stage",
+      "type": "select",
+      "required": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "first_job",
+          "career_growth",
+          "career_change",
+          "promotion_seeking",
+          "industry_switch",
+          "returning_to_work",
+          "freelance_to_fulltime",
+          "executive_level"
+        ]
+      },
+      "note": "IMPORTANT: Add all values in the list above"
+    },
+    {
+      "name": "preferred_work_type",
+      "type": "select",
+      "required": false,
+      "options": {
+        "maxSelect": 3,
+        "values": [
+          "remote",
+          "hybrid",
+          "onsite",
+          "contract",
+          "freelance",
+          "part_time",
+          "full_time",
+          "internship"
+        ]
+      },
+      "note": "IMPORTANT: Max select is 3, add all values in the list above"
+    },
+    {
+      "name": "salary_expectation_min",
+      "type": "number",
+      "required": false,
+      "options": {
+        "min": 0,
+        "noDecimal": true
+      }
+    },
+    {
+      "name": "salary_expectation_max",
+      "type": "number",
+      "required": false,
+      "options": {
+        "min": 0,
+        "noDecimal": true
+      }
+    },
+    {
+      "name": "education_level",
+      "type": "select",
+      "required": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "high_school",
+          "some_college",
+          "associates",
+          "bachelors",
+          "masters",
+          "doctorate",
+          "professional",
+          "bootcamp",
+          "certification"
+        ]
+      },
+      "note": "IMPORTANT: Add all values in the list above"
+    },
+    {
+      "name": "certifications",
+      "type": "text",
+      "required": false,
+      "options": {
+        "max": 500
+      }
+    },
+    {
+      "name": "willing_to_relocate",
+      "type": "bool",
+      "required": false
+    },
+    {
+      "name": "template_preferences",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "onboarding_data",
+      "type": "json",
+      "required": false
+    },
+    {
+      "name": "profile_completed",
+      "type": "bool",
+      "required": false
+    },
+    {
+      "name": "profile_completed_at",
+      "type": "date",
+      "required": false
+    }
+  ],
+  "api_rules": {
+    "listRule": "user = @request.auth.id",
+    "viewRule": "user = @request.auth.id",
+    "createRule": "user = @request.auth.id",
+    "updateRule": "user = @request.auth.id",
+    "deleteRule": "user = @request.auth.id"
+  },
+  "validation_notes": {
+    "relation_field": "Make sure the 'user' field points to the 'users' collection (not '_pb_users_auth_')",
+    "select_fields": "For select fields, you MUST add the values list or you'll get 'values cannot be blank' error",
+    "field_order": "Add fields in the order listed above for consistency",
+    "auto_fields": "Don't manually add 'created' and 'updated' fields - PocketBase adds these automatically"
+  }
+}

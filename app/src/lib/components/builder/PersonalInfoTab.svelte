@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { builderData, updatePersonalInfo, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
+	import { userProfile } from '$lib/stores/userProfile.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { validateEmail, validatePhone } from '$lib/utils.js';
+	import { User } from 'lucide-svelte';
 
 	// Ensure we always have a defined object before reactive assignments run
 	let personalInfo = { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '' };
@@ -46,6 +48,16 @@
 	
 	export let onNext: () => void;
 
+	// Check if data comes from profile
+	$: profile = $userProfile;
+	$: hasProfileData = profile && (
+		(profile.first_name && profile.last_name && fullName.includes(profile.first_name)) ||
+		(profile.phone && phone === profile.phone) ||
+		(profile.location && location === profile.location) ||
+		(profile.linkedin_url && linkedin === profile.linkedin_url) ||
+		(profile.portfolio_url && website === profile.portfolio_url)
+	);
+
 	function handleNext() {
 		console.log('Next clicked');
 		console.log('handleNext function called');
@@ -58,6 +70,18 @@
 </script>
 
 <div class="space-y-6">
+	<!-- Profile Data Indicator -->
+	{#if hasProfileData}
+		<div class="bg-green-50 border border-green-200 rounded-lg p-3">
+			<div class="flex items-center gap-2">
+				<User class="w-4 h-4 text-green-600" />
+				<p class="text-sm text-green-800">
+					Some information has been imported from your profile. You can edit any field as needed.
+				</p>
+			</div>
+		</div>
+	{/if}
+
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		<div class="space-y-2">
 			<label for="fullName" class="text-sm font-medium">Full Name *</label>

@@ -43,8 +43,8 @@
       const result = await authStore.register(email, password, name, username);
       
       if (result.success) {
-        // Use window.location for redirect to ensure it works
-        window.location.href = '/dashboard';
+        // Redirect to onboarding for new users
+        window.location.href = '/onboarding';
       } else {
         error = result.error || 'Registration failed';
       }

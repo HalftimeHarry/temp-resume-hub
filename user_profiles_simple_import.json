@@ -1,0 +1,121 @@
+[
+  {
+    "id": "pbc_user_profiles",
+    "name": "user_profiles",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "system": false,
+        "id": "user_field",
+        "name": "user",
+        "type": "relation",
+        "required": true,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "collectionId": "_pb_users_auth_",
+          "cascadeDelete": true,
+          "minSelect": null,
+          "maxSelect": 1,
+          "displayFields": []
+        }
+      },
+      {
+        "system": false,
+        "id": "first_name",
+        "name": "first_name",
+        "type": "text",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": 50,
+          "pattern": ""
+        }
+      },
+      {
+        "system": false,
+        "id": "last_name",
+        "name": "last_name",
+        "type": "text",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": 50,
+          "pattern": ""
+        }
+      },
+      {
+        "system": false,
+        "id": "target_industry",
+        "name": "target_industry",
+        "type": "select",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "technology",
+            "healthcare",
+            "finance",
+            "retail",
+            "education",
+            "other"
+          ]
+        }
+      },
+      {
+        "system": false,
+        "id": "experience_level",
+        "name": "experience_level",
+        "type": "select",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "entry",
+            "junior",
+            "mid",
+            "senior",
+            "executive"
+          ]
+        }
+      },
+      {
+        "system": false,
+        "id": "target_job_titles",
+        "name": "target_job_titles",
+        "type": "text",
+        "required": false,
+        "presentable": false,
+        "unique": false,
+        "options": {
+          "min": null,
+          "max": 500,
+          "pattern": ""
+        }
+      },
+      {
+        "system": false,
+        "id": "profile_completed",
+        "name": "profile_completed",
+        "type": "bool",
+        "required": false,
+        "presentable": false,
+        "unique": false
+      }
+    ],
+    "listRule": "user = @request.auth.id",
+    "viewRule": "user = @request.auth.id",
+    "createRule": "user = @request.auth.id",
+    "updateRule": "user = @request.auth.id",
+    "deleteRule": "user = @request.auth.id"
+  }
+]
