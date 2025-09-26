@@ -3,11 +3,14 @@
 import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete, autoPopulateFromProfile, smartMergeProfileAndTemplate, importFromProfile, syncProfileFromBuilder, enableAutoSync } from '$lib/stores/resumeBuilder.js';
+	import { userProfile } from '$lib/stores/userProfile.js';
+	import { generateId } from '$lib/utils.js';
 	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown } from 'lucide-svelte';
+	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
+	import { toast } from 'svelte-sonner';
 	
 	// Selected template/color display
 	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
@@ -36,64 +39,51 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	async function selectTemplate(t: any) {
 		try {
 			const full = await templateStore.getTemplate(t.id);
+			const profile = $userProfile;
+			
 			builderData.update(d => {
-				const sd = full.starterData || {};
-				// Populate as much data as possible from the template
+				// Get template starter data or create default bootstrap content
+				const templateData = full.starterData || getDefaultBootstrapContent(full);
+				
+				// Smart merge profile data with template data
+				const mergedData = profile 
+					? smartMergeProfileAndTemplate(templateData, profile)
+					: templateData;
+				
+				// Apply merged data to builder - template data takes precedence for content
 				return {
 					...d,
-					personalInfo: sd.personalInfo ? { ...d.personalInfo, ...sd.personalInfo } : d.personalInfo,
-					summary: sd.summary ?? d.summary,
-					experience: Array.isArray(sd.experience) ? sd.experience : d.experience,
-					education: Array.isArray(sd.education) ? sd.education : d.education,
-					skills: Array.isArray(sd.skills) ? sd.skills : d.skills,
-					projects: Array.isArray(sd.projects) ? sd.projects : d.projects,
-					settings: { ...d.settings, ...(sd.settings || {}), template: full.id }
+					personalInfo: mergedData.personalInfo ? { ...d.personalInfo, ...mergedData.personalInfo } : d.personalInfo,
+					summary: mergedData.summary || getDefaultSummary(full),
+					experience: Array.isArray(mergedData.experience) && mergedData.experience.length > 0 
+						? mergedData.experience 
+						: getDefaultExperience(full),
+					education: Array.isArray(mergedData.education) && mergedData.education.length > 0 
+						? mergedData.education 
+						: getDefaultEducation(full),
+					skills: Array.isArray(mergedData.skills) && mergedData.skills.length > 0 
+						? mergedData.skills 
+						: getDefaultSkills(full),
+					projects: Array.isArray(mergedData.projects) ? mergedData.projects : d.projects,
+					settings: { ...d.settings, ...(mergedData.settings || {}), template: full.id }
 				};
 			});
 			
-			// Update step completion status based on the template data
-			const templateData = full.starterData || {};
+			// Update step completion status - templates now provide bootstrap content
+			// Personal info step - will be completed by profile import or user input
+			// Don't auto-complete personal info since it needs user's actual data
 			
-			// Personal info step - check if we have basic info
-			if (templateData.personalInfo?.fullName?.trim() || templateData.personalInfo?.email?.trim()) {
-				markStepComplete('personal');
-			} else {
-				markStepIncomplete('personal');
-			}
+			// Summary step - templates provide default summary
+			markStepComplete('summary');
 			
-			// Summary step - check if we have a summary
-			if (templateData.summary?.trim()) {
-				markStepComplete('summary');
-			} else {
-				markStepIncomplete('summary');
-			}
+			// Experience step - templates provide example experience
+			markStepComplete('experience');
 			
-			// Experience step - check if we have at least one experience entry with basic info
-			if (Array.isArray(templateData.experience) && templateData.experience.some(exp =>
-				exp.company?.trim() ||
-				exp.position?.trim() ||
-				exp.description?.trim())) {
-				markStepComplete('experience');
-			} else {
-				markStepIncomplete('experience');
-			}
+			// Education step - templates provide example education
+			markStepComplete('education');
 			
-			// Education step - check if we have at least one education entry with basic info
-			if (Array.isArray(templateData.education) && templateData.education.some(edu =>
-				edu.institution?.trim() ||
-				edu.degree?.trim() ||
-				edu.description?.trim())) {
-				markStepComplete('education');
-			} else {
-				markStepIncomplete('education');
-			}
-			
-			// Skills step - check if we have at least one skill
-			if (Array.isArray(templateData.skills) && templateData.skills.some(skill => skill.name?.trim())) {
-				markStepComplete('skills');
-			} else {
-				markStepIncomplete('skills');
-			}
+			// Skills step - templates provide example skills
+			markStepComplete('skills');
 			
 			currentStep.set('personal');
 		} catch (e) {
@@ -161,9 +151,15 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 				currentStep.set('personal');
 				localStorage.removeItem('builderDraft');
 			} else {
+				// Try to auto-populate from profile first
+				const profilePopulated = autoPopulateFromProfile();
+				
 				// Default to the first template if none selected yet
 				if ($allTemplates && $allTemplates.length > 0 && (!$builderData.settings?.template || $builderData.settings?.template === 'default-template-id')) {
 					await selectTemplate($allTemplates[0]);
+				} else if (!profilePopulated) {
+					// If no template and no profile data, try auto-populate anyway
+					autoPopulateFromProfile();
 				}
 			}
 		} catch (e) {
@@ -228,6 +224,189 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		}
 	}
 
+	// Helper functions to generate default bootstrap content
+	function getDefaultBootstrapContent(template: any) {
+		return {
+			personalInfo: {},
+			summary: getDefaultSummary(template),
+			experience: getDefaultExperience(template),
+			education: getDefaultEducation(template),
+			skills: getDefaultSkills(template),
+			projects: [],
+			settings: template.settings || {}
+		};
+	}
+
+	function getDefaultSummary(template: any) {
+		const templateName = template.name?.toLowerCase() || '';
+		
+		if (templateName.includes('retail') || templateName.includes('service')) {
+			return 'Dedicated customer service professional with strong communication skills and a passion for helping others. Experienced in fast-paced retail environments with a focus on customer satisfaction and team collaboration.';
+		} else if (templateName.includes('tech') || templateName.includes('software')) {
+			return 'Motivated software developer with experience in modern web technologies. Passionate about creating user-friendly applications and solving complex problems through code. Eager to contribute to innovative projects and continue learning new technologies.';
+		} else if (templateName.includes('hospitality')) {
+			return 'Enthusiastic hospitality professional with excellent interpersonal skills and attention to detail. Experienced in providing exceptional customer service in fast-paced environments while maintaining high standards of quality.';
+		} else if (templateName.includes('student') || templateName.includes('entry')) {
+			return 'Recent graduate with strong academic background and eagerness to apply learned skills in a professional environment. Quick learner with excellent problem-solving abilities and strong work ethic.';
+		}
+		
+		return 'Professional with strong work ethic and excellent communication skills. Experienced in collaborative environments with a focus on achieving results and continuous improvement. Eager to contribute to team success and professional growth.';
+	}
+
+	function getDefaultExperience(template: any) {
+		const templateName = template.name?.toLowerCase() || '';
+		
+		if (templateName.includes('retail') || templateName.includes('service')) {
+			return [
+				{
+					id: generateId(),
+					company: 'ABC Retail Store',
+					position: 'Sales Associate',
+					location: 'City, State',
+					startDate: '2023-06',
+					endDate: '2024-01',
+					current: false,
+					description: 'Provided excellent customer service, processed transactions, and maintained store appearance. Consistently met sales targets and received positive customer feedback.',
+					highlights: []
+				}
+			];
+		} else if (templateName.includes('tech') || templateName.includes('software')) {
+			return [
+				{
+					id: generateId(),
+					company: 'Tech Solutions Inc.',
+					position: 'Junior Developer',
+					location: 'City, State',
+					startDate: '2023-08',
+					endDate: '',
+					current: true,
+					description: 'Developed and maintained web applications using modern frameworks. Collaborated with cross-functional teams to deliver high-quality software solutions.',
+					highlights: []
+				}
+			];
+		} else if (templateName.includes('hospitality')) {
+			return [
+				{
+					id: generateId(),
+					company: 'Grand Hotel',
+					position: 'Front Desk Associate',
+					location: 'City, State',
+					startDate: '2023-05',
+					endDate: '2024-02',
+					current: false,
+					description: 'Managed guest check-ins and check-outs, handled reservations, and provided exceptional customer service. Resolved guest concerns promptly and professionally.',
+					highlights: []
+				}
+			];
+		}
+		
+		return [
+			{
+				id: generateId(),
+				company: 'Example Company',
+				position: 'Team Member',
+				location: 'City, State',
+				startDate: '2023-06',
+				endDate: '2024-01',
+				current: false,
+				description: 'Contributed to team objectives through effective collaboration and strong work ethic. Developed skills in problem-solving and communication.',
+				highlights: []
+			}
+		];
+	}
+
+	function getDefaultEducation(template: any) {
+		const templateName = template.name?.toLowerCase() || '';
+		
+		if (templateName.includes('tech') || templateName.includes('software')) {
+			return [
+				{
+					id: generateId(),
+					institution: 'State University',
+					degree: 'Bachelor of Science',
+					field: 'Computer Science',
+					location: 'City, State',
+					startDate: '2020-09',
+					endDate: '2024-05',
+					current: false,
+					gpa: '3.5/4.0',
+					honors: [],
+					description: ''
+				}
+			];
+		} else if (templateName.includes('business')) {
+			return [
+				{
+					id: generateId(),
+					institution: 'Business College',
+					degree: 'Bachelor of Business Administration',
+					field: 'Business Management',
+					location: 'City, State',
+					startDate: '2020-09',
+					endDate: '2024-05',
+					current: false,
+					gpa: '3.4/4.0',
+					honors: [],
+					description: ''
+				}
+			];
+		}
+		
+		return [
+			{
+				id: generateId(),
+				institution: 'Local University',
+				degree: 'Bachelor of Arts',
+				field: 'General Studies',
+				location: 'City, State',
+				startDate: '2020-09',
+				endDate: '2024-05',
+				current: false,
+				gpa: '3.3/4.0',
+				honors: [],
+				description: ''
+			}
+		];
+	}
+
+	function getDefaultSkills(template: any) {
+		const templateName = template.name?.toLowerCase() || '';
+		
+		if (templateName.includes('retail') || templateName.includes('service')) {
+			return [
+				{ id: generateId(), name: 'Customer Service', level: 'advanced', category: 'soft' },
+				{ id: generateId(), name: 'POS Systems', level: 'intermediate', category: 'technical' },
+				{ id: generateId(), name: 'Communication', level: 'advanced', category: 'soft' },
+				{ id: generateId(), name: 'Team Collaboration', level: 'intermediate', category: 'soft' },
+				{ id: generateId(), name: 'Problem Solving', level: 'intermediate', category: 'soft' }
+			];
+		} else if (templateName.includes('tech') || templateName.includes('software')) {
+			return [
+				{ id: generateId(), name: 'JavaScript', level: 'intermediate', category: 'technical' },
+				{ id: generateId(), name: 'HTML/CSS', level: 'advanced', category: 'technical' },
+				{ id: generateId(), name: 'React', level: 'intermediate', category: 'technical' },
+				{ id: generateId(), name: 'Problem Solving', level: 'advanced', category: 'soft' },
+				{ id: generateId(), name: 'Team Collaboration', level: 'intermediate', category: 'soft' }
+			];
+		} else if (templateName.includes('hospitality')) {
+			return [
+				{ id: generateId(), name: 'Customer Service', level: 'advanced', category: 'soft' },
+				{ id: generateId(), name: 'Multitasking', level: 'intermediate', category: 'soft' },
+				{ id: generateId(), name: 'Communication', level: 'advanced', category: 'soft' },
+				{ id: generateId(), name: 'Reservation Systems', level: 'intermediate', category: 'technical' },
+				{ id: generateId(), name: 'Attention to Detail', level: 'advanced', category: 'soft' }
+			];
+		}
+		
+		return [
+			{ id: generateId(), name: 'Communication', level: 'intermediate', category: 'soft' },
+			{ id: generateId(), name: 'Teamwork', level: 'intermediate', category: 'soft' },
+			{ id: generateId(), name: 'Problem Solving', level: 'intermediate', category: 'soft' },
+			{ id: generateId(), name: 'Microsoft Office', level: 'intermediate', category: 'technical' },
+			{ id: generateId(), name: 'Time Management', level: 'intermediate', category: 'soft' }
+		];
+	}
+
 	function handleBackToDashboard() {
 		console.log('🔄 Navigating to dashboard');
 		goto('/dashboard');
@@ -243,6 +422,72 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 			console.error('Failed to logout:', error);
 		}
 	}
+
+	function handleImportProfile() {
+		if (!$userProfile) {
+			console.warn('No user profile available to import');
+			toast.error('No profile data available to import');
+			return;
+		}
+		
+		console.log('📥 Importing personal information from profile');
+		importFromProfile({
+			includePersonalInfo: true,
+			includeExperience: false,
+			includeEducation: false,
+			includeSkills: false,
+			mergingStrategy: 'merge'
+		});
+		
+		toast.success('Contact information imported from your profile', {
+			description: 'Only empty fields were updated to preserve your existing data'
+		});
+	}
+
+	async function handleSyncToProfile() {
+		if (!$userProfile) {
+			console.warn('No user profile available to sync to');
+			return;
+		}
+		
+		console.log('📤 Syncing contact info to profile');
+		const success = await syncProfileFromBuilder({
+			syncPersonalInfo: true,
+			syncSummary: false,
+			syncExperience: false,
+			syncEducation: false,
+			syncSkills: false
+		});
+		
+		if (success) {
+			console.log('✅ Successfully synced contact info to profile');
+		} else {
+			console.error('❌ Failed to sync to profile');
+		}
+	}
+
+	// Optional: Enable auto-sync for personal info only (less intrusive)
+	let autoSyncUnsubscribe: (() => void) | null = null;
+	
+	onMount(() => {
+		// Enable auto-sync for personal info only to keep profile updated
+		// This is conservative - only syncs contact information
+		if ($userProfile) {
+			autoSyncUnsubscribe = enableAutoSync({
+				personalInfo: true, // Auto-sync contact info
+				summary: false,     // Don't auto-sync content
+				experience: false,  // Don't auto-sync content  
+				education: false,   // Don't auto-sync content
+				skills: false       // Don't auto-sync content
+			});
+		}
+		
+		return () => {
+			if (autoSyncUnsubscribe) {
+				autoSyncUnsubscribe();
+			}
+		};
+	});
 </script>
 
 <svelte:head>
@@ -277,6 +522,26 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						</div>
 					</div>
 					<div class="flex items-center gap-2">
+						{#if $userProfile}
+							<Button 
+								variant="ghost" 
+								size="sm"
+								on:click={handleImportProfile}
+								title="Import contact information from your profile"
+							>
+								<Download class="w-4 h-4 mr-1" />
+								Import Contact Info
+							</Button>
+							<Button 
+								variant="ghost" 
+								size="sm"
+								on:click={handleSyncToProfile}
+								title="Sync contact information back to your profile"
+							>
+								<UserPlus class="w-4 h-4 mr-1" />
+								Sync Contact Info
+							</Button>
+						{/if}
 						<Button 
 							variant="outline" 
 							size="sm"
