@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { builderData, addSkill, removeSkill, markStepComplete, markStepIncomplete, characterLimits } from '$lib/stores/resumeBuilder.js';
 	import { templates as allTemplates } from '$lib/stores/templates.js';
+	import { userProfile } from '$lib/stores/userProfile.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { X } from 'lucide-svelte';
+	import { X, Sparkles } from 'lucide-svelte';
 
 	$: skills = $builderData.skills;
 	$: technicalSkills = skills.filter(skill => skill.category === 'technical');
@@ -65,9 +66,10 @@
 		}
 	}
 
-	// Predefined skill suggestions with template-aware overrides
+	// Enhanced skill suggestions with profile and template awareness
 	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
 	$: templateName = (selectedTemplate?.name || '').toLowerCase();
+	$: profile = $userProfile;
 	
 	const technicalBase = [
 	 'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML/CSS', 'SQL', 'Git', 'Microsoft Office'
@@ -77,30 +79,101 @@
 	];
 	const langBase = ['Spanish', 'French', 'German', 'Mandarin'];
 	
+	// Get profile-based skill suggestions
+	$: profileSkills = (() => {
+		if (!profile?.key_skills) return [];
+		try {
+			const skillsString = typeof profile.key_skills === 'string' 
+				? profile.key_skills 
+				: JSON.stringify(profile.key_skills);
+			return skillsString.split(',').map(s => s.trim()).filter(s => s.length > 0);
+		} catch {
+			return [];
+		}
+	})();
+	
+	// Industry-specific skills based on profile
+	$: industrySkills = (() => {
+		if (!profile?.target_industry) return [];
+		
+		const industry = profile.target_industry.toLowerCase();
+		
+		if (industry.includes('tech') || industry.includes('software') || industry.includes('it')) {
+			return ['JavaScript', 'Python', 'React', 'AWS', 'Docker', 'Git', 'Agile', 'API Development'];
+		}
+		if (industry.includes('marketing') || industry.includes('digital')) {
+			return ['Google Analytics', 'SEO', 'Social Media', 'Content Marketing', 'Adobe Creative Suite', 'Email Marketing'];
+		}
+		if (industry.includes('finance') || industry.includes('accounting')) {
+			return ['Excel', 'QuickBooks', 'Financial Analysis', 'SAP', 'Bloomberg Terminal', 'Risk Management'];
+		}
+		if (industry.includes('healthcare') || industry.includes('medical')) {
+			return ['EMR Systems', 'HIPAA Compliance', 'Medical Terminology', 'Patient Care', 'Clinical Documentation'];
+		}
+		if (industry.includes('education') || industry.includes('teaching')) {
+			return ['Curriculum Development', 'Classroom Management', 'Learning Management Systems', 'Assessment Design'];
+		}
+		if (industry.includes('sales') || industry.includes('retail')) {
+			return ['CRM Software', 'Lead Generation', 'Customer Service', 'POS Systems', 'Sales Analytics'];
+		}
+		
+		return [];
+	})();
+	
 	$: technicalSuggestions = (() => {
-	 if (templateName.includes('retail') || templateName.includes('service') || templateName.includes('star')) {
-			return ['POS Systems', 'Cash Handling', 'Merchandising', 'Inventory', 'Barcode Scanners', 'Stocking', 'Cleaning', 'Microsoft Office'];
+		// Combine profile skills, industry skills, and template-specific skills
+		let suggestions = [...technicalBase];
+		
+		// Add profile skills first (highest priority)
+		if (profileSkills.length > 0) {
+			suggestions = [...profileSkills.slice(0, 6), ...suggestions];
 		}
-		if (templateName.includes('hospitality')) {
-			return ['POS Systems', 'Table Service', 'Scheduling', 'Food Safety', 'Reservations', 'Host/Server Tools'];
+		
+		// Add industry-specific skills
+		if (industrySkills.length > 0) {
+			suggestions = [...industrySkills.slice(0, 4), ...suggestions];
 		}
-		if (templateName.includes('lifeguard')) {
-			return ['CPR/First Aid', 'Water Safety', 'Rescue Techniques', 'Incident Reporting', 'Two-Way Radios'];
+		
+		// Template-specific overrides
+		if (templateName.includes('retail') || templateName.includes('service') || templateName.includes('star')) {
+			suggestions = ['POS Systems', 'Cash Handling', 'Merchandising', 'Inventory', 'Barcode Scanners', 'Stocking', 'Cleaning', 'Microsoft Office', ...suggestions];
+		} else if (templateName.includes('hospitality')) {
+			suggestions = ['POS Systems', 'Table Service', 'Scheduling', 'Food Safety', 'Reservations', 'Host/Server Tools', ...suggestions];
+		} else if (templateName.includes('lifeguard')) {
+			suggestions = ['CPR/First Aid', 'Water Safety', 'Rescue Techniques', 'Incident Reporting', 'Two-Way Radios', ...suggestions];
 		}
-		return technicalBase;
+		
+		// Remove duplicates and limit to 12 suggestions
+		return [...new Set(suggestions)].slice(0, 12);
 	})();
 	
 	$: softSuggestions = (() => {
+		let suggestions = [...softBase];
+		
+		// Industry-specific soft skills
+		if (profile?.target_industry) {
+			const industry = profile.target_industry.toLowerCase();
+			
+			if (industry.includes('tech') || industry.includes('software')) {
+				suggestions = ['Problem Solving', 'Analytical Thinking', 'Collaboration', 'Adaptability', ...suggestions];
+			} else if (industry.includes('sales') || industry.includes('customer')) {
+				suggestions = ['Communication', 'Persuasion', 'Relationship Building', 'Negotiation', ...suggestions];
+			} else if (industry.includes('management') || industry.includes('leadership')) {
+				suggestions = ['Leadership', 'Team Management', 'Strategic Planning', 'Decision Making', ...suggestions];
+			}
+		}
+		
+		// Template-specific overrides
 		if (templateName.includes('retail') || templateName.includes('service') || templateName.includes('star')) {
-			return ['Customer Service', 'Communication', 'Reliability', 'Attention to Detail', 'Teamwork', 'Problem Solving'];
+			suggestions = ['Customer Service', 'Communication', 'Reliability', 'Attention to Detail', 'Teamwork', 'Problem Solving', ...suggestions];
+		} else if (templateName.includes('hospitality')) {
+			suggestions = ['Customer Service', 'Multitasking', 'Communication', 'Teamwork', 'Adaptability', ...suggestions];
+		} else if (templateName.includes('lifeguard')) {
+			suggestions = ['Attention to Detail', 'Calm Under Pressure', 'Communication', 'Teamwork', 'Responsibility', ...suggestions];
 		}
-		if (templateName.includes('hospitality')) {
-			return ['Customer Service', 'Multitasking', 'Communication', 'Teamwork', 'Adaptability'];
-		}
-		if (templateName.includes('lifeguard')) {
-			return ['Attention to Detail', 'Calm Under Pressure', 'Communication', 'Teamwork', 'Responsibility'];
-		}
-		return softBase;
+		
+		// Remove duplicates and limit to 10 suggestions
+		return [...new Set(suggestions)].slice(0, 10);
 	})();
 	
 	$: languageSuggestions = langBase;
@@ -113,6 +186,8 @@
 		<h3 class="text-lg font-semibold">Skills</h3>
 		<p class="text-sm text-muted-foreground">Add your technical skills, soft skills, and languages (minimum 3 skills required)</p>
 	</div>
+
+
 
 	<!-- Technical Skills -->
 	<div class="space-y-4">

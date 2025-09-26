@@ -2,7 +2,7 @@ import { PUBLIC_POCKETBASE_URL, PUBLIC_APP_URL } from '$env/static/public';
 import { dev } from '$app/environment';
 
 // PocketBase configuration
-export const POCKETBASE_URL = PUBLIC_POCKETBASE_URL || 'http://localhost:8080';
+export const POCKETBASE_URL = PUBLIC_POCKETBASE_URL || 'http://localhost:8090';
 
 // App configuration
 export const APP_URL = PUBLIC_APP_URL || (dev ? 'http://localhost:5173' : 'https://res-build-hub.netlify.app');

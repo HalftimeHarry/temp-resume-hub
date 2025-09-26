@@ -2,6 +2,8 @@
 import { writable, derived } from 'svelte/store';
 import type { ResumeTemplate, TemplateFilters } from '$lib/types/resume';
 import { pb } from '$lib/pocketbase';
+import { userProfile } from './userProfile';
+import { templatePreferences, userSettingsStore } from './userSettings';
 
 // Template stores
 export const templates = writable<ResumeTemplate[]>([]);
@@ -17,7 +19,7 @@ export const templateFilters = writable<Omit<TemplateFilters, 'isPopular' | 'tag
   sortOrder: 'desc'
 });
 
-// Derived stores
+// Enhanced derived stores with profile and settings integration
 export const filteredTemplates = derived(
   [templates, templateFilters],
   ([$templates, $filters]) => {
@@ -65,6 +67,125 @@ export const filteredTemplates = derived(
     }
 );
 
+// Profile-based recommended templates
+export const recommendedTemplates = derived(
+  [templates, userProfile, templatePreferences],
+  ([$templates, $profile, $preferences]) => {
+    if (!$profile || !$preferences?.auto_recommend) {
+      return $templates.slice(0, 6); // Return first 6 if no profile or auto-recommend disabled
+    }
+    
+    return getRecommendedTemplates($templates, $profile, $preferences);
+  }
+);
+
+// Favorite templates
+export const favoriteTemplates = derived(
+  [templates, templatePreferences],
+  ([$templates, $preferences]) => {
+    if (!$preferences?.favorite_templates?.length) {
+      return [];
+    }
+    
+    return $templates.filter(template => 
+      $preferences.favorite_templates.includes(template.id)
+    );
+  }
+);
+
+// Recently used templates
+export const recentTemplates = derived(
+  [templates, templatePreferences],
+  ([$templates, $preferences]) => {
+    if (!$preferences?.template_usage_history) {
+      return [];
+    }
+    
+    const usageHistory = $preferences.template_usage_history;
+    const recentTemplateIds = Object.entries(usageHistory)
+      .sort(([,a], [,b]) => b - a) // Sort by usage count
+      .slice(0, 5) // Get top 5
+      .map(([id]) => id);
+    
+    return $templates.filter(template => 
+      recentTemplateIds.includes(template.id)
+    );
+  }
+);
+
+// Template recommendation algorithm
+function getRecommendedTemplates(templates: ResumeTemplate[], profile: any, preferences: any): ResumeTemplate[] {
+  if (!templates.length) return [];
+  
+  // Score each template based on profile match
+  const scoredTemplates = templates.map(template => ({
+    template,
+    score: calculateTemplateScore(template, profile, preferences)
+  }));
+  
+  // Sort by score (highest first) and return top templates
+  return scoredTemplates
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8)
+    .map(item => item.template);
+}
+
+function calculateTemplateScore(template: ResumeTemplate, profile: any, preferences: any): number {
+  let score = 0;
+  
+  // Base score for all templates
+  score += 10;
+  
+  // Category preference match
+  if (preferences.preferred_categories?.includes(template.category)) {
+    score += 30;
+  }
+  
+  // Usage history bonus
+  const usageCount = preferences.template_usage_history?.[template.id] || 0;
+  score += Math.min(usageCount * 5, 20); // Max 20 points for usage
+  
+  // Favorite bonus
+  if (preferences.favorite_templates?.includes(template.id)) {
+    score += 25;
+  }
+  
+  // Industry matching (if template has targeting data)
+  if (template.config?.targeting?.industries?.includes(profile.target_industry)) {
+    score += 40;
+  }
+  
+  // Experience level matching
+  if (template.config?.targeting?.experience_levels?.includes(profile.experience_level)) {
+    score += 35;
+  }
+  
+  // Job type matching
+  if (profile.target_job_titles && template.config?.targeting?.job_types) {
+    const jobTitles = profile.target_job_titles.toLowerCase();
+    const hasJobMatch = template.config.targeting.job_types.some((jobType: string) =>
+      jobTitles.includes(jobType.toLowerCase())
+    );
+    if (hasJobMatch) {
+      score += 30;
+    }
+  }
+  
+  // Premium template handling
+  if (template.isPremium && !preferences.show_premium_templates) {
+    score -= 50; // Reduce score for premium if user doesn't want to see them
+  }
+  
+  // Recency bonus for newer templates
+  const templateAge = Date.now() - new Date(template.createdAt).getTime();
+  const daysSinceCreated = templateAge / (1000 * 60 * 60 * 24);
+  if (daysSinceCreated < 30) {
+    score += 15; // Bonus for templates created in last 30 days
+  }
+  
+  return Math.max(score, 0); // Ensure non-negative score
+}
+
 // Template operations
 export const templateStore = {
   // Load all templates
@@ -107,14 +228,43 @@ export const templateStore = {
     }
   },
   
-  // Get template by ID
-  async getTemplate(id: string): Promise<ResumeTemplate> {
+  // Get template by ID with usage tracking
+  async getTemplate(id: string, trackUsage: boolean = true): Promise<ResumeTemplate> {
     try {
       const record = await pb.collection('templates').getOne(id);
-      return mapRecordToTemplate(record);
+      const template = mapRecordToTemplate(record);
+      
+      // Track template usage if enabled
+      if (trackUsage) {
+        await userSettingsStore.trackTemplateUsage(id);
+      }
+      
+      return template;
     } catch (error) {
       console.error('Failed to get template:', error);
       throw error;
+    }
+  },
+  
+  // Toggle template favorite status
+  async toggleFavorite(templateId: string): Promise<boolean> {
+    try {
+      return await userSettingsStore.toggleTemplateFavorite(templateId);
+    } catch (error) {
+      console.error('Failed to toggle template favorite:', error);
+      return false;
+    }
+  },
+  
+  // Get personalized template recommendations
+  async getPersonalizedRecommendations(): Promise<ResumeTemplate[]> {
+    try {
+      const allTemplates = await this.loadTemplates();
+      // The recommendedTemplates derived store will handle the filtering
+      return allTemplates.slice(0, 8); // Fallback to first 8 templates
+    } catch (error) {
+      console.error('Failed to get personalized recommendations:', error);
+      return [];
     }
   },
   

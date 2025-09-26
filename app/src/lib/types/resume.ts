@@ -141,16 +141,94 @@ export interface ResumeSettings {
   customCSS?: string;
 }
 
+export interface ProfileSnapshot {
+  target_industry?: string;
+  experience_level?: string;
+  target_job_titles?: string;
+  key_skills?: string;
+  location?: string;
+  snapshot_date: string;
+}
+
+export interface AIInsights {
+  suggestions?: string[];
+  improvements?: string[];
+  keywords?: string[];
+  ats_recommendations?: string[];
+  industry_tips?: string[];
+  last_analyzed?: string;
+}
+
+export interface SuccessMetrics {
+  applications_sent?: number;
+  responses_received?: number;
+  interviews_scheduled?: number;
+  offers_received?: number;
+  last_success_date?: string;
+  success_rate?: number;
+}
+
+export interface FeedbackData {
+  user_rating?: number;
+  improvement_suggestions?: string[];
+  feedback_date?: string;
+  helpful_features?: string[];
+  pain_points?: string[];
+}
+
+export interface TemplateCustomizations {
+  sections_added?: string[];
+  sections_removed?: string[];
+  sections_reordered?: boolean;
+  color_scheme_changed?: boolean;
+  layout_modifications?: string[];
+  font_changes?: boolean;
+  spacing_adjustments?: boolean;
+}
+
 export interface Resume {
   id: string;
   title: string;
-  user: string;
-  content: Record<string, any>;
-  template?: string;
-  is_public: boolean;
   slug?: string;
+  user: string;
+  template?: string;
+  content: Record<string, any>;
+  is_public: boolean;
   created: string;
   updated: string;
+  
+  // Analytics & Tracking
+  view_count?: number;
+  last_viewed?: string;
+  download_count?: number;
+  share_count?: number;
+  last_downloaded?: string;
+  last_shared?: string;
+  
+  // Profile Integration
+  profile_snapshot?: ProfileSnapshot;
+  target_job?: string;
+  target_company?: string;
+  industry_focus?: string;
+  experience_level?: string;
+  
+  // Quality & Optimization
+  optimization_score?: number;
+  completion_percentage?: number;
+  personalization_level?: 'basic' | 'enhanced' | 'ai_optimized';
+  ats_score?: number;
+  
+  // Organization & Management
+  status?: 'draft' | 'active' | 'archived' | 'template';
+  version?: number;
+  tags?: string[];
+  
+  // AI & Intelligence
+  ai_insights?: AIInsights;
+  success_metrics?: SuccessMetrics;
+  feedback_data?: FeedbackData;
+  template_customizations?: TemplateCustomizations;
+  
   expand?: {
     user?: User;
   };
