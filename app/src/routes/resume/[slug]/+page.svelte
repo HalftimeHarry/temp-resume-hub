@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { pb, resumes } from '$lib/pocketbase';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import type { Resume } from '$lib/types/resume.js';
-	import { Menu, X, ArrowLeft } from 'lucide-svelte';
+	import { Menu, X, ArrowLeft, Printer } from 'lucide-svelte';
 
 	let resume: Resume | null = null;
 	let loading = true;
@@ -16,6 +16,7 @@
 	// Styling state
 	let showStylingPanel = false;
 	let showUpgradeModal = false;
+	let isSavingStyling = false;
 
 	// Debug reactive statement
 	$: {
@@ -29,6 +30,15 @@
 			!(event.target as Element).closest('[data-mobile-menu-button]')) {
 			mobileMenuOpen = false;
 		}
+	}
+
+	// Print function
+	function handlePrint() {
+		// Close mobile menu if open
+		mobileMenuOpen = false;
+		
+		// Trigger browser print dialog
+		window.print();
 	}
 	let previewSettings = {
 		colorScheme: 'orange',
@@ -149,9 +159,15 @@
 
 	$: slug = $page.params.slug;
 	
-	// Reactive dependencies for preview settings
-	// Create a single reactive dependency on the entire previewSettings object
+	// Reactive dependency to ensure functions re-run when previewSettings changes
 	$: previewSettingsDep = JSON.stringify(previewSettings);
+	
+	// Force template re-render when previewSettings changes
+	$: {
+		if (previewSettings) {
+			console.log('🔄 Template reactive update triggered by previewSettings change:', previewSettings);
+		}
+	}
 
 	onMount(async () => {
 		try {
@@ -225,7 +241,7 @@
 	}
 	
 	async function saveStyling(): Promise<void> {
-		showStylingPanel = false;
+		isSavingStyling = true;
 		// Save styling settings to server
 		console.log('Saving styling settings to server:', previewSettings);
 		
@@ -248,13 +264,20 @@
 				}
 				console.log('Styling saved successfully. Updated previewSettings:', previewSettings);
 				
-				// Refresh the page to ensure styling is properly applied
-				window.location.reload();
+				// Show success feedback briefly before closing
+				setTimeout(() => {
+					showStylingPanel = false;
+				}, 500);
+				
+				// Force a reactive update to apply the new styling
+				resume = { ...resume };
 			} else {
 				console.error(`Failed to save styling: ${result.error}`);
 			}
 		} catch (error) {
 			console.error('Error saving styling:', error);
+		} finally {
+			isSavingStyling = false;
 		}
 	}
 	
@@ -269,7 +292,7 @@
 		// No alert needed - styling is applied immediately to preview
 	}
 	
-	async function applyThemePreset(preset: typeof themePresets[0]) {
+	function applyThemePreset(preset: typeof themePresets[0]) {
 		console.log('Applying theme preset:', preset);
 		// Update preview settings with proper reactivity
 		previewSettings = {
@@ -493,11 +516,12 @@
 					<div class="hidden sm:flex items-center gap-2">
 						<!-- Demo Premium Toggle (for testing) -->
 						<button
-							class={`px-3 py-2 text-sm rounded-lg transition-colors ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-							on:click={() => isPremiumUser = !isPremiumUser}
-							title="Demo: Toggle Premium Status"
+							class="px-3 py-2 text-sm rounded-lg transition-colors bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-2"
+							on:click={handlePrint}
+							title="Print Resume"
 						>
-							{isPremiumUser ? '✨ Premium' : '🆓 Free'}
+							<Printer class="w-4 h-4" />
+							Print
 						</button>
 						<button
 							class="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors"
@@ -530,11 +554,12 @@
 
 							<!-- Premium Status -->
 							<button
-								class={`w-full px-4 py-2 rounded-lg text-center font-medium transition-colors duration-200 ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-								on:click={() => { isPremiumUser = !isPremiumUser; mobileMenuOpen = false; }}
-								title="Demo: Toggle Premium Status"
+								class="w-full px-4 py-2 rounded-lg text-center font-medium transition-colors duration-200 bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center justify-center gap-2"
+								on:click={handlePrint}
+								title="Print Resume"
 							>
-								{isPremiumUser ? '✨ Premium User' : '🆓 Free User'}
+								<Printer class="w-4 h-4" />
+								Print Resume
 							</button>
 
 							<!-- Action Buttons -->
@@ -561,6 +586,7 @@
 		<!-- Resume Content -->
 		<main class="container mx-auto px-4 py-8">
 			<div class="max-w-4xl mx-auto">
+				{#key previewSettingsDep}
 				<div class={`bg-white rounded-lg shadow-lg p-8 md:p-12 ${getSpacingClass()} ${getLayoutClass()}`}>
 					<!-- Left column for two-column layout -->
 					<div class={previewSettings.layout === 'two-column' ? 'md:pr-8 md:border-r md:border-gray-200' : ''}>
@@ -729,9 +755,9 @@
 										<div class="mb-4">
 											<h3 class="font-bold text-lg">{project.name}</h3>
 											<p class={`text-gray-700 mt-1 ${getFontSizeClass()}`}>{project.description}</p>
-											{#if project.technologies && project.technologies.length > 0}
+											{#if project.technologies && project.technologies.trim()}
 												<div class="flex flex-wrap gap-2 mt-2">
-													{#each project.technologies as tech}
+													{#each project.technologies.split(',').map(tech => tech.trim()).filter(tech => tech) as tech}
 														<span class={`px-3 py-1 ${getColorClasses().secondary} rounded-full text-sm`}>
 															{tech}
 														</span>
@@ -745,6 +771,7 @@
 						{/if}
 				</div>
 			</div>
+			{/key}
 		</div>
 		</main>
 
@@ -767,8 +794,9 @@
 				<div class="flex items-center justify-between mb-6">
 					<h2 class="text-xl font-bold">🎨 Style Your Resume</h2>
 					<button
-						class="text-gray-500 hover:text-gray-700"
+						class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
 						on:click={() => showStylingPanel = false}
+						disabled={isSavingStyling}
 					>
 						✕
 					</button>
@@ -866,22 +894,31 @@
 				
 				<div class="flex justify-between mt-6">
 					<button
-						class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+						class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
 						on:click={resetToDefault}
+						disabled={isSavingStyling}
 					>
 						🔄 Reset to Default
 					</button>
 					<button
-						class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+						class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
 						on:click={saveStyling}
+						disabled={isSavingStyling}
 					>
-						🎨 Set Theme
+						{#if isSavingStyling}
+							<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+							Saving...
+						{:else}
+							🎨 Set Theme
+						{/if}
 					</button>
 				</div>
 			</div>
 		</div>
 	</div>
 {/if}
+
+
 
 <!-- Premium Upgrade Modal -->
 {#if showUpgradeModal}
@@ -945,3 +982,5 @@
 		</div>
 	</div>
 {/if}
+
+
