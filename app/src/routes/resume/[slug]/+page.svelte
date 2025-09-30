@@ -16,7 +16,6 @@
 	// Styling state
 	let showStylingPanel = false;
 	let showUpgradeModal = false;
-	let isSavingStyling = false;
 
 	// Debug reactive statement
 	$: {
@@ -219,9 +218,41 @@
 		}
 	});
 
-	function downloadPDF(): void {
-		// TODO: Implement PDF generation
-		alert('📄 PDF download will be implemented soon! 🚀');
+	let isApplying = false;
+	
+	async function applyChanges(): Promise<void> {
+		isApplying = true;
+		try {
+			// Save both styling and resume data to database
+			console.log('Applying changes - saving styling and data to server:', previewSettings);
+			
+			const updatedContent = {
+				...resume.content,
+				styling: { ...previewSettings }
+			};
+			
+			const result = await resumes.updateResume(resume.id, { content: updatedContent });
+			
+			if (result.success) {
+				resume = result.resume;
+				// Update previewSettings to match the saved styling
+				if (resume.content?.styling) {
+					previewSettings = { ...resume.content.styling };
+				}
+				console.log('Changes applied successfully');
+				
+				// Show success feedback
+				alert('✅ Changes applied successfully!');
+			} else {
+				console.error(`Failed to apply changes: ${result.error}`);
+				alert('❌ Failed to apply changes. Please try again.');
+			}
+		} catch (error) {
+			console.error('Error applying changes:', error);
+			alert('❌ Error applying changes. Please try again.');
+		} finally {
+			isApplying = false;
+		}
 	}
 	
 	function updatePreviewSettings(setting: keyof typeof previewSettings, value: string) {
@@ -240,46 +271,7 @@
 		console.log('Preview styling applied successfully');
 	}
 	
-	async function saveStyling(): Promise<void> {
-		isSavingStyling = true;
-		// Save styling settings to server
-		console.log('Saving styling settings to server:', previewSettings);
-		
-		try {
-			const updatedContent = {
-				...resume.content,
-				styling: { ...previewSettings }
-			};
-			
-			console.log('Sending updated content to server:', updatedContent);
-			
-			const result = await resumes.updateResume(resume.id, { content: updatedContent });
-			console.log('Server response:', result);
-			
-			if (result.success) {
-				resume = result.resume;
-				// Update previewSettings to match the saved styling
-				if (resume.content?.styling) {
-					previewSettings = { ...resume.content.styling };
-				}
-				console.log('Styling saved successfully. Updated previewSettings:', previewSettings);
-				
-				// Show success feedback briefly before closing
-				setTimeout(() => {
-					showStylingPanel = false;
-				}, 500);
-				
-				// Force a reactive update to apply the new styling
-				resume = { ...resume };
-			} else {
-				console.error(`Failed to save styling: ${result.error}`);
-			}
-		} catch (error) {
-			console.error('Error saving styling:', error);
-		} finally {
-			isSavingStyling = false;
-		}
-	}
+
 	
 	function resetToDefault(): void {
 		previewSettings = {
@@ -530,10 +522,16 @@
 							🎨 Style Resume
 						</button>
 						<button
-							class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-							on:click={downloadPDF}
+							class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+							on:click={applyChanges}
+							disabled={isApplying}
 						>
-							📄 Download PDF
+							{#if isApplying}
+								<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+								Applying...
+							{:else}
+								✅ Apply Changes
+							{/if}
 						</button>
 					</div>
 				</div>
@@ -571,10 +569,16 @@
 									🎨 Style Resume
 								</button>
 								<button
-									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200"
-									on:click={() => { downloadPDF(); mobileMenuOpen = false; }}
+									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+									on:click={() => { applyChanges(); mobileMenuOpen = false; }}
+									disabled={isApplying}
 								>
-									📄 Download PDF
+									{#if isApplying}
+										<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+										Applying...
+									{:else}
+										✅ Apply Changes
+									{/if}
 								</button>
 							</div>
 						</div>
@@ -794,9 +798,8 @@
 				<div class="flex items-center justify-between mb-6">
 					<h2 class="text-xl font-bold">🎨 Style Your Resume</h2>
 					<button
-						class="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="text-gray-500 hover:text-gray-700"
 						on:click={() => showStylingPanel = false}
-						disabled={isSavingStyling}
 					>
 						✕
 					</button>
@@ -894,24 +897,23 @@
 				
 				<div class="flex justify-between mt-6">
 					<button
-						class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
 						on:click={resetToDefault}
-						disabled={isSavingStyling}
 					>
 						🔄 Reset to Default
 					</button>
 					<button
-						class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-						on:click={saveStyling}
-						disabled={isSavingStyling}
+						class="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+						on:click={() => showStylingPanel = false}
 					>
-						{#if isSavingStyling}
-							<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-							Saving...
-						{:else}
-							🎨 Set Theme
-						{/if}
+						Close Preview
 					</button>
+				</div>
+				
+				<div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+					<p class="text-sm text-blue-700">
+						💡 <strong>Preview your changes above</strong>, then click <strong>"Apply Changes"</strong> in the header to save them permanently.
+					</p>
 				</div>
 			</div>
 		</div>
