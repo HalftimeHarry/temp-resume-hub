@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
   import { pb } from '$lib/pocketbase';
@@ -48,7 +48,9 @@
     LogOut,
     User,
     Settings,
-    Sparkles
+    Sparkles,
+    Menu,
+    X
    } from 'lucide-svelte';
   import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
   import { AlertCircle, CheckCircle } from 'lucide-svelte';
@@ -60,6 +62,21 @@
   let searchQuery = '';
   let viewMode: 'grid' | 'list' = 'grid';
   let activeTab: 'resumes' | 'analytics' | 'templates' = 'resumes';
+  let mobileMenuOpen = false;
+  
+  // Debug reactive statement
+  $: {
+    console.log('Mobile menu state changed:', mobileMenuOpen);
+  }
+
+  // Close mobile menu when clicking outside
+  function handleClickOutside(event: MouseEvent) {
+    if (mobileMenuOpen && 
+        !(event.target as Element).closest('.mobile-menu-container') &&
+        !(event.target as Element).closest('[data-mobile-menu-button]')) {
+      mobileMenuOpen = false;
+    }
+  }
   let isLoading = true;
   let selectedResume: Resume | null = null;
   let showShareDialog = false;
@@ -99,6 +116,11 @@
   }
 
   onMount(async () => {
+    // Add click outside handler for mobile menu (browser only)
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
     // Only load data if authenticated
     if (!$isAuthenticated) {
       isLoading = false;
@@ -121,12 +143,18 @@
       isLoading = false;
     }
   });
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', handleClickOutside);
+    }
+  });
   
   function createNewResume() {
     console.log('Create Resume button clicked!');
     try {
-      console.log('Navigating to /builder');
-      goto('/builder');
+      console.log('Navigating to /builder for new resume');
+      goto('/builder'); // No edit parameter = new resume
       console.log('Navigation to /builder initiated');
     } catch (error) {
       console.error('Error navigating to builder:', error);
@@ -152,7 +180,7 @@
   }
    
    function editResume(resumeId: string) {
-    goto('/builder');
+    goto(`/builder?edit=${resumeId}`);
   }
   
   function viewResume(resume: Resume) {
@@ -288,15 +316,40 @@
   <header class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
+        <!-- Left side: Logo and title -->
         <div class="flex items-center space-x-3">
           <img src="/icon.svg" alt="Digital Resume Hub" class="h-8 w-8" />
-          <div>
+          <div class="hidden sm:block">
             <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
             <p class="text-sm text-gray-600">Welcome back, {user?.name || 'User'}!</p>
           </div>
+          <div class="sm:hidden">
+            <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
+          </div>
         </div>
-        
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+
+        <!-- Mobile menu button -->
+        <div class="sm:hidden">
+          <button
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+            data-mobile-menu-button
+            on:click={() => {
+              console.log('Hamburger menu clicked! Current state:', mobileMenuOpen);
+              mobileMenuOpen = !mobileMenuOpen;
+              console.log('New state:', mobileMenuOpen);
+            }}
+            aria-expanded={mobileMenuOpen}
+          >
+            <span class="sr-only">Open main menu</span>
+            <div class="relative w-6 h-6">
+              <Menu class="h-6 w-6 transition-all duration-300 {mobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}" />
+              <X class="h-6 w-6 absolute inset-0 transition-all duration-300 {mobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}" />
+            </div>
+          </button>
+        </div>
+
+        <!-- Desktop navigation -->
+        <div class="hidden sm:flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <!-- Profile Completion Notification -->
           {#if $userProfile}
             {#if $profileCompletionPercentage < 85}
@@ -363,6 +416,65 @@
           {/if}
         </div>
       </div>
+
+      <!-- Mobile menu -->
+      {#if mobileMenuOpen}
+        <div class="sm:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+          <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
+            <!-- Profile completion notification (mobile) -->
+            {#if $userProfile && $profileCompletionPercentage < 85}
+              <div class="flex items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm mb-3">
+                <AlertCircle class="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                <span class="text-amber-800 flex-1">
+                  Profile {$profileCompletionPercentage}% complete
+                </span>
+                <button 
+                  class="ml-2 text-amber-600 hover:text-amber-700 font-medium"
+                  on:click={() => { goto('/onboarding'); mobileMenuOpen = false; }}
+                >
+                  Complete
+                </button>
+              </div>
+            {/if}
+
+            <!-- New Resume Button -->
+            <button
+              class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 text-center font-medium transition-colors duration-200 shadow-sm"
+              on:click={() => { createNewResume(); mobileMenuOpen = false; }}
+            >
+              + New Resume
+            </button>
+
+            <!-- User info -->
+            {#if user}
+              <div class="flex items-center justify-between py-3 px-3 bg-gray-50 rounded-lg mt-3 border border-gray-100">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <span class="text-sm text-gray-700 font-medium">{user.email}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-md transition-colors duration-200"
+                    title="Settings"
+                    on:click={() => { goto('/settings'); mobileMenuOpen = false; }}
+                  >
+                    <Settings class="h-4 w-4" />
+                  </button>
+                  <button
+                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+                    title="Sign out"
+                    on:click={() => { handleLogout(); mobileMenuOpen = false; }}
+                  >
+                    <LogOut class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </div>
+      {/if}
     </div>
   </header>
   
@@ -533,29 +645,32 @@
     {/if}
     
     <!-- Navigation Tabs -->
-    <div class="flex items-center space-x-1 mb-6">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-1 mb-6">
       <Button
         variant={activeTab === 'resumes' ? 'default' : 'ghost'}
         size="sm"
+        class="w-full sm:w-auto justify-start sm:justify-center"
         on:click={() => activeTab = 'resumes'}
       >
-        <FileText class="h-4 w-4 mr-1" />
+        <FileText class="h-4 w-4 mr-2" />
         My Resumes
       </Button>
       <Button
         variant={activeTab === 'analytics' ? 'default' : 'ghost'}
         size="sm"
+        class="w-full sm:w-auto justify-start sm:justify-center"
         on:click={() => activeTab = 'analytics'}
       >
-        <BarChart3 class="h-4 w-4 mr-1" />
+        <BarChart3 class="h-4 w-4 mr-2" />
         Analytics
       </Button>
       <Button
         variant={activeTab === 'templates' ? 'default' : 'ghost'}
         size="sm"
+        class="w-full sm:w-auto justify-start sm:justify-center"
         on:click={() => activeTab = 'templates'}
       >
-        <Star class="h-4 w-4 mr-1" />
+        <Star class="h-4 w-4 mr-2" />
         Templates
       </Button>
     </div>

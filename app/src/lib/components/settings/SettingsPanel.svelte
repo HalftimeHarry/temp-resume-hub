@@ -4,7 +4,7 @@
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { 
     userSettings, 
@@ -31,13 +31,65 @@
     RotateCcw,
     CheckCircle,
     AlertCircle,
-    ArrowLeft
+    ArrowLeft,
+    Menu,
+    X,
+    User,
+    LogOut
   } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
+  import { currentUser, authStore } from '$lib/stores/auth';
 
   let activeTab = 'builder';
   let hasUnsavedChanges = false;
   let isSaving = false;
+  let mobileMenuOpen = false;
+
+  // Debug reactive statement
+  $: {
+    console.log('Settings mobile menu state changed:', mobileMenuOpen);
+  }
+
+  // Close mobile menu when clicking outside
+  function handleClickOutside(event: MouseEvent) {
+    if (mobileMenuOpen && 
+        !(event.target as Element).closest('.mobile-menu-container') &&
+        !(event.target as Element).closest('[data-mobile-menu-button]')) {
+      mobileMenuOpen = false;
+    }
+  }
+
+  async function handleLogout() {
+    console.log('Settings logout button clicked!');
+    try {
+      console.log('Calling authStore.logout()');
+      await authStore.logout();
+      console.log('authStore.logout() completed');
+      // Use hard navigation to ensure all state is cleared and route guards re-evaluate
+      if (typeof window !== 'undefined') {
+        console.log('Redirecting to home page');
+        window.location.href = '/';
+      } else {
+        console.log('Using goto to redirect to home page');
+        goto('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
+  onMount(() => {
+    // Add click outside handler for mobile menu (browser only)
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', handleClickOutside);
+    }
+  });
+
+  onDestroy(() => {
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('click', handleClickOutside);
+    }
+  });
 
   // Track changes to show save indicator
   $: if ($userSettings) {
@@ -94,38 +146,138 @@
   ];
 </script>
 
-<div class="settings-panel max-w-4xl mx-auto p-6">
-  <div class="mb-8">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          on:click={() => goto('/dashboard')}
-          class="flex items-center gap-2"
-        >
-          <ArrowLeft class="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <div>
-          <h1 class="text-3xl font-bold mb-2">Settings</h1>
-          <p class="text-gray-600">Customize your resume building experience</p>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Left side: Logo and title -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden sm:block">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              on:click={() => goto('/dashboard')}
+              class="flex items-center gap-2"
+            >
+              <ArrowLeft class="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </div>
+          <div class="hidden sm:block">
+            <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
+            <p class="text-sm text-gray-600">Customize your resume building experience</p>
+          </div>
+          <div class="sm:hidden">
+            <h1 class="text-xl font-bold text-gray-900">Settings</h1>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <div class="sm:hidden">
+          <button
+            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+            data-mobile-menu-button
+            on:click={() => {
+              console.log('Settings hamburger menu clicked! Current state:', mobileMenuOpen);
+              mobileMenuOpen = !mobileMenuOpen;
+              console.log('New state:', mobileMenuOpen);
+            }}
+            aria-expanded={mobileMenuOpen}
+          >
+            <span class="sr-only">Open main menu</span>
+            <div class="relative w-6 h-6">
+              <Menu class="h-6 w-6 transition-all duration-300 {mobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}" />
+              <X class="h-6 w-6 absolute inset-0 transition-all duration-300 {mobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}" />
+            </div>
+          </button>
+        </div>
+
+        <!-- Desktop navigation -->
+        <div class="hidden sm:flex items-center space-x-2">
+          {#if hasUnsavedChanges}
+            <Badge variant="outline" class="bg-amber-50 text-amber-700 border-amber-200">
+              <AlertCircle class="h-3 w-3 mr-1" />
+              Unsaved changes
+            </Badge>
+          {:else if $userSettings}
+            <Badge variant="outline" class="bg-green-50 text-green-700 border-green-200">
+              <CheckCircle class="h-3 w-3 mr-1" />
+              All settings saved
+            </Badge>
+          {/if}
+          
+          {#if $currentUser}
+            <div class="flex items-center gap-2 ml-2">
+              <div class="hidden md:flex items-center gap-1 text-sm text-gray-700">
+                <User class="h-4 w-4 text-gray-500" />
+                <span>{$currentUser.email}</span>
+              </div>
+              <button
+                class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"
+                title="Sign out"
+                on:click={handleLogout}
+              >
+                <LogOut class="h-4 w-4" />
+              </button>
+            </div>
+          {/if}
         </div>
       </div>
-      
-      {#if hasUnsavedChanges}
-        <Badge variant="outline" class="bg-amber-50 text-amber-700 border-amber-200">
-          <AlertCircle class="h-3 w-3 mr-1" />
-          Unsaved changes
-        </Badge>
-      {:else if $userSettings}
-        <Badge variant="outline" class="bg-green-50 text-green-700 border-green-200">
-          <CheckCircle class="h-3 w-3 mr-1" />
-          All settings saved
-        </Badge>
+
+      <!-- Mobile menu -->
+      {#if mobileMenuOpen}
+        <div class="sm:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+          <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
+            <!-- Back to Dashboard Button -->
+            <button
+              class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 text-center font-medium transition-colors duration-200 shadow-sm"
+              on:click={() => { goto('/dashboard'); mobileMenuOpen = false; }}
+            >
+              <ArrowLeft class="h-4 w-4 mr-1 inline" />
+              Back to Dashboard
+            </button>
+
+            <!-- Status Badge -->
+            {#if hasUnsavedChanges}
+              <div class="flex items-center bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm">
+                <AlertCircle class="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                <span class="text-amber-800 flex-1">Unsaved changes</span>
+              </div>
+            {:else if $userSettings}
+              <div class="flex items-center bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm">
+                <CheckCircle class="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+                <span class="text-green-800 flex-1">All settings saved</span>
+              </div>
+            {/if}
+
+            <!-- User info -->
+            {#if $currentUser}
+              <div class="flex items-center justify-between py-3 px-3 bg-gray-50 rounded-lg mt-3 border border-gray-100">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {$currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <span class="text-sm text-gray-700 font-medium">{$currentUser.email}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+                    title="Sign out"
+                    on:click={() => { handleLogout(); mobileMenuOpen = false; }}
+                  >
+                    <LogOut class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </div>
       {/if}
     </div>
-  </div>
+  </header>
+
+  <div class="settings-panel max-w-4xl mx-auto p-6">
 
   {#if $isLoadingSettings}
     <div class="text-center py-12">
@@ -669,6 +821,7 @@
       <p class="text-gray-600 mb-6">We'll create your settings when you first log in</p>
     </div>
   {/if}
+  </div>
 </div>
 
 <style>

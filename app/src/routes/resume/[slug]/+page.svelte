@@ -1,17 +1,35 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { pb, resumes } from '$lib/pocketbase';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import type { Resume } from '$lib/types/resume.js';
+	import { Menu, X, ArrowLeft } from 'lucide-svelte';
 
 	let resume: Resume | null = null;
 	let loading = true;
 	let error = '';
 	
+	// Mobile menu state
+	let mobileMenuOpen = false;
+	
 	// Styling state
 	let showStylingPanel = false;
 	let showUpgradeModal = false;
+
+	// Debug reactive statement
+	$: {
+		console.log('Resume mobile menu state changed:', mobileMenuOpen);
+	}
+
+	// Close mobile menu when clicking outside
+	function handleClickOutside(event: MouseEvent) {
+		if (mobileMenuOpen && 
+			!(event.target as Element).closest('.mobile-menu-container') &&
+			!(event.target as Element).closest('[data-mobile-menu-button]')) {
+			mobileMenuOpen = false;
+		}
+	}
 	let previewSettings = {
 		colorScheme: 'orange',
 		fontSize: 'medium',
@@ -171,6 +189,17 @@
 				};
 			}
 			loading = false;
+		}
+		
+		// Add click outside handler for mobile menu (browser only)
+		if (typeof document !== 'undefined') {
+			document.addEventListener('click', handleClickOutside);
+		}
+	});
+
+	onDestroy(() => {
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('click', handleClickOutside);
 		}
 	});
 
@@ -419,16 +448,49 @@
 {:else if resume}
 	<div class="min-h-screen bg-gray-50">
 		<!-- Header -->
-		<header class="bg-white border-b">
-			<div class="container mx-auto px-4 py-4">
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-3">
-						<a href="/" class={`flex items-center gap-2 hover:underline ${getColorClasses().primary}`}>
-							<Logo size="sm" showText={false} />
-							← Dashboard
-						</a>
+		<header class="bg-white border-b border-gray-200">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div class="flex items-center justify-between h-16">
+					<!-- Left side: Logo and title -->
+					<div class="flex items-center space-x-3">
+						<div class="hidden sm:block">
+							<a href="/" class={`flex items-center gap-2 hover:underline ${getColorClasses().primary}`}>
+								<ArrowLeft class="w-4 h-4" />
+								Dashboard
+							</a>
+						</div>
+						<Logo size="sm" showText={false} />
+						<div class="hidden sm:block">
+							<h1 class="text-xl font-semibold">Resume View</h1>
+							<p class="text-sm text-gray-600">Public resume preview</p>
+						</div>
+						<div class="sm:hidden">
+							<h1 class="text-xl font-bold text-gray-900">Resume View</h1>
+						</div>
 					</div>
-					<div class="flex items-center gap-2">
+
+					<!-- Mobile menu button -->
+					<div class="sm:hidden">
+						<button
+							class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+							data-mobile-menu-button
+							on:click={() => {
+								console.log('Resume hamburger menu clicked! Current state:', mobileMenuOpen);
+								mobileMenuOpen = !mobileMenuOpen;
+								console.log('New state:', mobileMenuOpen);
+							}}
+							aria-expanded={mobileMenuOpen}
+						>
+							<span class="sr-only">Open main menu</span>
+							<div class="relative w-6 h-6">
+								<Menu class="h-6 w-6 transition-all duration-300 {mobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}" />
+								<X class="h-6 w-6 absolute inset-0 transition-all duration-300 {mobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}" />
+							</div>
+						</button>
+					</div>
+
+					<!-- Desktop navigation -->
+					<div class="hidden sm:flex items-center gap-2">
 						<!-- Demo Premium Toggle (for testing) -->
 						<button
 							class={`px-3 py-2 text-sm rounded-lg transition-colors ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
@@ -451,6 +513,48 @@
 						</button>
 					</div>
 				</div>
+
+				<!-- Mobile menu -->
+				{#if mobileMenuOpen}
+					<div class="sm:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+						<div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
+							<!-- Back to Dashboard Button -->
+							<a
+								href="/"
+								class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 text-center font-medium transition-colors duration-200 shadow-sm flex items-center justify-center"
+								on:click={() => { mobileMenuOpen = false; }}
+							>
+								<ArrowLeft class="h-4 w-4 mr-1" />
+								Back to Dashboard
+							</a>
+
+							<!-- Premium Status -->
+							<button
+								class={`w-full px-4 py-2 rounded-lg text-center font-medium transition-colors duration-200 ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
+								on:click={() => { isPremiumUser = !isPremiumUser; mobileMenuOpen = false; }}
+								title="Demo: Toggle Premium Status"
+							>
+								{isPremiumUser ? '✨ Premium User' : '🆓 Free User'}
+							</button>
+
+							<!-- Action Buttons -->
+							<div class="space-y-2">
+								<button
+									class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
+									on:click={() => { showStylingPanel = true; mobileMenuOpen = false; }}
+								>
+									🎨 Style Resume
+								</button>
+								<button
+									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200"
+									on:click={() => { downloadPDF(); mobileMenuOpen = false; }}
+								>
+									📄 Download PDF
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</header>
 

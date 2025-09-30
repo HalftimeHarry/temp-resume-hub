@@ -7,7 +7,7 @@ import { writable, derived } from 'svelte/store';
 import { pb } from '$lib/pocketbase';
 import { currentUser } from './auth';
 
-// User profile interface
+// User profile interface - matches PocketBase schema
 export interface UserProfile {
   id: string;
   user: string;
@@ -17,12 +17,12 @@ export interface UserProfile {
   location?: string;
   linkedin_url?: string;
   portfolio_url?: string;
-  target_industry?: string;
-  experience_level?: 'entry' | 'junior' | 'mid' | 'senior' | 'executive' | 'student' | 'career_change';
+  target_industry?: 'technology' | 'healthcare' | 'finance' | 'retail' | 'education' | 'manufacturing' | 'hospitality' | 'marketing' | 'sales' | 'consulting' | 'nonprofit' | 'government' | 'media' | 'real_estate' | 'construction' | 'transportation' | 'energy' | 'agriculture' | 'legal' | 'other';
+  experience_level?: 'entry' | 'junior' | 'mid' | 'senior' | 'executive' | 'student';
   target_job_titles?: string;
   key_skills?: string;
-  career_stage?: 'first_job' | 'career_growth' | 'career_change' | 'promotion_seeking' | 'industry_switch' | 'returning_to_work' | 'freelance_to_fulltime' | 'executive_level';
-  preferred_work_type?: string[];
+  career_stage?: 'first_job' | 'career_growth' | 'career_change' | 'promotion_seeking' | 'industry_switch' | 'returning_to_work' | 'freelance_to_fulltime';
+  preferred_work_type?: ('remote' | 'hybrid' | 'onsite' | 'contract' | 'freelance' | 'part_time' | 'full_time' | 'internship')[];
   salary_expectation_min?: number;
   salary_expectation_max?: number;
   education_level?: 'high_school' | 'some_college' | 'associates' | 'bachelors' | 'masters' | 'doctorate' | 'professional' | 'bootcamp' | 'certification';
@@ -32,6 +32,18 @@ export interface UserProfile {
   onboarding_data?: any;
   profile_completed?: boolean;
   profile_completed_at?: string;
+  
+  // New fields for first-time job seekers (editor fields in PocketBase)
+  academic_projects?: string;
+  volunteer_experience?: string;
+  extracurricular_activities?: string;
+  personal_projects?: string;
+  internships_completed?: string;
+  technical_proficiencies?: string;
+  soft_skills_examples?: string;
+  achievements_awards?: string;
+  relevant_coursework?: string;
+  
   created: string;
   updated: string;
 }
