@@ -3,14 +3,30 @@
 import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated, isLoading, auth } from '$lib/stores/auth.js';
-	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete, autoPopulateFromProfile, smartMergeProfileAndTemplate, importFromProfile, syncProfileFromBuilder, enableAutoSync } from '$lib/stores/resumeBuilder.js';
+	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete, autoPopulateFromProfile, smartMergeProfileAndTemplate, importFromProfile, syncProfileFromBuilder, enableAutoSync, loadResumeForEditing, resetBuilderForNewResume } from '$lib/stores/resumeBuilder.js';
 	import { userProfile } from '$lib/stores/userProfile.js';
 	import { generateId } from '$lib/utils.js';
 	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus } from 'lucide-svelte';
+	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus, Menu, X } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import { toast } from 'svelte-sonner';
+	
+	let mobileMenuOpen = false;
+
+	// Debug reactive statement
+	$: {
+		console.log('Builder mobile menu state changed:', mobileMenuOpen);
+	}
+
+	// Close mobile menu when clicking outside
+	function handleClickOutside(event: MouseEvent) {
+		if (mobileMenuOpen && 
+			!(event.target as Element).closest('.mobile-menu-container') &&
+			!(event.target as Element).closest('[data-mobile-menu-button]')) {
+			mobileMenuOpen = false;
+		}
+	}
 	
 	// Selected template/color display
 	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
@@ -31,6 +47,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import ExperienceTab from '$lib/components/builder/ExperienceTab.svelte';
 	import EducationTab from '$lib/components/builder/EducationTab.svelte';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
+	import ProjectsTab from '$lib/components/builder/ProjectsTab.svelte';
 	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
 	
 	// Preview Component
@@ -93,6 +110,29 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 
 	// Prefill from template starter data if provided via localStorage & ensure templates list loaded
 	onMount(async () => {
+		// Add click outside handler for mobile menu (browser only)
+		if (typeof document !== 'undefined') {
+			document.addEventListener('click', handleClickOutside);
+		}
+		
+		// Check if we're editing an existing resume
+		const urlParams = new URLSearchParams(window.location.search);
+		const editResumeId = urlParams.get('edit');
+		
+		if (editResumeId) {
+			try {
+				console.log('Loading resume for editing:', editResumeId);
+				await loadResumeForEditing(editResumeId);
+				console.log('Resume loaded successfully for editing');
+			} catch (error) {
+				console.error('Failed to load resume for editing:', error);
+				toast.error('Failed to load resume for editing');
+			}
+		} else {
+			// Reset builder for new resume
+			console.log('No edit parameter, resetting builder for new resume');
+			resetBuilderForNewResume();
+		}
 		try {
 			if (!$allTemplates || $allTemplates.length === 0) {
 				await templateStore.loadTemplates();
@@ -190,21 +230,56 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		markStepComplete('settings');
 	}
 
-	const tabs = [
+	// Smart section ordering based on experience level
+	$: profile = $userProfile;
+	$: isFirstTimeJobSeeker = profile && ['student', 'entry'].includes(profile.experience_level);
+	
+	$: tabs = isFirstTimeJobSeeker ? [
+		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
+		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
+		{ id: 'education', label: 'Education', icon: Award, description: 'Academic background' },
+		{ id: 'projects', label: 'Projects', icon: FileText, description: 'Projects & activities' },
+		{ id: 'skills', label: 'Skills', icon: Code, description: 'Technical & soft skills' },
+		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history (optional)' },
+		{ id: 'settings', label: 'Settings', icon: Settings, description: 'Layout & formatting' },
+		{ id: 'preview', label: 'Preview', icon: Eye, description: 'Review & publish' }
+	] : [
 		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
 		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
 		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history' },
 		{ id: 'education', label: 'Education', icon: Award, description: 'Academic background' },
 		{ id: 'skills', label: 'Skills', icon: Code, description: 'Technical & soft skills' },
+		{ id: 'projects', label: 'Projects', icon: FileText, description: 'Projects & activities' },
 		{ id: 'settings', label: 'Settings', icon: Settings, description: 'Layout & formatting' },
 		{ id: 'preview', label: 'Preview', icon: Eye, description: 'Review & publish' }
 	];
 
 	function handleTabChange(tabId: string) {
-		console.log('handleTabChange called with:', tabId);
-		console.log('Calling goToStep with:', tabId);
+		console.log('🔄 Tab change requested:', tabId);
+		console.log('🔄 Current activeTab:', activeTab);
+		
+		// Ensure we can navigate to any step directly
 		goToStep(tabId);
-		console.log('handleTabChange finished');
+		
+		// Add visual feedback
+		toast.success(`Switched to ${tabs.find(t => t.id === tabId)?.label || tabId}`, {
+			duration: 1500
+		});
+	}
+	
+	// Get next/previous tab based on current ordering
+	function getNextTab(currentTab: string): string {
+		const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
+		const nextIndex = currentIndex + 1;
+		return nextIndex < tabs.length ? tabs[nextIndex].id : 'preview';
+	}
+	
+	function getPreviousTab(currentTab: string): string {
+		const currentIndex = tabs.findIndex(tab => tab.id === currentTab);
+		const prevIndex = currentIndex - 1;
+		return prevIndex >= 0 ? tabs[prevIndex].id : 'personal';
+		
+		console.log('✅ Tab change completed');
 	}
 
 	async function handleSave() {
@@ -486,6 +561,9 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 			if (autoSyncUnsubscribe) {
 				autoSyncUnsubscribe();
 			}
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('click', handleClickOutside);
+			}
 		};
 	});
 </script>
@@ -504,24 +582,52 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 {:else if authenticated}
 	<div class="min-h-screen bg-gray-50">
 		<!-- Header -->
-		<header class="bg-white border-b">
-			<div class="container mx-auto px-4 py-4">
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-3">
-						<button 
-							class="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
-							on:click={handleBackToDashboard}
-						>
-							<ArrowLeft class="w-4 h-4" />
-							Dashboard
-						</button>
+		<header class="bg-white border-b border-gray-200">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div class="flex items-center justify-between h-16">
+					<!-- Left side: Logo and title -->
+					<div class="flex items-center space-x-3">
+						<div class="hidden sm:block">
+							<button 
+								class="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
+								on:click={handleBackToDashboard}
+							>
+								<ArrowLeft class="w-4 h-4" />
+								Dashboard
+							</button>
+						</div>
 						<Logo size="sm" showText={false} />
-						<div>
+						<div class="hidden sm:block">
 							<h1 class="text-xl font-semibold">Resume Builder</h1>
 							<p class="text-sm text-muted-foreground">Create your professional resume step by step</p>
 						</div>
+						<div class="sm:hidden">
+							<h1 class="text-xl font-bold text-gray-900">Resume Builder</h1>
+						</div>
 					</div>
-					<div class="flex items-center gap-2">
+
+					<!-- Mobile menu button -->
+					<div class="sm:hidden">
+						<button
+							class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+							data-mobile-menu-button
+							on:click={() => {
+								console.log('Builder hamburger menu clicked! Current state:', mobileMenuOpen);
+								mobileMenuOpen = !mobileMenuOpen;
+								console.log('New state:', mobileMenuOpen);
+							}}
+							aria-expanded={mobileMenuOpen}
+						>
+							<span class="sr-only">Open main menu</span>
+							<div class="relative w-6 h-6">
+								<Menu class="h-6 w-6 transition-all duration-300 {mobileMenuOpen ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}" />
+								<X class="h-6 w-6 absolute inset-0 transition-all duration-300 {mobileMenuOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}" />
+							</div>
+						</button>
+					</div>
+
+					<!-- Desktop navigation -->
+					<div class="hidden sm:flex items-center gap-2">
 						{#if $userProfile}
 							<Button 
 								variant="ghost" 
@@ -567,12 +673,82 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						{/if}
 					</div>
 				</div>
+
+				<!-- Mobile menu -->
+				{#if mobileMenuOpen}
+					<div class="sm:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+						<div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
+							<!-- Back to Dashboard Button -->
+							<button
+								class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 text-center font-medium transition-colors duration-200 shadow-sm"
+								on:click={() => { handleBackToDashboard(); mobileMenuOpen = false; }}
+							>
+								<ArrowLeft class="h-4 w-4 mr-1 inline" />
+								Back to Dashboard
+							</button>
+
+							<!-- Action Buttons -->
+							<div class="space-y-2">
+								{#if $userProfile}
+									<button
+										class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
+										on:click={() => { handleImportProfile(); mobileMenuOpen = false; }}
+									>
+										<Download class="h-4 w-4 mr-1 inline" />
+										Import Contact Info
+									</button>
+									<button
+										class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
+										on:click={() => { handleSyncToProfile(); mobileMenuOpen = false; }}
+									>
+										<UserPlus class="h-4 w-4 mr-1 inline" />
+										Sync Contact Info
+									</button>
+								{/if}
+								<button
+									class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
+									on:click={() => { handleSave(); mobileMenuOpen = false; }}
+									disabled={!unsavedChanges}
+								>
+									{unsavedChanges ? 'Save Draft' : 'Saved'}
+								</button>
+								<button
+									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200"
+									on:click={() => { handlePublish(); mobileMenuOpen = false; }}
+								>
+									Publish Resume
+								</button>
+							</div>
+
+							<!-- User info -->
+							{#if $currentUser}
+								<div class="flex items-center justify-between py-3 px-3 bg-gray-50 rounded-lg mt-3 border border-gray-100">
+									<div class="flex items-center gap-2">
+										<div class="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+											{$currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
+										</div>
+										<span class="text-sm text-gray-700 font-medium">{$currentUser.email}</span>
+									</div>
+									<div class="flex items-center gap-1">
+										<button
+											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+											title="Sign out"
+											on:click={() => { handleLogout(); mobileMenuOpen = false; }}
+										>
+											<LogOut class="h-4 w-4" />
+										</button>
+									</div>
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</header>
 
 		<!-- Main Content -->
-		<div class="container mx-auto px-4 py-6">
-			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+		<div class="container mx-auto px-4 py-6 min-h-screen">
+			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[calc(100vh-200px)]">
 				<!-- Sidebar Navigation -->
 				<div class="lg:col-span-1">
 					<div class="bg-white rounded-lg border p-4 sticky top-6">
@@ -580,9 +756,10 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						<nav class="space-y-2">
 							{#each tabs as tab}
 								<button
-									class="w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors
-										{activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}"
+									class="w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-all duration-200 cursor-pointer
+										{activeTab === tab.id ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-muted hover:shadow-sm'}"
 									on:click={() => handleTabChange(tab.id)}
+									title="Click to go to {tab.label}"
 								>
 									<div class="relative">
 										<svelte:component this={tab.icon} class="w-4 h-4" />
@@ -627,55 +804,68 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							</div>
 
 				<!-- Content Area -->
-				<div class="lg:col-span-3">
-					<div class="bg-white rounded-lg border p-6">
+				<div class="lg:col-span-3 flex flex-col">
+					<div class="bg-white rounded-lg border flex-1 flex flex-col max-h-[calc(100vh-200px)]">
+						<!-- Header Section (Fixed) -->
+						<div class="p-6 border-b bg-white rounded-t-lg flex-shrink-0">
+							<!-- Active Section Indicator -->
+							<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+								<div class="flex items-center gap-2 text-blue-800">
+									<svelte:component this={tabs.find(t => t.id === activeTab)?.icon || User} class="w-4 h-4" />
+									<span class="font-medium">Current Section: {tabs.find(t => t.id === activeTab)?.label || 'Unknown'}</span>
+								</div>
+								<p class="text-sm text-blue-600 mt-1">{tabs.find(t => t.id === activeTab)?.description || ''}</p>
+							</div>
+						</div>
+						
+						<!-- Scrollable Content Area -->
+						<div class="flex-1 overflow-y-auto p-6">
+						
+						<!-- First-time job seeker guidance -->
+						{#if isFirstTimeJobSeeker && activeTab !== 'preview'}
+							<div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+								<div class="flex items-start gap-3">
+									<div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+										<User class="w-4 h-4 text-blue-600" />
+									</div>
+									<div>
+										<h3 class="font-medium text-blue-900 mb-1">Smart Resume Builder for First-Time Job Seekers</h3>
+										<p class="text-sm text-blue-800 mb-2">
+											We've optimized the section order for your experience level. Education and projects come first to highlight your academic achievements and personal initiatives.
+										</p>
+										<div class="text-xs text-blue-700">
+											<strong>Tip:</strong> Experience is optional for students and entry-level candidates. Focus on your education, projects, and transferable skills.
+										</div>
+									</div>
+								</div>
+							</div>
+						{/if}
+						
 						{#if activeTab === 'personal'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Personal Information</h2>
-								<p class="text-muted-foreground">Add your basic contact details and professional links</p>
-							</div>
-							<PersonalInfoTab onNext={() => handleTabChange('summary')} />
+							<PersonalInfoTab onNext={() => handleTabChange(getNextTab('personal'))} />
 						{:else if activeTab === 'summary'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Professional Summary</h2>
-								<p class="text-muted-foreground">Write a compelling summary that highlights your strengths and career goals</p>
-							</div>
 							<SummaryTab 
-								onNext={() => handleTabChange('experience')} 
-								onPrevious={() => handleTabChange('personal')} 
+								onNext={() => handleTabChange(getNextTab('summary'))} 
+								onPrevious={() => handleTabChange(getPreviousTab('summary'))} 
 							/>
 						{:else if activeTab === 'experience'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Work Experience</h2>
-								<p class="text-muted-foreground">Add your work history, internships, and relevant experience</p>
-							</div>
 							<ExperienceTab 
-								onNext={() => handleTabChange('education')} 
-								onPrevious={() => handleTabChange('summary')} 
+								onNext={() => handleTabChange(getNextTab('experience'))} 
+								onPrevious={() => handleTabChange(getPreviousTab('experience'))} 
 							/>
 						{:else if activeTab === 'education'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Education</h2>
-								<p class="text-muted-foreground">Add your educational background and qualifications</p>
-							</div>
 							<EducationTab 
-								onNext={() => handleTabChange('skills')} 
-								onPrevious={() => handleTabChange('experience')} 
+								onNext={() => handleTabChange(getNextTab('education'))} 
+								onPrevious={() => handleTabChange(getPreviousTab('education'))} 
 							/>
 						{:else if activeTab === 'skills'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Skills</h2>
-								<p class="text-muted-foreground">Add your technical skills, soft skills, and languages</p>
-							</div>
 							<SkillsTab 
-								onNext={() => handleTabChange('settings')} 
-								onPrevious={() => handleTabChange('education')} 
+								onNext={() => handleTabChange(getNextTab('skills'))} 
+								onPrevious={() => handleTabChange(getPreviousTab('skills'))} 
 							/>
+						{:else if activeTab === 'projects'}
+							<ProjectsTab />
 						{:else if activeTab === 'settings'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Resume Settings</h2>
-								<p class="text-muted-foreground">Customize your resume layout and formatting</p>
-							</div>
 							
 							<div class="space-y-8">
 								<!-- Layout Toggle -->
@@ -751,10 +941,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							</div>
 
 						{:else if activeTab === 'preview'}
-							<div class="mb-6">
-								<h2 class="text-2xl font-bold mb-2">Preview & Publish</h2>
-								<p class="text-muted-foreground">Review your resume and publish it to share with employers</p>
-							</div>
 
 							<div class="space-y-6">
 								<!-- Completion Status -->
@@ -857,9 +1043,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								</Button>
 							</div>
 						{/if}
+						</div>
 					</div>
-
-
 				</div>
 			</div>
 		</div>

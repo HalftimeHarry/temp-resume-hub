@@ -33,13 +33,31 @@
     certifications: '',
     willing_to_relocate: false,
     salary_expectation_min: null,
-    salary_expectation_max: null
+    salary_expectation_max: null,
+    
+    // New fields for first-time job seekers
+    academic_projects: '',
+    volunteer_experience: '',
+    extracurricular_activities: '',
+    personal_projects: '',
+    internships_completed: '',
+    technical_proficiencies: '',
+    soft_skills_examples: '',
+    achievements_awards: '',
+    relevant_coursework: ''
   };
   
   let currentStep = 1;
   let totalSteps = 4;
   let isSubmitting = false;
   let error = '';
+  
+  // Detect if user is a first-time job seeker
+  $: isFirstTimeJobSeeker = ['first_job', 'career_change', 'returning_to_work'].includes(formData.career_stage) || 
+                           ['student', 'entry'].includes(formData.experience_level);
+  
+  // Adjust total steps based on user type
+  $: totalSteps = isFirstTimeJobSeeker ? 5 : 4;
   
   // Industry options
   const industries = [
@@ -76,14 +94,13 @@
   ];
   
   const careerStages = [
-    { value: 'first_job', label: 'Looking for my first job' },
-    { value: 'career_growth', label: 'Growing in my current field' },
-    { value: 'career_change', label: 'Changing careers' },
-    { value: 'promotion_seeking', label: 'Seeking promotion' },
-    { value: 'industry_switch', label: 'Switching industries' },
-    { value: 'returning_to_work', label: 'Returning to work' },
-    { value: 'freelance_to_fulltime', label: 'Freelance to full-time' },
-    { value: 'executive_level', label: 'Executive level' }
+    { value: 'first_job', label: 'Looking for my first job', description: 'New to the workforce, seeking first professional role' },
+    { value: 'career_growth', label: 'Growing in my current field', description: 'Advancing within my current industry' },
+    { value: 'career_change', label: 'Changing careers', description: 'Transitioning to a completely new field' },
+    { value: 'promotion_seeking', label: 'Seeking promotion', description: 'Looking for advancement in current role' },
+    { value: 'industry_switch', label: 'Switching industries', description: 'Moving to a different industry with transferable skills' },
+    { value: 'returning_to_work', label: 'Returning to work', description: 'Re-entering workforce after a break' },
+    { value: 'freelance_to_fulltime', label: 'Freelance to full-time', description: 'Transitioning from freelance to permanent employment' }
   ];
   
   const workTypes = [
@@ -128,7 +145,18 @@
       certifications: $userProfile.certifications || '',
       willing_to_relocate: $userProfile.willing_to_relocate || false,
       salary_expectation_min: $userProfile.salary_expectation_min || null,
-      salary_expectation_max: $userProfile.salary_expectation_max || null
+      salary_expectation_max: $userProfile.salary_expectation_max || null,
+      
+      // New fields for first-time job seekers
+      academic_projects: $userProfile.academic_projects || '',
+      volunteer_experience: $userProfile.volunteer_experience || '',
+      extracurricular_activities: $userProfile.extracurricular_activities || '',
+      personal_projects: $userProfile.personal_projects || '',
+      internships_completed: $userProfile.internships_completed || '',
+      technical_proficiencies: $userProfile.technical_proficiencies || '',
+      soft_skills_examples: $userProfile.soft_skills_examples || '',
+      achievements_awards: $userProfile.achievements_awards || '',
+      relevant_coursework: $userProfile.relevant_coursework || ''
     };
   }
   
@@ -344,6 +372,14 @@
               <option value={level.value}>{level.label}</option>
             {/each}
           </select>
+          
+          {#if ['student', 'entry'].includes(formData.experience_level)}
+            <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p class="text-sm text-blue-700">
+                💡 First-time job seeker? Don't worry! We'll help you highlight your academic projects, volunteer work, and transferable skills to create a compelling resume.
+              </p>
+            </div>
+          {/if}
         </div>
         
         <div>
@@ -439,8 +475,84 @@
     </Card>
   {/if}
   
-  <!-- Step 4: Additional Preferences -->
-  {#if currentStep === 4}
+  <!-- Step 4: Background & Experience (First-time job seekers only) -->
+  {#if currentStep === 4 && isFirstTimeJobSeeker}
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Background & Experience</CardTitle>
+        <CardDescription>Tell us about your academic projects, volunteer work, and other experiences that showcase your skills</CardDescription>
+      </CardHeader>
+      <CardContent class="space-y-6">
+        <div>
+          <Label for="academic_projects">Academic Projects</Label>
+          <textarea
+            id="academic_projects"
+            bind:value={formData.academic_projects}
+            placeholder="Describe significant school projects, research, thesis work, or group assignments. Include technologies used, your role, and outcomes achieved."
+            class="w-full min-h-[100px] p-3 border rounded-md resize-vertical"
+          />
+          <p class="text-sm text-gray-500 mt-1">
+            Example: "Senior Capstone: Built e-commerce website using React and Node.js for local business, resulting in 30% increase in online sales"
+          </p>
+        </div>
+        
+        <div>
+          <Label for="volunteer_experience">Volunteer Experience</Label>
+          <textarea
+            id="volunteer_experience"
+            bind:value={formData.volunteer_experience}
+            placeholder="Describe volunteer work, community service, or unpaid roles. Focus on skills developed and impact made."
+            class="w-full min-h-[100px] p-3 border rounded-md resize-vertical"
+          />
+          <p class="text-sm text-gray-500 mt-1">
+            Example: "Food bank volunteer: Organized weekly food distributions for 200+ families, developed leadership skills managing team of 8 volunteers"
+          </p>
+        </div>
+        
+        <div>
+          <Label for="extracurricular_activities">Extracurricular Activities & Leadership</Label>
+          <textarea
+            id="extracurricular_activities"
+            bind:value={formData.extracurricular_activities}
+            placeholder="Describe clubs, sports, student organizations, leadership roles, or team activities."
+            class="w-full min-h-[80px] p-3 border rounded-md resize-vertical"
+          />
+          <p class="text-sm text-gray-500 mt-1">
+            Example: "Student Government President: Led initiatives that improved campus dining options, managed $50K budget"
+          </p>
+        </div>
+        
+        <div>
+          <Label for="personal_projects">Personal Projects</Label>
+          <textarea
+            id="personal_projects"
+            bind:value={formData.personal_projects}
+            placeholder="Describe side projects, hobbies, or self-directed learning that demonstrate relevant skills."
+            class="w-full min-h-[80px] p-3 border rounded-md resize-vertical"
+          />
+          <p class="text-sm text-gray-500 mt-1">
+            Example: "Photography portfolio website: Self-taught web development to create responsive portfolio showcasing 100+ photos"
+          </p>
+        </div>
+        
+        <div>
+          <Label for="achievements_awards">Achievements & Awards</Label>
+          <textarea
+            id="achievements_awards"
+            bind:value={formData.achievements_awards}
+            placeholder="List academic honors, competition wins, scholarships, or other recognitions."
+            class="w-full min-h-[60px] p-3 border rounded-md resize-vertical"
+          />
+          <p class="text-sm text-gray-500 mt-1">
+            Example: "Dean's List Fall 2023, Hackathon Winner - Best Innovation Award, Academic Excellence Scholarship Recipient"
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  {/if}
+  
+  <!-- Step 4/5: Additional Preferences -->
+  {#if currentStep === (isFirstTimeJobSeeker ? 5 : 4)}
     <Card>
       <CardHeader>
         <CardTitle>Additional Preferences</CardTitle>

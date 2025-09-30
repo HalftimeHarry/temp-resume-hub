@@ -24,16 +24,37 @@ export const characterLimits: CharacterLimits = {
   achievementItem: 100
 };
 
-// Builder steps configuration
-export const builderSteps: BuilderStep[] = [
+// Builder steps configuration - base configuration
+const baseBuilderSteps: BuilderStep[] = [
   { id: 'personal', title: 'Personal Info', description: 'Basic contact information', isComplete: false, isRequired: true },
   { id: 'summary', title: 'Summary', description: 'Professional summary', isComplete: false, isRequired: true },
   { id: 'experience', title: 'Experience', description: 'Work history', isComplete: false, isRequired: true },
   { id: 'education', title: 'Education', description: 'Academic background', isComplete: false, isRequired: true },
   { id: 'skills', title: 'Skills', description: 'Technical & soft skills', isComplete: false, isRequired: true },
+  { id: 'projects', title: 'Projects', description: 'Projects & activities', isComplete: false, isRequired: false },
   { id: 'settings', title: 'Settings', description: 'Layout & formatting', isComplete: false, isRequired: false },
   { id: 'preview', title: 'Preview', description: 'Review & publish', isComplete: false, isRequired: false }
 ];
+
+// Get builder steps configuration based on experience level
+export function getBuilderSteps(isFirstTimeJobSeeker: boolean = false): BuilderStep[] {
+  if (isFirstTimeJobSeeker) {
+    return [
+      { id: 'personal', title: 'Personal Info', description: 'Basic contact information', isComplete: false, isRequired: true },
+      { id: 'summary', title: 'Summary', description: 'Professional summary', isComplete: false, isRequired: true },
+      { id: 'education', title: 'Education', description: 'Academic background', isComplete: false, isRequired: true },
+      { id: 'projects', title: 'Projects', description: 'Projects & activities', isComplete: false, isRequired: true },
+      { id: 'skills', title: 'Skills', description: 'Technical & soft skills', isComplete: false, isRequired: true },
+      { id: 'experience', title: 'Experience', description: 'Work history (optional)', isComplete: false, isRequired: false },
+      { id: 'settings', title: 'Settings', description: 'Layout & formatting', isComplete: false, isRequired: false },
+      { id: 'preview', title: 'Preview', description: 'Review & publish', isComplete: false, isRequired: false }
+    ];
+  }
+  return baseBuilderSteps;
+}
+
+// Default export for backward compatibility
+export const builderSteps = baseBuilderSteps;
 
 // Default data
 const defaultPersonalInfo: PersonalInfo = {
@@ -60,6 +81,7 @@ const defaultSettings: BuilderSettings = {
 };
 
 const defaultBuilderData: ResumeBuilderData = {
+  id: undefined, // No ID for new resumes
   personalInfo: {
     fullName: '',
     email: '',
@@ -397,6 +419,48 @@ export async function saveResume() {
   }
 }
 
+export function resetBuilderForNewResume() {
+  builderData.set({ ...defaultBuilderData });
+  hasUnsavedChanges.set(false);
+  currentStep.set('personal');
+  console.log('Builder reset for new resume');
+}
+
+export async function loadResumeForEditing(resumeId: string) {
+  isLoading.set(true);
+  try {
+    const { pb } = await import('$lib/pocketbase');
+    
+    // Fetch the resume from PocketBase
+    const resume = await pb.collection('resumes').getOne(resumeId);
+    
+    // Update the builder data with the resume content
+    builderData.set({
+      id: resume.id,
+      personalInfo: resume.content?.personalInfo || defaultBuilderData.personalInfo,
+      summary: resume.content?.summary || defaultBuilderData.summary,
+      experience: resume.content?.experience || defaultBuilderData.experience,
+      education: resume.content?.education || defaultBuilderData.education,
+      skills: resume.content?.skills || defaultBuilderData.skills,
+      projects: resume.content?.projects || defaultBuilderData.projects,
+      settings: resume.content?.settings || defaultBuilderData.settings,
+      currentStep: 'personal',
+      completedSteps: ['personal', 'summary', 'experience', 'education', 'skills']
+    });
+    
+    // Mark as no unsaved changes since we just loaded
+    hasUnsavedChanges.set(false);
+    
+    console.log('Resume loaded for editing:', resumeId);
+    return resume;
+  } catch (error) {
+    console.error('Failed to load resume for editing:', error);
+    throw error;
+  } finally {
+    isLoading.set(false);
+  }
+}
+
 export async function publishResume() {
   isLoading.set(true);
   try {
@@ -428,10 +492,7 @@ export async function publishResume() {
       }
     }
 
-    // Generate a unique slug for the resume
-    const slug = `${currentUser.username}-${currentData.personalInfo.fullName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume'}-${Date.now()}`;
-
-    // Create or update resume record in PocketBase
+    // Prepare resume data
     const resumeData = {
       user: currentUser.id,
       title: `${currentUser.name || currentData.personalInfo.fullName || 'Untitled'} - ${templateName}`,
@@ -445,11 +506,26 @@ export async function publishResume() {
         settings: currentData.settings
       },
       template: currentData.settings.template || 'default-template-id',
-      is_public: true,
-      slug: slug
+      is_public: true
     };
 
-    const record = await pb.collection('resumes').create(resumeData);
+    let record;
+    
+    // Check if we're editing an existing resume or creating a new one
+    if (currentData.id) {
+      // Update existing resume
+      console.log('Updating existing resume:', currentData.id);
+      record = await pb.collection('resumes').update(currentData.id, resumeData);
+    } else {
+      // Create new resume with unique slug
+      const slug = `${currentUser.username}-${currentData.personalInfo.fullName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume'}-${Date.now()}`;
+      resumeData.slug = slug;
+      console.log('Creating new resume');
+      record = await pb.collection('resumes').create(resumeData);
+      
+      // Update the builder data with the new resume ID
+      builderData.update(data => ({ ...data, id: record.id }));
+    }
     const publicUrl = `${window.location.origin}/resume/${record.slug}`;
     
     console.log('Resume published successfully:', publicUrl);
