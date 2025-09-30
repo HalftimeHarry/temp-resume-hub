@@ -389,6 +389,7 @@ export interface BuilderSettings extends ResumeSettings {
 }
 
 export interface ResumeBuilderData {
+  id?: string; // Resume ID when editing existing resume
   personalInfo: PersonalInfo;
   summary: string;
   experience: Experience[];

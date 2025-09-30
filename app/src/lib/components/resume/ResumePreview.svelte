@@ -18,6 +18,23 @@
   
   export let resume: Resume;
   
+  // Safely access settings from either resume.settings or resume.content.settings
+  $: settings = resume.settings || resume.content?.settings || {
+    showProfileImage: false,
+    colorScheme: 'blue',
+    fontSize: 'medium',
+    spacing: 'normal'
+  };
+  
+  // Safely access content data
+  $: personalInfo = resume.personalInfo || resume.content?.personalInfo || {};
+  $: summary = resume.summary || resume.content?.summary || '';
+  $: experience = resume.experience || resume.content?.experience || [];
+  $: education = resume.education || resume.content?.education || [];
+  $: skills = resume.skills || resume.content?.skills || [];
+  $: projects = resume.projects || resume.content?.projects || [];
+  $: sections = resume.sections || [];
+  
   function formatDate(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString + '-01');
@@ -32,6 +49,7 @@
   }
   
   function getInitials(name: string): string {
+    if (!name) return 'UN';
     return name
       .split(' ')
       .map(part => part.charAt(0))
@@ -61,7 +79,7 @@
   }
   
   // Filter visible sections and sort by order
-  $: visibleSections = resume.sections
+  $: visibleSections = sections
     .filter(section => section.visible)
     .sort((a, b) => a.order - b.order);
 </script>
@@ -71,12 +89,12 @@
   <header class="mb-6 md:mb-8">
     <div class="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6">
       <!-- Profile Image -->
-      {#if resume.settings.showProfileImage && resume.personalInfo.profileImage}
+      {#if settings.showProfileImage && personalInfo.profileImage}
         <div class="flex-shrink-0">
           <Avatar class="h-24 w-24">
-            <AvatarImage src={resume.personalInfo.profileImage} alt={resume.personalInfo.fullName} />
+            <AvatarImage src={personalInfo.profileImage} alt={personalInfo.fullName} />
             <AvatarFallback class="text-xl">
-              {getInitials(resume.personalInfo.fullName)}
+              {getInitials(personalInfo.fullName)}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -85,76 +103,76 @@
       <!-- Personal Info -->
       <div class="flex-1">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
-          {resume.personalInfo.fullName}
+          {personalInfo.fullName}
         </h1>
         
         <!-- Contact Information -->
         <div class="space-y-1 text-sm text-gray-600 mb-4">
-          {#if resume.personalInfo.email}
+          {#if personalInfo.email}
             <div class="flex items-start space-x-2">
               <Mail class="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <span class="font-medium">Email:</span>
-                <span> {resume.personalInfo.email}</span>
+                <span> {personalInfo.email}</span>
               </div>
             </div>
           {/if}
           
-          {#if resume.personalInfo.phone}
+          {#if personalInfo.phone}
             <div class="flex items-start space-x-2">
               <Phone class="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <span class="font-medium">Phone:</span>
-                <span> {resume.personalInfo.phone}</span>
+                <span> {personalInfo.phone}</span>
               </div>
             </div>
           {/if}
           
-          {#if resume.personalInfo.location}
+          {#if personalInfo.location}
             <div class="flex items-start space-x-2">
               <MapPin class="h-4 w-4 mt-0.5 flex-shrink-0" />
               <div>
                 <span class="font-medium">Location:</span>
-                <span> {resume.personalInfo.location}</span>
+                <span> {personalInfo.location}</span>
               </div>
             </div>
           {/if}
         </div>
         
         <!-- Links -->
-        {#if resume.personalInfo.website || resume.personalInfo.linkedin || resume.personalInfo.github}
+        {#if personalInfo.website || personalInfo.linkedin || personalInfo.github}
           <div class="space-y-1 text-sm text-blue-600 mb-4">
-            {#if resume.personalInfo.website}
+            {#if personalInfo.website}
               <div class="flex items-start space-x-2">
                 <Globe class="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
                   <span class="font-medium">Website:</span>
-                  <a href={resume.personalInfo.website} target="_blank" rel="noopener noreferrer" class="ml-1">
-                    {resume.personalInfo.website.replace(/^https?:\/\//, '')}
+                  <a href={personalInfo.website} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {personalInfo.website?.replace(/^https?:\/\//, '') || personalInfo.website}
                   </a>
                 </div>
               </div>
             {/if}
             
-            {#if resume.personalInfo.linkedin}
+            {#if personalInfo.linkedin}
               <div class="flex items-start space-x-2">
                 <Linkedin class="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
                   <span class="font-medium">LinkedIn:</span>
-                  <a href={resume.personalInfo.linkedin} target="_blank" rel="noopener noreferrer" class="ml-1">
-                    {resume.personalInfo.linkedin}
+                  <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {personalInfo.linkedin}
                   </a>
                 </div>
               </div>
             {/if}
             
-            {#if resume.personalInfo.github}
+            {#if personalInfo.github}
               <div class="flex items-start space-x-2">
                 <Github class="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
                   <span class="font-medium">GitHub:</span>
-                  <a href={resume.personalInfo.github} target="_blank" rel="noopener noreferrer" class="ml-1">
-                    {resume.personalInfo.github}
+                  <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" class="ml-1">
+                    {personalInfo.github}
                   </a>
                 </div>
               </div>
@@ -163,9 +181,9 @@
         {/if}
         
         <!-- Professional Summary -->
-        {#if resume.personalInfo.summary}
+        {#if summary || personalInfo.summary}
           <p class="text-gray-700 leading-relaxed">
-            {resume.personalInfo.summary}
+            {summary || personalInfo.summary}
           </p>
         {/if}
       </div>

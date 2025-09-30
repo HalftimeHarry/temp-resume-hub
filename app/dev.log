@@ -2,209 +2,149 @@
 > app@1.0.0 dev
 > vite dev
 
+The following Vite config options will be overridden by SvelteKit:
+  - base
 NODE_ENV=production is not supported in the .env file. Only NODE_ENV=development is supported to create a development build of your project. If you need to set process.env.NODE_ENV, you can set it in the Vite config instead.
+Port 5173 is in use, trying another one...
 
-  VITE v7.1.5  ready in 1059 ms
+  VITE v7.1.6  ready in 1703 ms
 
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: http://100.64.180.40:5173/
-12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:52:27 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-
-[1;31m[500] GET /dashboard[0m
-TypeError: Cannot read properties of null (reading 'user')
-    at _page (src/routes/dashboard/+page.svelte:47:10)
-    at eval (.svelte-kit/generated/root.svelte:71:5)
-    at Module.slot (node_modules/svelte/src/internal/server/index.js:378:3)
-    at _layout (src/routes/+layout.svelte:81:24)
-
-[1;31m[404] GET /favicon.ico[0m
-
-[1;31m[500] GET /dashboard[0m
-TypeError: Cannot read properties of null (reading 'user')
-    at _page (src/routes/dashboard/+page.svelte:47:10)
-    at eval (.svelte-kit/generated/root.svelte:71:5)
-    at Module.slot (node_modules/svelte/src/internal/server/index.js:378:3)
-    at _layout (src/routes/+layout.svelte:81:24)
-
-[1;31m[404] GET /favicon.ico[0m
-12:55:05 AM [vite] (client) hmr update /src/app.css
-12:55:05 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:06 AM [vite] (ssr) Error when evaluating SSR module /src/routes/dashboard/+page.svelte: /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:47:12 `$authStore` is an illegal variable name. To reference a global variable called `$authStore`, use `globalThis.$authStore`
-https://svelte.dev/e/global_reference_invalid
-  Plugin: vite-plugin-svelte:compile
-  File: /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:47:12
-   45 |    $: resumes = $userResumes;
-   46 |    $: analytics = $userAnalytics;
-   47 |    $: user = $authStore.user;
-                               ^
-   48 |    
-   49 |    // Filter resumes based on search query
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: http://100.64.89.22:5174/
+3:27:25 PM [vite-plugin-svelte] /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:306:4 This element is implicitly closed by the following `</header>`, which can cause an unexpected DOM structure. Add an explicit `</div>` to avoid surprises.
+https://svelte.dev/e/element_implicitly_closed
+3:27:25 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:382:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+3:27:25 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:382:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+3:27:25 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:937:2 Unused CSS selector ".line-clamp-1"
+https://svelte.dev/e/css_unused_selector
+3:27:25 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:944:2 Unused CSS selector ".line-clamp-2"
+https://svelte.dev/e/css_unused_selector
+👤 User logged out, clearing profile
+3:27:26 PM [vite-plugin-svelte] src/lib/components/ui/button/button.svelte:65:2 Using `on:click` to listen to the click event is deprecated. Use the event attribute `onclick` instead
+https://svelte.dev/e/event_directive_deprecated
+3:27:26 PM [vite-plugin-svelte] src/lib/components/ui/button/button.svelte:77:2 Using `on:click` to listen to the click event is deprecated. Use the event attribute `onclick` instead
+https://svelte.dev/e/event_directive_deprecated
 
 [1;31m[500] GET /dashboard[0m
-
-
-[1;31m[404] GET /favicon.ico[0m
-12:55:08 AM [vite] (client) hmr update /src/app.css
-12:55:08 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:20 AM [vite] (client) hmr update /src/app.css
-12:55:20 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-
-[1;31m[404] GET /favicon.ico[0m
-12:55:21 AM [vite] (client) hmr update /src/app.css
-12:55:21 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:55:21 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:55:21 AM [vite] (client) ✨ new dependencies optimized: style-to-object, @internationalized/date, tabbable, @floating-ui/dom
-12:55:21 AM [vite] (client) ✨ optimized dependencies changed. reloading
-12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-KPXOP4UB.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
-12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-RG3GKSXM.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
-12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-VRKWUSFV.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
-12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-OKPIXEMK.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
-12:55:21 AM [vite] (client) Pre-transform error: The file does not exist at "/workspaces/temp-resume-hub/app/node_modules/.vite/deps/chunk-QSRP6QV7.js" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
-12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:186:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:201:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-12:55:23 AM [vite-plugin-svelte] src/lib/components/templates/TemplateGallery.svelte:215:12 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-
-[1;31m[404] GET /favicon.ico[0m
-12:55:24 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:24 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:37 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:37 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:41 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:41 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:46 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:46 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:51 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:51 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:55:58 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:55:58 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:56:02 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:56:02 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:57:58 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:57:58 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-12:58:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-12:58:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-
-[1;31m[404] GET /favicon.ico[0m
-
-[1;31m[404] GET /favicon.ico[0m
-1:00:19 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:00:19 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:00:23 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:00:23 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-
-[1;31m[404] GET /favicon.ico[0m
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:88:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:97:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:109:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:118:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:140:6 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:88:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:97:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:109:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:118:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:129:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:138:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:161:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:01:10 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:169:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:04:58 AM [vite] (client) hmr update /src/app.css
-1:04:58 AM [vite] (ssr) page reload src/routes/+page.svelte
-1:05:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:05:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:05:11 AM [vite] (client) page reload src/app.html
-1:05:11 AM [vite] (ssr) page reload src/app.html
-1:05:11 AM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:88:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:97:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:109:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:118:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/ExperienceTab.svelte:140:6 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:88:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:97:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:109:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:118:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:129:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:138:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:161:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-1:05:12 AM [vite-plugin-svelte] src/lib/components/builder/EducationTab.svelte:169:7 A form label must be associated with a control
-https://svelte.dev/e/a11y_label_has_associated_control
-🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
-🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
-1:08:31 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:08:31 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
-1:13:57 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:13:57 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
-1:14:57 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:14:57 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:15:08 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:15:08 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-🔐 Builder Auth Debug - Loading: true User: null Authenticated: false
-1:16:38 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:16:38 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:16:44 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:16:44 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:19:10 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
-1:19:25 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:19:25 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:19:38 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:19:38 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:20:03 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:20:03 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:20:14 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:20:14 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:20:18 AM [vite] (client) hmr update /src/routes/builder/+page.svelte, /src/app.css
-1:20:18 AM [vite] (ssr) page reload src/routes/builder/+page.svelte
-1:22:00 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:22:00 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:22:04 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:22:04 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:23:32 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:23:32 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:23:41 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
-1:23:46 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:23:46 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:24:25 AM [vite] (client) hmr update /src/lib/components/ui/Logo.svelte, /src/app.css
-1:24:25 AM [vite] (ssr) page reload src/lib/components/ui/Logo.svelte
-1:25:44 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:25:44 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
-1:25:48 AM [vite] (client) hmr update /src/routes/dashboard/+page.svelte, /src/app.css
-1:25:48 AM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+ReferenceError: document is not defined
+    at /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:139:5
+    at render (node_modules/svelte/src/internal/server/index.js:102:37)
+    at Function._render [as render] (node_modules/svelte/src/legacy/legacy-server.js:27:24)
+    at /workspaces/temp-resume-hub/app/node_modules/@sveltejs/kit/src/runtime/server/page/render.js:206:34
+    at AsyncLocalStorage.run (node:async_hooks:346:14)
+    at with_request_store (file:/workspaces/temp-resume-hub/app/node_modules/@sveltejs/kit/src/exports/internal/event.js:65:20)
+    at render_response (node_modules/@sveltejs/kit/src/runtime/server/page/render.js:205:34)
+    at async render_page (node_modules/@sveltejs/kit/src/runtime/server/page/index.js:340:10)
+    at async resolve (node_modules/@sveltejs/kit/src/runtime/server/respond.js:579:18)
+    at async Object.handle (src/hooks.server.ts:52:20)
+3:27:52 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:27:57 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:28:01 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:28:06 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:28:06 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:28:06 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:28:42 PM [vite] (client) page reload build/index.html
+3:28:47 PM [vite-plugin-svelte] /workspaces/temp-resume-hub/app/src/routes/dashboard/+page.svelte:310:4 This element is implicitly closed by the following `</header>`, which can cause an unexpected DOM structure. Add an explicit `</div>` to avoid surprises.
+https://svelte.dev/e/element_implicitly_closed
+3:28:47 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:386:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+3:28:47 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:386:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+3:28:47 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:941:2 Unused CSS selector ".line-clamp-1"
+https://svelte.dev/e/css_unused_selector
+3:28:47 PM [vite-plugin-svelte] src/routes/dashboard/+page.svelte:948:2 Unused CSS selector ".line-clamp-2"
+https://svelte.dev/e/css_unused_selector
+3:30:32 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:30:36 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:30:41 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:30:51 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:30:51 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:30:51 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:31:28 PM [vite] (client) page reload build/index.html
+3:31:28 PM [vite] (client) page reload build/index.html
+3:39:10 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:39:10 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:39:10 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:39:47 PM [vite] (client) page reload build/index.html
+3:39:47 PM [vite] (client) page reload build/index.html
+3:39:52 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:39:52 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:39:52 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:40:15 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:40:21 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:40:50 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:40:50 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:40:50 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:41:08 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:41:13 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:41:28 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+3:45:28 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:45:37 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:46:08 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:46:17 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:46:27 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+3:46:33 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+3:46:38 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+3:46:50 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+3:47:23 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+3:47:43 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:47:43 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:47:43 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:48:00 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:48:00 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:48:00 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:48:19 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:48:23 PM [vite] (ssr) page reload src/lib/components/settings/SettingsPanel.svelte
+3:48:28 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:48:28 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:48:28 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:49:03 PM [vite] (client) page reload build/index.html
+3:49:03 PM [vite] (client) page reload build/index.html
+3:54:21 PM [vite] (ssr) page reload src/routes/resume/[slug]/+page.svelte
+3:54:28 PM [vite] (ssr) page reload src/routes/resume/[slug]/+page.svelte
+3:54:41 PM [vite] (ssr) page reload src/routes/resume/[slug]/+page.svelte
+3:55:06 PM [vite] (ssr) page reload src/routes/resume/[slug]/+page.svelte
+3:55:16 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+3:55:16 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+3:55:16 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+3:55:51 PM [vite] (client) page reload build/index.html
+3:55:52 PM [vite] (client) page reload build/index.html
+4:00:41 PM [vite] (ssr) page reload src/lib/types/resume.ts
+4:00:51 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:01:00 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:01:13 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:01:19 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+4:01:27 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:01:34 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:01:39 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:01:45 PM [vite] (ssr) page reload src/routes/dashboard/+page.svelte
+4:01:52 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:01:59 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:02:07 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+4:02:07 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+4:02:07 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+4:02:43 PM [vite] (client) page reload build/index.html
+4:42:49 PM [vite] (ssr) page reload src/lib/stores/userProfile.ts
+4:43:06 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:43:17 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:43:27 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:43:33 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:43:58 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:50:18 PM [vite] (ssr) page reload src/lib/components/profile/ProfileSetup.svelte
+4:52:06 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:52:14 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:52:21 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:52:30 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:52:46 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+4:52:46 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+4:52:46 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+4:55:06 PM [vite] (ssr) page reload .svelte-kit/generated/server/internal.js
+4:55:06 PM [vite] (ssr) page reload .svelte-kit/generated/root.svelte
+4:55:06 PM [vite] (ssr) page reload .svelte-kit/generated/root.js
+4:55:28 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:55:43 PM [vite] (ssr) page reload src/lib/stores/resumeBuilder.ts
+4:56:04 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:56:27 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
+4:56:35 PM [vite] (ssr) page reload src/routes/builder/+page.svelte
