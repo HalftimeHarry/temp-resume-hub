@@ -299,9 +299,9 @@
                 <div class="flex justify-between items-start">
                   <div>
                     <h3 class="font-semibold text-gray-900">{project.name}</h3>
-                    {#if project.technologies && project.technologies.length > 0}
+                    {#if project.technologies && project.technologies.trim()}
                       <div class="flex flex-wrap gap-1 mt-1">
-                        {#each project.technologies as tech}
+                        {#each project.technologies.split(',').map(tech => tech.trim()).filter(tech => tech) as tech}
                           <Badge variant="outline" class="text-xs">{tech}</Badge>
                         {/each}
                       </div>

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { pb, resumes } from '$lib/pocketbase';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import type { Resume } from '$lib/types/resume.js';
-	import { Menu, X, ArrowLeft } from 'lucide-svelte';
+	import { Menu, X, ArrowLeft, Printer } from 'lucide-svelte';
 
 	let resume: Resume | null = null;
 	let loading = true;
@@ -29,6 +29,15 @@
 			!(event.target as Element).closest('[data-mobile-menu-button]')) {
 			mobileMenuOpen = false;
 		}
+	}
+
+	// Print function
+	function handlePrint() {
+		// Close mobile menu if open
+		mobileMenuOpen = false;
+		
+		// Trigger browser print dialog
+		window.print();
 	}
 	let previewSettings = {
 		colorScheme: 'orange',
@@ -149,9 +158,15 @@
 
 	$: slug = $page.params.slug;
 	
-	// Reactive dependencies for preview settings
-	// Create a single reactive dependency on the entire previewSettings object
+	// Reactive dependency to ensure functions re-run when previewSettings changes
 	$: previewSettingsDep = JSON.stringify(previewSettings);
+	
+	// Force template re-render when previewSettings changes
+	$: {
+		if (previewSettings) {
+			console.log('🔄 Template reactive update triggered by previewSettings change:', previewSettings);
+		}
+	}
 
 	onMount(async () => {
 		try {
@@ -203,9 +218,41 @@
 		}
 	});
 
-	function downloadPDF(): void {
-		// TODO: Implement PDF generation
-		alert('📄 PDF download will be implemented soon! 🚀');
+	let isApplying = false;
+	
+	async function applyChanges(): Promise<void> {
+		isApplying = true;
+		try {
+			// Save both styling and resume data to database
+			console.log('Applying changes - saving styling and data to server:', previewSettings);
+			
+			const updatedContent = {
+				...resume.content,
+				styling: { ...previewSettings }
+			};
+			
+			const result = await resumes.updateResume(resume.id, { content: updatedContent });
+			
+			if (result.success) {
+				resume = result.resume;
+				// Update previewSettings to match the saved styling
+				if (resume.content?.styling) {
+					previewSettings = { ...resume.content.styling };
+				}
+				console.log('Changes applied successfully');
+				
+				// Show success feedback
+				alert('✅ Changes applied successfully!');
+			} else {
+				console.error(`Failed to apply changes: ${result.error}`);
+				alert('❌ Failed to apply changes. Please try again.');
+			}
+		} catch (error) {
+			console.error('Error applying changes:', error);
+			alert('❌ Error applying changes. Please try again.');
+		} finally {
+			isApplying = false;
+		}
 	}
 	
 	function updatePreviewSettings(setting: keyof typeof previewSettings, value: string) {
@@ -224,39 +271,7 @@
 		console.log('Preview styling applied successfully');
 	}
 	
-	async function saveStyling(): Promise<void> {
-		showStylingPanel = false;
-		// Save styling settings to server
-		console.log('Saving styling settings to server:', previewSettings);
-		
-		try {
-			const updatedContent = {
-				...resume.content,
-				styling: { ...previewSettings }
-			};
-			
-			console.log('Sending updated content to server:', updatedContent);
-			
-			const result = await resumes.updateResume(resume.id, { content: updatedContent });
-			console.log('Server response:', result);
-			
-			if (result.success) {
-				resume = result.resume;
-				// Update previewSettings to match the saved styling
-				if (resume.content?.styling) {
-					previewSettings = { ...resume.content.styling };
-				}
-				console.log('Styling saved successfully. Updated previewSettings:', previewSettings);
-				
-				// Refresh the page to ensure styling is properly applied
-				window.location.reload();
-			} else {
-				console.error(`Failed to save styling: ${result.error}`);
-			}
-		} catch (error) {
-			console.error('Error saving styling:', error);
-		}
-	}
+
 	
 	function resetToDefault(): void {
 		previewSettings = {
@@ -269,7 +284,7 @@
 		// No alert needed - styling is applied immediately to preview
 	}
 	
-	async function applyThemePreset(preset: typeof themePresets[0]) {
+	function applyThemePreset(preset: typeof themePresets[0]) {
 		console.log('Applying theme preset:', preset);
 		// Update preview settings with proper reactivity
 		previewSettings = {
@@ -493,11 +508,12 @@
 					<div class="hidden sm:flex items-center gap-2">
 						<!-- Demo Premium Toggle (for testing) -->
 						<button
-							class={`px-3 py-2 text-sm rounded-lg transition-colors ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-							on:click={() => isPremiumUser = !isPremiumUser}
-							title="Demo: Toggle Premium Status"
+							class="px-3 py-2 text-sm rounded-lg transition-colors bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-2"
+							on:click={handlePrint}
+							title="Print Resume"
 						>
-							{isPremiumUser ? '✨ Premium' : '🆓 Free'}
+							<Printer class="w-4 h-4" />
+							Print
 						</button>
 						<button
 							class="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors"
@@ -506,10 +522,16 @@
 							🎨 Style Resume
 						</button>
 						<button
-							class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-							on:click={downloadPDF}
+							class="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+							on:click={applyChanges}
+							disabled={isApplying}
 						>
-							📄 Download PDF
+							{#if isApplying}
+								<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+								Applying...
+							{:else}
+								✅ Apply Changes
+							{/if}
 						</button>
 					</div>
 				</div>
@@ -530,11 +552,12 @@
 
 							<!-- Premium Status -->
 							<button
-								class={`w-full px-4 py-2 rounded-lg text-center font-medium transition-colors duration-200 ${isPremiumUser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-								on:click={() => { isPremiumUser = !isPremiumUser; mobileMenuOpen = false; }}
-								title="Demo: Toggle Premium Status"
+								class="w-full px-4 py-2 rounded-lg text-center font-medium transition-colors duration-200 bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center justify-center gap-2"
+								on:click={handlePrint}
+								title="Print Resume"
 							>
-								{isPremiumUser ? '✨ Premium User' : '🆓 Free User'}
+								<Printer class="w-4 h-4" />
+								Print Resume
 							</button>
 
 							<!-- Action Buttons -->
@@ -546,10 +569,16 @@
 									🎨 Style Resume
 								</button>
 								<button
-									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200"
-									on:click={() => { downloadPDF(); mobileMenuOpen = false; }}
+									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+									on:click={() => { applyChanges(); mobileMenuOpen = false; }}
+									disabled={isApplying}
 								>
-									📄 Download PDF
+									{#if isApplying}
+										<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+										Applying...
+									{:else}
+										✅ Apply Changes
+									{/if}
 								</button>
 							</div>
 						</div>
@@ -561,6 +590,7 @@
 		<!-- Resume Content -->
 		<main class="container mx-auto px-4 py-8">
 			<div class="max-w-4xl mx-auto">
+				{#key previewSettingsDep}
 				<div class={`bg-white rounded-lg shadow-lg p-8 md:p-12 ${getSpacingClass()} ${getLayoutClass()}`}>
 					<!-- Left column for two-column layout -->
 					<div class={previewSettings.layout === 'two-column' ? 'md:pr-8 md:border-r md:border-gray-200' : ''}>
@@ -729,9 +759,9 @@
 										<div class="mb-4">
 											<h3 class="font-bold text-lg">{project.name}</h3>
 											<p class={`text-gray-700 mt-1 ${getFontSizeClass()}`}>{project.description}</p>
-											{#if project.technologies && project.technologies.length > 0}
+											{#if project.technologies && project.technologies.trim()}
 												<div class="flex flex-wrap gap-2 mt-2">
-													{#each project.technologies as tech}
+													{#each project.technologies.split(',').map(tech => tech.trim()).filter(tech => tech) as tech}
 														<span class={`px-3 py-1 ${getColorClasses().secondary} rounded-full text-sm`}>
 															{tech}
 														</span>
@@ -745,6 +775,7 @@
 						{/if}
 				</div>
 			</div>
+			{/key}
 		</div>
 		</main>
 
@@ -872,16 +903,24 @@
 						🔄 Reset to Default
 					</button>
 					<button
-						class="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-						on:click={saveStyling}
+						class="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+						on:click={() => showStylingPanel = false}
 					>
-						🎨 Set Theme
+						Close Preview
 					</button>
+				</div>
+				
+				<div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+					<p class="text-sm text-blue-700">
+						💡 <strong>Preview your changes above</strong>, then click <strong>"Apply Changes"</strong> in the header to save them permanently.
+					</p>
 				</div>
 			</div>
 		</div>
 	</div>
 {/if}
+
+
 
 <!-- Premium Upgrade Modal -->
 {#if showUpgradeModal}
@@ -945,3 +984,5 @@
 		</div>
 	</div>
 {/if}
+
+
