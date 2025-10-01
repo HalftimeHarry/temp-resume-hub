@@ -14,6 +14,7 @@ import { generateId } from '$lib/utils.js';
 import { templateStore } from '$lib/stores/templates.js';
 import { userProfile } from '$lib/stores/userProfile.js';
 import { currentUser } from '$lib/stores/auth.js';
+import { isClientTemplate } from '$lib/templates';
 
 // Character limits for different sections
 export const characterLimits: CharacterLimits = {
@@ -434,6 +435,18 @@ export async function loadResumeForEditing(resumeId: string) {
     // Fetch the resume from PocketBase
     const resume = await pb.collection('resumes').getOne(resumeId);
     
+    // Handle client-side template restoration
+    let settings = resume.content?.settings || defaultBuilderData.settings;
+    
+    // If this resume was created with a client-side template, restore the original template ID
+    if (settings.clientSideTemplate && settings.originalTemplate) {
+      settings = {
+        ...settings,
+        template: settings.originalTemplate
+      };
+      console.log(`Restored client-side template: ${settings.originalTemplate}`);
+    }
+
     // Update the builder data with the resume content
     builderData.set({
       id: resume.id,
@@ -443,7 +456,7 @@ export async function loadResumeForEditing(resumeId: string) {
       education: resume.content?.education || defaultBuilderData.education,
       skills: resume.content?.skills || defaultBuilderData.skills,
       projects: resume.content?.projects || defaultBuilderData.projects,
-      settings: resume.content?.settings || defaultBuilderData.settings,
+      settings,
       currentStep: 'personal',
       completedSteps: ['personal', 'summary', 'experience', 'education', 'skills']
     });
@@ -492,6 +505,31 @@ export async function publishResume() {
       }
     }
 
+    // Handle client-side vs database templates
+    let templateId = currentData.settings.template || 'default-template-id';
+    const isClientSideTemplate = templateId && isClientTemplate(templateId);
+    
+    // If using a client-side template, we need a database template ID for the relation field
+    if (isClientSideTemplate) {
+      console.log(`Using client-side template: ${templateId}, finding database fallback`);
+      
+      // Try to find any existing template as fallback for the database relation
+      try {
+        const templates = await pb.collection('templates').getList(1, 1);
+        if (templates.items.length > 0) {
+          const fallbackTemplateId = templates.items[0].id;
+          console.log(`Using database template ${fallbackTemplateId} as fallback for client template ${templateId}`);
+          templateId = fallbackTemplateId;
+        } else {
+          console.warn('No templates found in database, cannot save resume');
+          throw new Error('No database templates available. Please create at least one template in the database.');
+        }
+      } catch (fallbackError) {
+        console.error('Failed to find fallback template:', fallbackError);
+        throw new Error('Unable to save resume: No database templates available');
+      }
+    }
+
     // Prepare resume data
     const resumeData = {
       user: currentUser.id,
@@ -503,11 +541,24 @@ export async function publishResume() {
         education: currentData.education,
         skills: currentData.skills,
         projects: currentData.projects,
-        settings: currentData.settings
+        settings: {
+          ...currentData.settings,
+          // Preserve the original template ID in content for client-side templates
+          originalTemplate: isClientSideTemplate ? currentData.settings.template : undefined,
+          clientSideTemplate: isClientSideTemplate
+        }
       },
-      template: currentData.settings.template || 'default-template-id',
+      template: templateId,
       is_public: true
     };
+
+    console.log('Publishing resume with data:', {
+      originalTemplate: currentData.settings.template,
+      isClientSideTemplate,
+      databaseTemplateId: templateId,
+      userId: currentUser.id,
+      title: resumeData.title
+    });
 
     let record;
     

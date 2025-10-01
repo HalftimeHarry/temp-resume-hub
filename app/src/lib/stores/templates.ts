@@ -5,11 +5,24 @@ import { pb } from '$lib/pocketbase';
 import { userProfile } from './userProfile';
 import { templatePreferences, userSettingsStore } from './userSettings';
 
+// Client-side template support
+import { 
+  getClientTemplatesAsResumeTemplates, 
+  getClientTemplateAsResumeTemplate,
+  mergeTemplates,
+  isClientTemplate
+} from '$lib/templates';
+import type { ExtendedResumeTemplate, TemplateLoadOptions } from '$lib/templates';
+
 // Template stores
-export const templates = writable<ResumeTemplate[]>([]);
-export const featuredTemplates = writable<ResumeTemplate[]>([]);
-export const userTemplates = writable<ResumeTemplate[]>([]);
+export const templates = writable<ExtendedResumeTemplate[]>([]);
+export const featuredTemplates = writable<ExtendedResumeTemplate[]>([]);
+export const userTemplates = writable<ExtendedResumeTemplate[]>([]);
 export const isLoadingTemplates = writable(false);
+
+// Client-side template stores
+export const clientTemplates = writable<ExtendedResumeTemplate[]>([]);
+export const databaseTemplates = writable<ResumeTemplate[]>([]);
 
 // Filter and search
 export const templateFilters = writable<Omit<TemplateFilters, 'isPopular' | 'tags' | 'rating' | 'usageCount' | 'sortBy'> & { sortBy: 'name' | 'createdAt' }>({
@@ -150,20 +163,21 @@ function calculateTemplateScore(template: ResumeTemplate, profile: any, preferen
     score += 25;
   }
   
-  // Industry matching (if template has targeting data)
-  if (template.config?.targeting?.industries?.includes(profile.target_industry)) {
+  // Industry matching (support both config.targeting and direct targeting)
+  const targeting = (template as ExtendedResumeTemplate).targeting || template.config?.targeting;
+  if (targeting?.industries?.includes(profile.target_industry)) {
     score += 40;
   }
   
   // Experience level matching
-  if (template.config?.targeting?.experience_levels?.includes(profile.experience_level)) {
+  if (targeting?.experience_levels?.includes(profile.experience_level)) {
     score += 35;
   }
   
   // Job type matching
-  if (profile.target_job_titles && template.config?.targeting?.job_types) {
+  if (profile.target_job_titles && targeting?.job_types) {
     const jobTitles = profile.target_job_titles.toLowerCase();
-    const hasJobMatch = template.config.targeting.job_types.some((jobType: string) =>
+    const hasJobMatch = targeting.job_types.some((jobType: string) =>
       jobTitles.includes(jobType.toLowerCase())
     );
     if (hasJobMatch) {
@@ -188,25 +202,65 @@ function calculateTemplateScore(template: ResumeTemplate, profile: any, preferen
 
 // Template operations
 export const templateStore = {
-  // Load all templates
-  async loadTemplates(): Promise<ResumeTemplate[]> {
+  // Load client-side templates
+  loadClientTemplates(): ExtendedResumeTemplate[] {
+    const clientTemplateList = getClientTemplatesAsResumeTemplates();
+    clientTemplates.set(clientTemplateList);
+    return clientTemplateList;
+  },
+
+  // Load all templates (client-side + database with client-side taking precedence)
+  async loadTemplates(options: TemplateLoadOptions = {}): Promise<ExtendedResumeTemplate[]> {
     isLoadingTemplates.set(true);
     try {
-      const records = await pb.collection('templates').getFullList({
-                    sort: '-created'
-                  });
+      const {
+        includeClientTemplates = true,
+        includeDatabaseTemplates = true,
+        preferClientTemplates = true
+      } = options;
+
+      let clientTemplateList: ExtendedResumeTemplate[] = [];
+      let dbTemplateList: ResumeTemplate[] = [];
+
+      // Load client-side templates
+      if (includeClientTemplates) {
+        clientTemplateList = this.loadClientTemplates();
+      }
+
+      // Load database templates
+      if (includeDatabaseTemplates) {
+        try {
+          const records = await pb.collection('templates').getFullList({
+            sort: '-created'
+          });
+          dbTemplateList = records.map(mapRecordToTemplate);
+          databaseTemplates.set(dbTemplateList);
+        } catch (error) {
+          console.warn('Failed to load database templates, using client-side only:', error);
+        }
+      }
+
+      // Merge templates with client-side taking precedence
+      const mergedTemplates = preferClientTemplates 
+        ? mergeTemplates(clientTemplateList, dbTemplateList)
+        : mergeTemplates([], [...dbTemplateList, ...clientTemplateList]);
+
+      templates.set(mergedTemplates);
       
-      const templateList = records.map(mapRecordToTemplate);
-      templates.set(templateList);
-      
-      // Set featured templates (popular and highly rated)
-      const featured = templateList.slice(0, 6);
+      // Set featured templates (prioritize client-side templates)
+      const featured = mergedTemplates
+        .filter(t => t.isClientSide || !isClientTemplate(t.id))
+        .slice(0, 6);
       featuredTemplates.set(featured);
       
-      return templateList;
+      return mergedTemplates;
     } catch (error) {
       console.error('Failed to load templates:', error);
-      throw error;
+      // Fallback to client-side templates only
+      const clientTemplateList = this.loadClientTemplates();
+      templates.set(clientTemplateList);
+      featuredTemplates.set(clientTemplateList.slice(0, 6));
+      return clientTemplateList;
     } finally {
       isLoadingTemplates.set(false);
     }
@@ -228,11 +282,23 @@ export const templateStore = {
     }
   },
   
-  // Get template by ID with usage tracking
-  async getTemplate(id: string, trackUsage: boolean = true): Promise<ResumeTemplate> {
+  // Get template by ID with usage tracking (client-side first, then database)
+  async getTemplate(id: string, trackUsage: boolean = true): Promise<ExtendedResumeTemplate> {
     try {
+      // Check client-side templates first
+      const clientTemplate = getClientTemplateAsResumeTemplate(id);
+      if (clientTemplate) {
+        // Track template usage if enabled
+        if (trackUsage) {
+          await userSettingsStore.trackTemplateUsage(id);
+        }
+        return clientTemplate;
+      }
+
+      // Fallback to database template
       const record = await pb.collection('templates').getOne(id);
-      const template = mapRecordToTemplate(record);
+      const template = mapRecordToTemplate(record) as ExtendedResumeTemplate;
+      template.isClientSide = false;
       
       // Track template usage if enabled
       if (trackUsage) {
@@ -257,7 +323,7 @@ export const templateStore = {
   },
   
   // Get personalized template recommendations
-  async getPersonalizedRecommendations(): Promise<ResumeTemplate[]> {
+  async getPersonalizedRecommendations(): Promise<ExtendedResumeTemplate[]> {
     try {
       const allTemplates = await this.loadTemplates();
       // The recommendedTemplates derived store will handle the filtering
@@ -288,11 +354,17 @@ export const templateStore = {
     }
   },
   
-  // Update template
-  async updateTemplate(id: string, updates: Partial<ResumeTemplate>): Promise<ResumeTemplate> {
+  // Update template (only works for database templates, client-side templates are read-only)
+  async updateTemplate(id: string, updates: Partial<ResumeTemplate>): Promise<ExtendedResumeTemplate> {
+    // Check if this is a client-side template
+    if (isClientTemplate(id)) {
+      throw new Error('Cannot update client-side template. Client templates are read-only.');
+    }
+
     try {
       const record = await pb.collection('templates').update(id, updates);
-      const template = mapRecordToTemplate(record);
+      const template = mapRecordToTemplate(record) as ExtendedResumeTemplate;
+      template.isClientSide = false;
       
       // Update stores
       templates.update(list => 
@@ -309,8 +381,13 @@ export const templateStore = {
     }
   },
   
-  // Delete template
+  // Delete template (only works for database templates)
   async deleteTemplate(id: string): Promise<void> {
+    // Check if this is a client-side template
+    if (isClientTemplate(id)) {
+      throw new Error('Cannot delete client-side template. Client templates are read-only.');
+    }
+
     try {
       await pb.collection('templates').delete(id);
       
@@ -352,11 +429,12 @@ export const templateStore = {
     }
   },
   
-  // Get template categories
+  // Get template categories (includes both client-side and database categories)
   getCategories(): string[] {
-    return [
+    const clientCategories = getClientTemplatesAsResumeTemplates().map(t => t.category);
+    const defaultCategories = [
       'Modern',
-      'Classic',
+      'Classic', 
       'Creative',
       'Professional',
       'Minimalist',
@@ -366,11 +444,16 @@ export const templateStore = {
       'Entry Level',
       'Industry Specific'
     ];
+    
+    // Merge and deduplicate
+    const allCategories = [...new Set([...clientCategories, ...defaultCategories])];
+    return allCategories.sort();
   },
   
-  // Get popular tags
+  // Get popular tags (includes both client-side and default tags)
   getPopularTags(): string[] {
-    return [
+    const clientTags = getClientTemplatesAsResumeTemplates().flatMap(t => t.tags || []);
+    const defaultTags = [
       'clean',
       'modern',
       'professional',
@@ -391,6 +474,10 @@ export const templateStore = {
       'multi-page',
       'ats-friendly'
     ];
+    
+    // Merge and deduplicate
+    const allTags = [...new Set([...clientTags, ...defaultTags])];
+    return allTags.sort();
   }
 };
 

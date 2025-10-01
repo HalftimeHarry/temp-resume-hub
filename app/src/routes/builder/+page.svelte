@@ -6,7 +6,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete, autoPopulateFromProfile, smartMergeProfileAndTemplate, importFromProfile, syncProfileFromBuilder, enableAutoSync, loadResumeForEditing, resetBuilderForNewResume } from '$lib/stores/resumeBuilder.js';
 	import { userProfile } from '$lib/stores/userProfile.js';
 	import { generateId } from '$lib/utils.js';
-	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
+	import { templates as allTemplates, templateStore, clientTemplates } from '$lib/stores/templates.js';
+	import type { ExtendedResumeTemplate } from '$lib/templates';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus, Menu, X } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
@@ -28,7 +29,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		}
 	}
 	
-	// Selected template/color display
+	// Selected template/color display (prioritize client-side templates)
 	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
 	$: selectedColorScheme = $builderData?.settings?.colorScheme || selectedTemplate?.settings?.colorScheme || '—';
 	const colorClassMap: Record<string, string> = {
@@ -53,13 +54,13 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	// Preview Component
 	import ResumePreview from '$lib/components/resume/ResumePreview.svelte';
 
-	async function selectTemplate(t: any) {
+	async function selectTemplate(t: ExtendedResumeTemplate) {
 		try {
 			const full = await templateStore.getTemplate(t.id);
 			const profile = $userProfile;
 			
 			builderData.update(d => {
-				// Get template starter data or create default bootstrap content
+				// Get template starter data (client-side templates have comprehensive starter data)
 				const templateData = full.starterData || getDefaultBootstrapContent(full);
 				
 				// Smart merge profile data with template data
@@ -135,7 +136,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		}
 		try {
 			if (!$allTemplates || $allTemplates.length === 0) {
-				await templateStore.loadTemplates();
+				await templateStore.loadTemplates({ 
+					includeClientTemplates: true, 
+					includeDatabaseTemplates: true, 
+					preferClientTemplates: true 
+				});
 			}
 			const raw = localStorage.getItem('builderDraft');
 			if (raw) {
@@ -194,9 +199,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 				// Try to auto-populate from profile first
 				const profilePopulated = autoPopulateFromProfile();
 				
-				// Default to the first template if none selected yet
+				// Default to the first template if none selected yet (prioritize client-side templates)
 				if ($allTemplates && $allTemplates.length > 0 && (!$builderData.settings?.template || $builderData.settings?.template === 'default-template-id')) {
-					await selectTemplate($allTemplates[0]);
+					// Prefer client-side templates, especially first-job-starter for new users
+					const preferredTemplate = $allTemplates.find(t => t.id === 'first-job-starter') || $allTemplates[0];
+					await selectTemplate(preferredTemplate);
 				} else if (!profilePopulated) {
 					// If no template and no profile data, try auto-populate anyway
 					autoPopulateFromProfile();
@@ -899,6 +906,9 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 													<div>
 														<div class="font-medium">{t.name}</div>
 														<div class="text-xs text-muted-foreground line-clamp-1">{t.category}</div>
+														{#if t.isClientSide}
+															<div class="text-xs text-green-600 font-medium">✨ Enhanced</div>
+														{/if}
 													</div>
 												</div>
 												<div class="mt-2 text-xs text-blue-600 hover:underline" on:click|stopPropagation={() => goto(`/templates/${t.id}/preview`)}>Preview</div>
