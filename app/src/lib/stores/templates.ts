@@ -1,28 +1,20 @@
-// Template store for managing resume templates
+// Template store for managing resume templates (client-side only)
 import { writable, derived } from 'svelte/store';
 import type { ResumeTemplate, TemplateFilters } from '$lib/types/resume';
-import { pb } from '$lib/pocketbase';
 import { userProfile } from './userProfile';
 import { templatePreferences, userSettingsStore } from './userSettings';
 
 // Client-side template support
 import { 
   getClientTemplatesAsResumeTemplates, 
-  getClientTemplateAsResumeTemplate,
-  mergeTemplates,
-  isClientTemplate
+  getClientTemplateAsResumeTemplate
 } from '$lib/templates';
-import type { ExtendedResumeTemplate, TemplateLoadOptions } from '$lib/templates';
+import type { ExtendedResumeTemplate } from '$lib/templates';
 
 // Template stores
 export const templates = writable<ExtendedResumeTemplate[]>([]);
 export const featuredTemplates = writable<ExtendedResumeTemplate[]>([]);
-export const userTemplates = writable<ExtendedResumeTemplate[]>([]);
 export const isLoadingTemplates = writable(false);
-
-// Client-side template stores
-export const clientTemplates = writable<ExtendedResumeTemplate[]>([]);
-export const databaseTemplates = writable<ResumeTemplate[]>([]);
 
 // Filter and search
 export const templateFilters = writable<Omit<TemplateFilters, 'isPopular' | 'tags' | 'rating' | 'usageCount' | 'sortBy'> & { sortBy: 'name' | 'createdAt' }>({
@@ -202,114 +194,35 @@ function calculateTemplateScore(template: ResumeTemplate, profile: any, preferen
 
 // Template operations
 export const templateStore = {
-  // Load client-side templates
-  loadClientTemplates(): ExtendedResumeTemplate[] {
-    const clientTemplateList = getClientTemplatesAsResumeTemplates();
-    clientTemplates.set(clientTemplateList);
-    return clientTemplateList;
-  },
-
-  // Load all templates (client-side + database with client-side taking precedence)
-  async loadTemplates(options: TemplateLoadOptions = {}): Promise<ExtendedResumeTemplate[]> {
+  // Load all templates (client-side only)
+  loadTemplates(): ExtendedResumeTemplate[] {
     isLoadingTemplates.set(true);
     try {
-      const {
-        includeClientTemplates = true,
-        includeDatabaseTemplates = true,
-        preferClientTemplates = true
-      } = options;
-
-      let clientTemplateList: ExtendedResumeTemplate[] = [];
-      let dbTemplateList: ResumeTemplate[] = [];
-
-      // Load client-side templates
-      if (includeClientTemplates) {
-        clientTemplateList = this.loadClientTemplates();
-      }
-
-      // Load database templates
-      if (includeDatabaseTemplates) {
-        try {
-          const records = await pb.collection('templates').getFullList({
-            sort: '-created'
-          });
-          dbTemplateList = records.map(mapRecordToTemplate);
-          databaseTemplates.set(dbTemplateList);
-        } catch (error) {
-          console.warn('Failed to load database templates, using client-side only:', error);
-        }
-      }
-
-      // Merge templates with client-side taking precedence
-      const mergedTemplates = preferClientTemplates 
-        ? mergeTemplates(clientTemplateList, dbTemplateList)
-        : mergeTemplates([], [...dbTemplateList, ...clientTemplateList]);
-
-      templates.set(mergedTemplates);
+      const templateList = getClientTemplatesAsResumeTemplates();
+      templates.set(templateList);
       
-      // Set featured templates (prioritize client-side templates)
-      const featured = mergedTemplates
-        .filter(t => t.isClientSide || !isClientTemplate(t.id))
-        .slice(0, 6);
-      featuredTemplates.set(featured);
+      // Set featured templates (first 6)
+      featuredTemplates.set(templateList.slice(0, 6));
       
-      return mergedTemplates;
-    } catch (error) {
-      console.error('Failed to load templates:', error);
-      // Fallback to client-side templates only
-      const clientTemplateList = this.loadClientTemplates();
-      templates.set(clientTemplateList);
-      featuredTemplates.set(clientTemplateList.slice(0, 6));
-      return clientTemplateList;
+      return templateList;
     } finally {
       isLoadingTemplates.set(false);
     }
   },
   
-  // Load user's custom templates
-  async loadUserTemplates(): Promise<ResumeTemplate[]> {
-    try {
-      const records = await pb.collection('templates').getFullList({
-                    sort: '-created'
-                  });
-      
-      const templateList = records.map(mapRecordToTemplate);
-      userTemplates.set(templateList);
-      return templateList;
-    } catch (error) {
-      console.error('Failed to load user templates:', error);
-      throw error;
-    }
-  },
-  
-  // Get template by ID with usage tracking (client-side first, then database)
+  // Get template by ID with usage tracking
   async getTemplate(id: string, trackUsage: boolean = true): Promise<ExtendedResumeTemplate> {
-    try {
-      // Check client-side templates first
-      const clientTemplate = getClientTemplateAsResumeTemplate(id);
-      if (clientTemplate) {
-        // Track template usage if enabled
-        if (trackUsage) {
-          await userSettingsStore.trackTemplateUsage(id);
-        }
-        return clientTemplate;
-      }
-
-      // Fallback to database template
-      const record = await pb.collection('templates').getOne(id);
-      const template = mapRecordToTemplate(record) as ExtendedResumeTemplate;
-      template.isClientSide = false;
-      
-      // Track template usage if enabled
-      if (trackUsage) {
-        await userSettingsStore.trackTemplateUsage(id);
-      }
-      
-      return template;
-    } catch (error) {
-      console.error('Failed to get template:', error);
-      throw error;
+    const template = getClientTemplateAsResumeTemplate(id);
+    if (!template) {
+      throw new Error(`Template not found: ${id}`);
     }
+    
+    // Track template usage if enabled
+    if (trackUsage) {
+      await userSettingsStore.trackTemplateUsage(id);
+    }
+    
+    return template;
   },
   
   // Toggle template favorite status
@@ -323,213 +236,40 @@ export const templateStore = {
   },
   
   // Get personalized template recommendations
-  async getPersonalizedRecommendations(): Promise<ExtendedResumeTemplate[]> {
-    try {
-      const allTemplates = await this.loadTemplates();
-      // The recommendedTemplates derived store will handle the filtering
-      return allTemplates.slice(0, 8); // Fallback to first 8 templates
-    } catch (error) {
-      console.error('Failed to get personalized recommendations:', error);
-      return [];
-    }
+  getPersonalizedRecommendations(): ExtendedResumeTemplate[] {
+    const allTemplates = this.loadTemplates();
+    // The recommendedTemplates derived store will handle the filtering
+    return allTemplates.slice(0, 8); // Fallback to first 8 templates
   },
   
-  // Create new template
-  async createTemplate(templateData: Partial<ResumeTemplate>): Promise<ResumeTemplate> {
-    try {
-      const record = await pb.collection('templates').create({
-              ...templateData
-            });
-      
-      const template = mapRecordToTemplate(record);
-      
-      // Update stores
-      templates.update(list => [template, ...list]);
-      userTemplates.update(list => [template, ...list]);
-      
-      return template;
-    } catch (error) {
-      console.error('Failed to create template:', error);
-      throw error;
-    }
+  // Search templates (client-side only)
+  searchTemplates(query: string): ExtendedResumeTemplate[] {
+    const allTemplates = getClientTemplatesAsResumeTemplates();
+    const lowerQuery = query.toLowerCase();
+    
+    return allTemplates.filter(template =>
+      template.name.toLowerCase().includes(lowerQuery) ||
+      template.description.toLowerCase().includes(lowerQuery) ||
+      template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+    );
   },
   
-  // Update template (only works for database templates, client-side templates are read-only)
-  async updateTemplate(id: string, updates: Partial<ResumeTemplate>): Promise<ExtendedResumeTemplate> {
-    // Check if this is a client-side template
-    if (isClientTemplate(id)) {
-      throw new Error('Cannot update client-side template. Client templates are read-only.');
-    }
-
-    try {
-      const record = await pb.collection('templates').update(id, updates);
-      const template = mapRecordToTemplate(record) as ExtendedResumeTemplate;
-      template.isClientSide = false;
-      
-      // Update stores
-      templates.update(list => 
-        list.map(t => t.id === id ? template : t)
-      );
-      userTemplates.update(list => 
-        list.map(t => t.id === id ? template : t)
-      );
-      
-      return template;
-    } catch (error) {
-      console.error('Failed to update template:', error);
-      throw error;
-    }
-  },
-  
-  // Delete template (only works for database templates)
-  async deleteTemplate(id: string): Promise<void> {
-    // Check if this is a client-side template
-    if (isClientTemplate(id)) {
-      throw new Error('Cannot delete client-side template. Client templates are read-only.');
-    }
-
-    try {
-      await pb.collection('templates').delete(id);
-      
-      // Update stores
-      templates.update(list => list.filter(t => t.id !== id));
-      userTemplates.update(list => list.filter(t => t.id !== id));
-    } catch (error) {
-      console.error('Failed to delete template:', error);
-      throw error;
-    }
-  },
-  
-  // Increment usage count
-  async incrementUsage(id: string): Promise<void> {
-    // Since there's no usageCount field in the templates collection, we can't increment it
-    // This function is kept for compatibility but doesn't perform any action
-    console.warn('incrementUsage called but usageCount field does not exist in templates collection');
-  },
-  
-  // Rate template
-  async rateTemplate(id: string, rating: number): Promise<void> {
-    // Since there's no rating field in the templates collection and no template_ratings collection,
-    // we can't rate templates. This function is kept for compatibility but doesn't perform any action
-    console.warn('rateTemplate called but rating field does not exist in templates collection');
-  },
-  
-  // Search templates
-  async searchTemplates(query: string): Promise<ResumeTemplate[]> {
-    try {
-      const records = await pb.collection('templates').getFullList({
-                    filter: `name ~ "${query}" || description ~ "${query}"`,
-                    sort: '-created'
-                  });
-      
-      return records.map(mapRecordToTemplate);
-    } catch (error) {
-      console.error('Failed to search templates:', error);
-      throw error;
-    }
-  },
-  
-  // Get template categories (includes both client-side and database categories)
+  // Get template categories (client-side only)
   getCategories(): string[] {
     const clientCategories = getClientTemplatesAsResumeTemplates().map(t => t.category);
-    const defaultCategories = [
-      'Modern',
-      'Classic', 
-      'Creative',
-      'Professional',
-      'Minimalist',
-      'Academic',
-      'Technical',
-      'Executive',
-      'Entry Level',
-      'Industry Specific'
-    ];
-    
-    // Merge and deduplicate
-    const allCategories = [...new Set([...clientCategories, ...defaultCategories])];
-    return allCategories.sort();
+    // Deduplicate and sort
+    return [...new Set(clientCategories)].sort();
   },
   
-  // Get popular tags (includes both client-side and default tags)
+  // Get popular tags (client-side only)
   getPopularTags(): string[] {
     const clientTags = getClientTemplatesAsResumeTemplates().flatMap(t => t.tags || []);
-    const defaultTags = [
-      'clean',
-      'modern',
-      'professional',
-      'creative',
-      'minimalist',
-      'colorful',
-      'tech',
-      'business',
-      'academic',
-      'executive',
-      'entry-level',
-      'first-job',
-      'teen',
-      'student',
-      'beginner',
-      'two-column',
-      'single-page',
-      'multi-page',
-      'ats-friendly'
-    ];
-    
-    // Merge and deduplicate
-    const allTags = [...new Set([...clientTags, ...defaultTags])];
-    return allTags.sort();
+    // Deduplicate and sort
+    return [...new Set(clientTags)].sort();
   }
 };
 
-// Helper function to map PocketBase record to ResumeTemplate
-function mapRecordToTemplate(record: any): ResumeTemplate {
-  const cfg = record?.config || {};
-  const settings = cfg.settings || cfg || getDefaultTemplateSettings();
-  const starterData = cfg.starterData || undefined;
-  const styleConfig = cfg.styleConfig || undefined;
-  const styles = cfg.styles || undefined;
-
-  // Fallback thumbnail from static assets if PB image missing
-  const slug = (record.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  const staticThumb = `/templates/${slug}.svg`;
-
-  // Normalize preview images from PocketBase: support preview_images[] or multi-file preview_image
-  let previewImages: string[] = [];
-  if (Array.isArray(record.preview_images)) {
-    previewImages = record.preview_images.map((img: string) => pb.files.getURL(record, img));
-  } else if (Array.isArray(record.preview_image)) {
-    previewImages = record.preview_image.map((img: string) => pb.files.getURL(record, img));
-  }
-
-  const thumbnail = previewImages.length > 0
-    ? previewImages[0]
-    : (typeof record.preview_image === 'string' && record.preview_image
-        ? pb.files.getURL(record, record.preview_image)
-        : staticThumb);
-
-  return {
-    id: record.id,
-    name: record.name,
-    description: record.description,
-    category: record.category,
-    thumbnail,
-    previewImages,
-    settings,
-    sections: [],
-    starterData,
-    styleConfig,
-    styles,
-    isPremium: record.is_premium || false,
-    isPopular: false,
-    createdBy: '',
-    createdAt: record.created,
-    usageCount: 0,
-    rating: 0,
-    tags: []
-  };
-}
-
-// Default template settings
+// Default template settings (kept for backward compatibility)
 function getDefaultTemplateSettings() {
   return {
     template: 'modern',

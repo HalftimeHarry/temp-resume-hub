@@ -1,118 +1,130 @@
 <script lang="ts">
-	import { builderData, updateSettings, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Layout, Palette } from 'lucide-svelte';
+	import { builderData, updateSettings, markStepComplete } from '$lib/stores/resumeBuilder.js';
+	import { generateId } from '$lib/utils.js';
+	import IndustryTemplateSelector from './IndustryTemplateSelector.svelte';
+	import type { IndustrySeedData } from '$lib/seed-data';
+	import type { ClientTemplateConfig } from '$lib/templates/types';
+	import { toast } from 'svelte-sonner';
 
-	$: settings = $builderData.settings;
-
-	function updateLayout(layout: '1-page' | '2-page') {
-		updateSettings({ layout });
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
 	}
 
-	function updateTemplate(template: 'modern' | 'classic' | 'minimal') {
-		updateSettings({ template });
-	}
+	let { onNext, onPrevious }: Props = $props();
 
-	function updateColorScheme(colorScheme: 'blue' | 'green' | 'purple' | 'black') {
-		updateSettings({ colorScheme });
-	}
+	let selectedIndustryId: string | null = null;
+	let selectedTemplateId: string | null = null;
+	let hasAppliedSelection = false;
 
-	// Mark step as complete when component is loaded
-	$: markStepComplete('settings');
-	
-	export let onNext: () => void;
-	export let onPrevious: () => void;
+	function handleSelection(industry: IndustrySeedData, template: ClientTemplateConfig) {
+		console.log('Selected industry:', industry.name);
+		console.log('Selected template:', template.name);
+
+		// Merge seed data with template
+		builderData.update(data => {
+			// Use first summary template
+			const summary = industry.summaryTemplates[0] || '';
+			
+			// Convert skill suggestions to builder format
+			const skills = industry.skillSuggestions
+				.filter(s => s.priority === 'high')
+				.slice(0, 6)
+				.map(s => ({
+					id: generateId(),
+					name: s.name,
+					level: s.level as 'beginner' | 'intermediate' | 'advanced',
+					category: s.category === 'technical' ? 'Technical' : s.category === 'soft' ? 'Soft Skills' : 'Professional'
+				}));
+
+			// Use experience examples if available
+			const experience = industry.experienceExamples || [];
+
+			// Use education examples if available
+			const education = industry.educationExamples || [];
+
+			return {
+				...data,
+				summary,
+				skills,
+				experience,
+				education,
+				settings: {
+					...data.settings,
+					template: template.id,
+					colorScheme: template.settings.colorScheme,
+					fontSize: template.settings.fontSize,
+					spacing: template.settings.spacing,
+					showProfileImage: template.settings.showProfileImage,
+					sectionOrder: template.settings.sectionOrder
+				}
+			};
+		});
+
+		selectedIndustryId = industry.id;
+		selectedTemplateId = template.id;
+		hasAppliedSelection = true;
+
+		// Mark step as complete
+		markStepComplete('settings');
+
+		toast.success(`Applied ${industry.name} content with ${template.name} design!`, {
+			description: 'Your resume has been populated with starter content. Customize it in the next steps.'
+		});
+
+		// Auto-advance to next step after a brief delay
+		setTimeout(() => {
+			onNext();
+		}, 1500);
+	}
 </script>
 
-<div class="space-y-8">
-	<!-- Layout Toggle -->
-	<div class="space-y-4">
-		<div class="flex items-center gap-2">
-			<Layout class="w-5 h-5" />
-			<h3 class="text-lg font-semibold">Resume Length</h3>
+<div class="space-y-6">
+	{#if !hasAppliedSelection}
+		<div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+			<h3 class="font-semibold text-blue-900 mb-2">👋 Welcome to Resume Builder!</h3>
+			<p class="text-blue-800 text-sm">
+				Let's get started by choosing the type of job you're applying for and how you want your resume to look.
+				We'll provide relevant content and examples to help you build a great resume quickly.
+			</p>
 		</div>
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+		<IndustryTemplateSelector 
+			onSelect={handleSelection}
+			{selectedIndustryId}
+			{selectedTemplateId}
+		/>
+	{:else}
+		<div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+			<div class="text-4xl mb-4">✅</div>
+			<h3 class="font-semibold text-green-900 mb-2">Your resume is ready to customize!</h3>
+			<p class="text-green-800 text-sm mb-4">
+				We've populated your resume with starter content. Click "Next" to begin customizing it with your information.
+			</p>
 			<button
-				class="p-4 border rounded-lg text-left transition-all hover:border-primary {settings.layout === '1-page' ? 'border-primary bg-primary/5' : 'border-border'}"
-				on:click={() => updateLayout('1-page')}
+				on:click={onNext}
+				class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
 			>
-				<div class="font-medium mb-2">1 Page</div>
-				<p class="text-sm text-muted-foreground">
-					Perfect for entry-level positions. Concise and focused.
-				</p>
-			</button>
-			
-			<button
-				class="p-4 border rounded-lg text-left transition-all hover:border-primary {settings.layout === '2-page' ? 'border-primary bg-primary/5' : 'border-border'}"
-				on:click={() => updateLayout('2-page')}
-			>
-				<div class="font-medium mb-2">2 Pages Max</div>
-				<p class="text-sm text-muted-foreground">
-					More space for experience and projects. Still professional.
-				</p>
+				Continue to Personal Info →
 			</button>
 		</div>
-	</div>
+	{/if}
+</div>
 
-	<!-- Template Selection -->
-	<div class="space-y-4">
-		<div class="flex items-center gap-2">
-			<Layout class="w-5 h-5" />
-			<h3 class="text-lg font-semibold">Template Style</h3>
-		</div>
-		<div class="grid grid-cols-3 gap-3">
-			{#each ['modern', 'classic', 'minimal'] as template}
-				<button
-					class="p-3 border rounded-lg text-center transition-all hover:border-primary {settings.template === template ? 'border-primary bg-primary/5' : 'border-border'}"
-					on:click={() => updateTemplate(template)}
-				>
-					<div class="font-medium capitalize">{template}</div>
-				</button>
-			{/each}
-		</div>
-	</div>
-
-	<!-- Color Scheme -->
-	<div class="space-y-4">
-		<div class="flex items-center gap-2">
-			<Palette class="w-5 h-5" />
-			<h3 class="text-lg font-semibold">Color Scheme</h3>
-		</div>
-		<div class="grid grid-cols-4 gap-3">
-			{#each [
-				{ name: 'blue', color: 'bg-blue-500' },
-				{ name: 'green', color: 'bg-green-500' },
-				{ name: 'purple', color: 'bg-purple-500' },
-				{ name: 'black', color: 'bg-gray-800' }
-			] as scheme}
-				<button
-					class="p-3 border rounded-lg text-center transition-all hover:border-primary {settings.colorScheme === scheme.name ? 'border-primary bg-primary/5' : 'border-border'}"
-					on:click={() => updateColorScheme(scheme.name)}
-				>
-					<div class="w-6 h-6 {scheme.color} rounded mx-auto mb-1"></div>
-					<div class="text-sm capitalize">{scheme.name}</div>
-				</button>
-			{/each}
-		</div>
-	</div>
-
-	<div class="bg-muted p-4 rounded-lg">
-		<h4 class="font-medium mb-2">💡 Layout Tips</h4>
-		<ul class="text-sm text-muted-foreground space-y-1">
-			<li>• 1-page resumes are preferred for entry-level positions</li>
-			<li>• 2-page resumes work well if you have significant experience</li>
-			<li>• Modern template works well for tech and creative fields</li>
-			<li>• Classic template is great for traditional industries</li>
-			<li>• Choose colors that match your industry standards</li>
-		</ul>
-	</div>
-
-	<div class="flex justify-between">
-		<Button variant="outline" on:click={onPrevious}>
-			Previous
-		</Button>
-		<Button on:click={onNext}>
-			Next: Preview
-		</Button>
-	</div>
+<!-- Navigation buttons -->
+<div class="flex justify-between mt-8 pt-6 border-t">
+	<button
+		class="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
+		on:click={onPrevious}
+		disabled={true}
+	>
+		← Previous
+	</button>
+	<button
+		class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+		on:click={onNext}
+		disabled={!hasAppliedSelection}
+	>
+		Continue →
+	</button>
 </div>

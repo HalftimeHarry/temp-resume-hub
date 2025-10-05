@@ -6,7 +6,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { currentStep, goToStep, nextStep, previousStep, completionProgress, saveResume, publishResume, hasUnsavedChanges, isStepComplete, updateSettings, markStepComplete, markStepIncomplete, autoPopulateFromProfile, smartMergeProfileAndTemplate, importFromProfile, syncProfileFromBuilder, enableAutoSync, loadResumeForEditing, resetBuilderForNewResume } from '$lib/stores/resumeBuilder.js';
 	import { userProfile } from '$lib/stores/userProfile.js';
 	import { generateId } from '$lib/utils.js';
-	import { templates as allTemplates, templateStore, clientTemplates } from '$lib/stores/templates.js';
+	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import type { ExtendedResumeTemplate } from '$lib/templates';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus, Menu, X } from 'lucide-svelte';
@@ -103,7 +103,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 			// Skills step - templates provide example skills
 			markStepComplete('skills');
 			
-			currentStep.set('personal');
+			currentStep.set('settings');
 		} catch (e) {
 			console.error('Failed to apply template:', e);
 		}
@@ -136,11 +136,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		}
 		try {
 			if (!$allTemplates || $allTemplates.length === 0) {
-				await templateStore.loadTemplates({ 
-					includeClientTemplates: true, 
-					includeDatabaseTemplates: true, 
-					preferClientTemplates: true 
-				});
+				templateStore.loadTemplates();
 			}
 			const raw = localStorage.getItem('builderDraft');
 			if (raw) {
@@ -193,7 +189,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					markStepIncomplete('skills');
 				}
 				
-				currentStep.set('personal');
+				currentStep.set('settings');
 				localStorage.removeItem('builderDraft');
 			} else {
 				// Try to auto-populate from profile first
@@ -242,22 +238,22 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	$: isFirstTimeJobSeeker = profile && ['student', 'entry'].includes(profile.experience_level);
 	
 	$: tabs = isFirstTimeJobSeeker ? [
+		{ id: 'settings', label: 'Get Started', icon: Settings, description: 'Choose industry & design' },
 		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
 		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
 		{ id: 'education', label: 'Education', icon: Award, description: 'Academic background' },
 		{ id: 'projects', label: 'Projects', icon: FileText, description: 'Projects & activities' },
 		{ id: 'skills', label: 'Skills', icon: Code, description: 'Technical & soft skills' },
 		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history (optional)' },
-		{ id: 'settings', label: 'Settings', icon: Settings, description: 'Layout & formatting' },
 		{ id: 'preview', label: 'Preview', icon: Eye, description: 'Review & publish' }
 	] : [
+		{ id: 'settings', label: 'Get Started', icon: Settings, description: 'Choose industry & design' },
 		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
 		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
 		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history' },
 		{ id: 'education', label: 'Education', icon: Award, description: 'Academic background' },
 		{ id: 'skills', label: 'Skills', icon: Code, description: 'Technical & soft skills' },
 		{ id: 'projects', label: 'Projects', icon: FileText, description: 'Projects & activities' },
-		{ id: 'settings', label: 'Settings', icon: Settings, description: 'Layout & formatting' },
 		{ id: 'preview', label: 'Preview', icon: Eye, description: 'Review & publish' }
 	];
 
@@ -755,9 +751,30 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 
 		<!-- Main Content -->
 		<div class="container mx-auto px-4 py-6 min-h-screen">
+			<!-- Mobile Tab Navigation -->
+			<div class="lg:hidden mb-4">
+				<div class="bg-white rounded-lg border p-2">
+					<div class="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+						{#each tabs as tab}
+							<button
+								class="flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-md transition-all
+									{activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}"
+								on:click={() => handleTabChange(tab.id)}
+							>
+								<svelte:component this={tab.icon} class="w-4 h-4" />
+								<span class="text-xs font-medium whitespace-nowrap">{tab.label}</span>
+								{#if $isStepComplete(tab.id)}
+									<div class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				</div>
+			</div>
+
 			<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[calc(100vh-200px)]">
-				<!-- Sidebar Navigation -->
-				<div class="lg:col-span-1">
+				<!-- Sidebar Navigation - Desktop only -->
+				<div class="hidden lg:block lg:col-span-1">
 					<div class="bg-white rounded-lg border p-4 sticky top-6">
 						<h3 class="font-semibold mb-4">Resume Sections</h3>
 						<nav class="space-y-2">
@@ -811,7 +828,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							</div>
 
 				<!-- Content Area -->
-				<div class="lg:col-span-3 flex flex-col">
+				<div class="col-span-1 lg:col-span-3 flex flex-col">
 					<div class="bg-white rounded-lg border flex-1 flex flex-col max-h-[calc(100vh-200px)]">
 						<!-- Header Section (Fixed) -->
 						<div class="p-6 border-b bg-white rounded-t-lg flex-shrink-0">
@@ -871,7 +888,10 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								onPrevious={() => handleTabChange(getPreviousTab('skills'))} 
 							/>
 						{:else if activeTab === 'projects'}
-							<ProjectsTab />
+							<ProjectsTab 
+								onNext={() => handleTabChange(getNextTab('projects'))} 
+								onPrevious={() => handleTabChange(getPreviousTab('projects'))} 
+							/>
 						{:else if activeTab === 'settings'}
 							
 							<div class="space-y-8">
@@ -942,8 +962,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							</div>
 
 							<div class="mt-8 flex justify-between">
-								<Button variant="outline" on:click={() => handleTabChange('skills')}>
-									Previous
+								<Button variant="outline" on:click={() => handleTabChange(getPreviousTab('settings'))}>
+									← Previous
 								</Button>
 								<Button on:click={() => handleTabChange('preview')} disabled={!$isStepComplete('personal') || !$isStepComplete('summary') || !$isStepComplete('experience') || !$isStepComplete('education') || !$isStepComplete('skills')}>
 									Next: Preview
@@ -1042,8 +1062,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							</div>
 
 							<div class="mt-8 flex justify-between">
-								<Button variant="outline" on:click={() => handleTabChange('settings')}>
-									Previous
+								<Button variant="outline" on:click={() => handleTabChange(getPreviousTab('preview'))}>
+									← Previous
 								</Button>
 								<Button
 									on:click={handlePublish}
@@ -1068,3 +1088,14 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* Hide scrollbar for mobile tab navigation */
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+</style>

@@ -44,26 +44,26 @@
   $: filtered = $filteredTemplates;
   $: filters = $templateFilters;
   
-  onMount(async () => {
+  onMount(() => {
     try {
-      await templateStore.loadTemplates();
+      templateStore.loadTemplates();
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast.error('Failed to load templates');
     }
   });
   
-  async function handleSearch() {
+  function handleSearch() {
     if (searchQuery.trim()) {
       try {
-        const results = await templateStore.searchTemplates(searchQuery);
+        const results = templateStore.searchTemplates(searchQuery);
         templates.set(results);
       } catch (error) {
         console.error('Search failed:', error);
         toast.error('Search failed');
       }
     } else {
-      await templateStore.loadTemplates();
+      templateStore.loadTemplates();
     }
   }
   
@@ -82,9 +82,6 @@
   
   async function useTemplate(templateId: string) {
     try {
-      // Increment usage count
-      await templateStore.incrementUsage(templateId);
-      
       // Create new resume from template
       const resume = await resumeStore.create(`Resume from Template`, templateId);
       

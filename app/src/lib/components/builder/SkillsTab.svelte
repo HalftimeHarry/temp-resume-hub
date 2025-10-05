@@ -7,20 +7,27 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { X, Sparkles } from 'lucide-svelte';
 
-	$: skills = $builderData.skills;
-	$: technicalSkills = skills.filter(skill => skill.category === 'technical');
-	$: softSkills = skills.filter(skill => skill.category === 'soft');
-	$: languageSkills = skills.filter(skill => skill.category === 'language');
-	
-	$: isValid = skills.length >= 3; // Minimum 3 skills required
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
+	}
 
-	$: {
+	let { onNext, onPrevious }: Props = $props();
+
+	let skills = $derived($builderData.skills);
+	let technicalSkills = $derived(skills.filter(skill => skill.category === 'technical'));
+	let softSkills = $derived(skills.filter(skill => skill.category === 'soft'));
+	let languageSkills = $derived(skills.filter(skill => skill.category === 'language'));
+	
+	let isValid = $derived(skills.length >= 3); // Minimum 3 skills required
+
+	$effect(() => {
 		if (isValid) {
 			markStepComplete('skills');
 		} else {
 			markStepIncomplete('skills');
 		}
-	}
+	});
 
 	let newTechnicalSkill = '';
 	let newSoftSkill = '';
@@ -67,9 +74,9 @@
 	}
 
 	// Enhanced skill suggestions with profile and template awareness
-	$: selectedTemplate = $allTemplates?.find?.(t => t.id === $builderData?.settings?.template);
-	$: templateName = (selectedTemplate?.name || '').toLowerCase();
-	$: profile = $userProfile;
+	let selectedTemplate = $derived($allTemplates?.find?.(t => t.id === $builderData?.settings?.template));
+	let templateName = $derived((selectedTemplate?.name || '').toLowerCase());
+	let profile = $derived($userProfile);
 	
 	const technicalBase = [
 	 'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML/CSS', 'SQL', 'Git', 'Microsoft Office'
@@ -80,7 +87,7 @@
 	const langBase = ['Spanish', 'French', 'German', 'Mandarin'];
 	
 	// Get profile-based skill suggestions
-	$: profileSkills = (() => {
+	let profileSkills = $derived.by(() => {
 		if (!profile?.key_skills) return [];
 		try {
 			const skillsString = typeof profile.key_skills === 'string' 
@@ -90,10 +97,10 @@
 		} catch {
 			return [];
 		}
-	})();
+	});
 	
 	// Industry-specific skills based on profile
-	$: industrySkills = (() => {
+	let industrySkills = $derived.by(() => {
 		if (!profile?.target_industry) return [];
 		
 		const industry = profile.target_industry.toLowerCase();
@@ -118,9 +125,9 @@
 		}
 		
 		return [];
-	})();
+	});
 	
-	$: technicalSuggestions = (() => {
+	let technicalSuggestions = $derived.by(() => {
 		// Combine profile skills, industry skills, and template-specific skills
 		let suggestions = [...technicalBase];
 		
@@ -145,9 +152,9 @@
 		
 		// Remove duplicates and limit to 12 suggestions
 		return [...new Set(suggestions)].slice(0, 12);
-	})();
+	});
 	
-	$: softSuggestions = (() => {
+	let softSuggestions = $derived.by(() => {
 		let suggestions = [...softBase];
 		
 		// Industry-specific soft skills
@@ -174,11 +181,9 @@
 		
 		// Remove duplicates and limit to 10 suggestions
 		return [...new Set(suggestions)].slice(0, 10);
-	})();
+	});
 	
-	$: languageSuggestions = langBase;
-
-	export let onNext: () => void;
+	let languageSuggestions = $derived(langBase);
 </script>
 
 <div class="space-y-6">
@@ -378,7 +383,7 @@
 			Previous
 		</Button>
 		<Button disabled={!isValid} on:click={onNext}>
-			Next: Settings
+			Save & Continue
 		</Button>
 	</div>
 </div>
