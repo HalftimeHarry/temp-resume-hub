@@ -128,6 +128,24 @@
     }
 
     try {
+      // Check user role and redirect admins to admin dashboard
+      const userId = pb.authStore.model?.id;
+      if (userId) {
+        try {
+          const profiles = await pb.collection('user_profiles').getFullList({
+            filter: `user = "${userId}"`
+          });
+          
+          if (profiles.length > 0 && profiles[0].role === 'admin') {
+            // Redirect admins to admin dashboard
+            goto('/dashboard/admin');
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking user role:', error);
+        }
+      }
+      
       // Load user's resumes
       const loadedResumes = await resumeStore.loadUserResumes();
       
