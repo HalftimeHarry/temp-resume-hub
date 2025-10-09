@@ -1,8 +1,9 @@
 /**
  * Role-based access control (RBAC) and permission management
+ * Uses UserProfile from user_profiles collection
  */
 
-import type { User } from '$lib/types';
+import type { UserProfile } from '$lib/types';
 
 // Role definitions
 export const ROLES = {
@@ -129,19 +130,20 @@ export const PLAN_PERMISSIONS: Record<string, Permission[]> = {
 
 /**
  * Check if user has a specific permission
+ * @param profile UserProfile from user_profiles collection
  */
-export function hasPermission(user: User | null, permission: Permission): boolean {
-  if (!user) return false;
+export function hasPermission(profile: UserProfile | null, permission: Permission): boolean {
+  if (!profile) return false;
   
   // Check role-based permissions
-  const rolePermissions = ROLE_PERMISSIONS[user.role as Role] || [];
+  const rolePermissions = ROLE_PERMISSIONS[profile.role as Role] || [];
   if (rolePermissions.includes(permission)) {
     return true;
   }
   
   // Check plan-based permissions (only if plan is active)
-  if (isPlanActive(user)) {
-    const planPermissions = PLAN_PERMISSIONS[user.plan] || [];
+  if (isPlanActive(profile)) {
+    const planPermissions = PLAN_PERMISSIONS[profile.plan] || [];
     if (planPermissions.includes(permission)) {
       return true;
     }
@@ -153,39 +155,39 @@ export function hasPermission(user: User | null, permission: Permission): boolea
 /**
  * Check if user has a specific role
  */
-export function hasRole(user: User | null, role: Role): boolean {
-  if (!user) return false;
-  return user.role === role;
+export function hasRole(profile: UserProfile | null, role: Role): boolean {
+  if (!profile) return false;
+  return profile.role === role;
 }
 
 /**
  * Check if user is admin
  */
-export function isAdmin(user: User | null): boolean {
-  return hasRole(user, ROLES.ADMIN);
+export function isAdmin(profile: UserProfile | null): boolean {
+  return hasRole(profile, ROLES.ADMIN);
 }
 
 /**
  * Check if user is moderator or admin
  */
-export function isModerator(user: User | null): boolean {
-  if (!user) return false;
-  return user.role === ROLES.MODERATOR || user.role === ROLES.ADMIN;
+export function isModerator(profile: UserProfile | null): boolean {
+  if (!profile) return false;
+  return profile.role === ROLES.MODERATOR || profile.role === ROLES.ADMIN;
 }
 
 /**
  * Check if user's plan is active
  */
-export function isPlanActive(user: User | null): boolean {
-  if (!user) return false;
+export function isPlanActive(profile: UserProfile | null): boolean {
+  if (!profile) return false;
   
   // Free plan is always active
-  if (user.plan === 'free') return true;
+  if (profile.plan === 'free') return true;
   
   // Check if plan has expired
-  if (!user.plan_expires) return false;
+  if (!profile.plan_expires) return false;
   
-  const expiryDate = new Date(user.plan_expires);
+  const expiryDate = new Date(profile.plan_expires);
   const now = new Date();
   
   return expiryDate > now;
@@ -194,10 +196,10 @@ export function isPlanActive(user: User | null): boolean {
 /**
  * Get days until plan expires
  */
-export function getDaysUntilExpiry(user: User | null): number | null {
-  if (!user || !user.plan_expires) return null;
+export function getDaysUntilExpiry(profile: UserProfile | null): number | null {
+  if (!profile || !profile.plan_expires) return null;
   
-  const expiryDate = new Date(user.plan_expires);
+  const expiryDate = new Date(profile.plan_expires);
   const now = new Date();
   const diffTime = expiryDate.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -208,11 +210,11 @@ export function getDaysUntilExpiry(user: User | null): number | null {
 /**
  * Check if user can upgrade to a specific plan
  */
-export function canUpgradeTo(user: User | null, targetPlan: 'pro' | 'enterprise'): boolean {
-  if (!user) return false;
+export function canUpgradeTo(profile: UserProfile | null, targetPlan: 'pro' | 'enterprise'): boolean {
+  if (!profile) return false;
   
   const planHierarchy = { free: 0, pro: 1, enterprise: 2 };
-  const currentLevel = planHierarchy[user.plan] || 0;
+  const currentLevel = planHierarchy[profile.plan] || 0;
   const targetLevel = planHierarchy[targetPlan] || 0;
   
   return targetLevel > currentLevel;
@@ -221,11 +223,11 @@ export function canUpgradeTo(user: User | null, targetPlan: 'pro' | 'enterprise'
 /**
  * Get all permissions for a user
  */
-export function getUserPermissions(user: User | null): Permission[] {
-  if (!user) return [];
+export function getUserPermissions(profile: UserProfile | null): Permission[] {
+  if (!profile) return [];
   
-  const rolePermissions = ROLE_PERMISSIONS[user.role as Role] || [];
-  const planPermissions = isPlanActive(user) ? (PLAN_PERMISSIONS[user.plan] || []) : [];
+  const rolePermissions = ROLE_PERMISSIONS[profile.role as Role] || [];
+  const planPermissions = isPlanActive(profile) ? (PLAN_PERMISSIONS[profile.plan] || []) : [];
   
   // Combine and deduplicate
   return [...new Set([...rolePermissions, ...planPermissions])];
@@ -234,15 +236,15 @@ export function getUserPermissions(user: User | null): Permission[] {
 /**
  * Check if user has any of the specified permissions
  */
-export function hasAnyPermission(user: User | null, permissions: Permission[]): boolean {
-  return permissions.some(permission => hasPermission(user, permission));
+export function hasAnyPermission(profile: UserProfile | null, permissions: Permission[]): boolean {
+  return permissions.some(permission => hasPermission(profile, permission));
 }
 
 /**
  * Check if user has all of the specified permissions
  */
-export function hasAllPermissions(user: User | null, permissions: Permission[]): boolean {
-  return permissions.every(permission => hasPermission(user, permission));
+export function hasAllPermissions(profile: UserProfile | null, permissions: Permission[]): boolean {
+  return permissions.every(permission => hasPermission(profile, permission));
 }
 
 /**

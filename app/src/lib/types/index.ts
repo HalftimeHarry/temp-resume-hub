@@ -1,28 +1,77 @@
 // TypeScript type definitions for Digital Resume Hub
 
+// User from users collection (authentication only)
 export interface User {
   id: string;
   email: string;
   name: string;
   username: string;
   avatar?: string;
-  bio?: string;
-  website?: string;
+  created: string;
+  updated: string;
+}
+
+// UserProfile from user_profiles collection (business logic)
+export interface UserProfile {
+  id: string;
+  user: string; // Reference to users.id
   
-  // Role system - defines user type and base permissions
-  role: 'job_seeker' | 'admin' | 'moderator';
+  // Personal info
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  location?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
   
-  // Plan system - defines subscription tier (separate from roles)
+  // Career info
+  target_industry?: string;
+  experience_level?: string;
+  target_job_titles?: string;
+  key_skills?: string;
+  career_stage?: string;
+  
+  // Role & Plan system
+  role: 'job_seeker' | 'moderator' | 'admin';
   plan: 'free' | 'pro' | 'enterprise';
   plan_expires?: string; // ISO date string for subscription expiry
   plan_payment_id?: string; // Reference to payment/subscription
-  
-  // Status flags
   verified: boolean; // Email verification status
   active: boolean; // Account active status
+  last_login?: string;
+  
+  // Profile completion
+  profile_completed: boolean;
+  profile_completed_at?: string;
+  
+  // Additional fields
+  preferred_work_type?: string;
+  salary_expectation_min?: number;
+  salary_expectation_max?: number;
+  education_level?: string;
+  certifications?: string;
+  willing_to_relocate?: boolean;
+  template_preferences?: any;
+  onboarding_data?: any;
+  
+  // Student/Entry-level specific
+  academic_projects?: string;
+  volunteer_experience?: string;
+  extracurricular_activities?: string;
+  personal_projects?: string;
+  internships_completed?: string;
+  technical_proficiencies?: string;
+  soft_skills_examples?: string;
+  achievements_awards?: string;
+  relevant_coursework?: string;
   
   created: string;
   updated: string;
+}
+
+// Combined user data (for convenience)
+export interface UserWithProfile extends User {
+  profile?: UserProfile;
 }
 
 export interface Template {

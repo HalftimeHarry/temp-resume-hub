@@ -1,13 +1,14 @@
 /**
  * Plan upgrade and subscription management utilities
+ * Works with user_profiles collection
  */
 
 import { pb } from '$lib/pocketbase';
-import type { User } from '$lib/types';
+import type { UserProfile } from '$lib/types';
 
 export interface UpgradeResult {
   success: boolean;
-  user?: User;
+  profile?: UserProfile;
   error?: string;
 }
 
@@ -77,8 +78,17 @@ export async function upgradeToPro(
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
     }
     
-    // Update user plan
-    const updatedUser = await pb.collection('users').update(userId, {
+    // Get user's profile
+    const profiles = await pb.collection('user_profiles').getFullList({
+      filter: `user = "${userId}"`
+    });
+    
+    if (profiles.length === 0) {
+      return { success: false, error: 'User profile not found' };
+    }
+    
+    // Update profile with new plan
+    const updatedProfile = await pb.collection('user_profiles').update(profiles[0].id, {
       plan: 'pro',
       plan_expires: expiryDate.toISOString(),
       plan_payment_id: paymentData?.paymentId || null
@@ -97,9 +107,9 @@ export async function upgradeToPro(
     // });
     
     // TODO: Send confirmation email
-    // await sendPlanUpgradeEmail(updatedUser.email, 'pro', billingCycle);
+    // await sendPlanUpgradeEmail(user.email, 'pro', billingCycle);
     
-    return { success: true, user: updatedUser };
+    return { success: true, profile: updatedProfile };
   } catch (error: any) {
     console.error('Plan upgrade error:', error);
     return { 
@@ -127,7 +137,16 @@ export async function upgradeToEnterprise(
       expiryDate.setFullYear(expiryDate.getFullYear() + 1);
     }
     
-    const updatedUser = await pb.collection('users').update(userId, {
+    // Get user's profile
+    const profiles = await pb.collection('user_profiles').getFullList({
+      filter: `user = "${userId}"`
+    });
+    
+    if (profiles.length === 0) {
+      return { success: false, error: 'User profile not found' };
+    }
+    
+    const updatedProfile = await pb.collection('user_profiles').update(profiles[0].id, {
       plan: 'enterprise',
       plan_expires: expiryDate.toISOString(),
       plan_payment_id: paymentData?.paymentId || null
@@ -135,7 +154,7 @@ export async function upgradeToEnterprise(
     
     // TODO: Create subscription record and send email
     
-    return { success: true, user: updatedUser };
+    return { success: true, profile: updatedProfile };
   } catch (error: any) {
     console.error('Plan upgrade error:', error);
     return { 
@@ -150,7 +169,16 @@ export async function upgradeToEnterprise(
  */
 export async function downgradeToFree(userId: string): Promise<UpgradeResult> {
   try {
-    const updatedUser = await pb.collection('users').update(userId, {
+    // Get user's profile
+    const profiles = await pb.collection('user_profiles').getFullList({
+      filter: `user = "${userId}"`
+    });
+    
+    if (profiles.length === 0) {
+      return { success: false, error: 'User profile not found' };
+    }
+    
+    const updatedProfile = await pb.collection('user_profiles').update(profiles[0].id, {
       plan: 'free',
       plan_expires: null,
       plan_payment_id: null
@@ -159,7 +187,7 @@ export async function downgradeToFree(userId: string): Promise<UpgradeResult> {
     // TODO: Cancel subscription with payment provider
     // TODO: Send downgrade confirmation email
     
-    return { success: true, user: updatedUser };
+    return { success: true, profile: updatedProfile };
   } catch (error: any) {
     console.error('Plan downgrade error:', error);
     return { 
@@ -175,27 +203,29 @@ export async function downgradeToFree(userId: string): Promise<UpgradeResult> {
  */
 export async function processExpiredPlans(): Promise<void> {
   try {
-    // Find users with expired plans
-    const expiredUsers = await pb.collection('users').getFullList({
+    // Find profiles with expired plans
+    const expiredProfiles = await pb.collection('user_profiles').getFullList({
       filter: 'plan != "free" && plan_expires < @now'
     });
     
-    console.log(`Found ${expiredUsers.length} expired plans to process`);
+    console.log(`Found ${expiredProfiles.length} expired plans to process`);
     
-    for (const user of expiredUsers) {
+    for (const profile of expiredProfiles) {
       try {
         // Downgrade to free
-        await pb.collection('users').update(user.id, {
+        await pb.collection('user_profiles').update(profile.id, {
           plan: 'free',
           plan_expires: null
         });
         
         // TODO: Send expiry notification email
-        // await sendPlanExpiredEmail(user.email, user.plan);
+        // Get user email from users collection
+        // const user = await pb.collection('users').getOne(profile.user);
+        // await sendPlanExpiredEmail(user.email, profile.plan);
         
-        console.log(`Downgraded user ${user.id} from ${user.plan} to free`);
+        console.log(`Downgraded profile ${profile.id} from ${profile.plan} to free`);
       } catch (error) {
-        console.error(`Failed to downgrade user ${user.id}:`, error);
+        console.error(`Failed to downgrade profile ${profile.id}:`, error);
       }
     }
   } catch (error) {

@@ -66,17 +66,36 @@
 
 ### Phase 1: Database Schema Updates (Required)
 
-You need to update your PocketBase `users` collection schema:
+⚠️ **IMPORTANT**: Add fields to `user_profiles` collection, NOT `users` collection!
+
+You need to update your PocketBase `user_profiles` collection schema:
 
 ```javascript
-// Add these fields to the users collection in PocketBase Admin UI:
+// Update/add these fields to the user_profiles collection in PocketBase Admin UI:
 
 {
+  // UPDATE EXISTING FIELD
   "role": {
     "type": "select",
     "options": ["job_seeker", "moderator", "admin"],
     "default": "job_seeker",
     "required": true
+  },
+  
+  // ADD NEW FIELDS
+  "plan": {
+    "type": "select",
+    "options": ["free", "pro", "enterprise"],
+    "default": "free",
+    "required": true
+  },
+  "plan_expires": {
+    "type": "date",
+    "required": false
+  },
+  "plan_payment_id": {
+    "type": "text",
+    "required": false
   },
   "verified": {
     "type": "bool",
@@ -86,12 +105,8 @@ You need to update your PocketBase `users` collection schema:
     "type": "bool",
     "default": true
   },
-  "plan_expires": {
+  "last_login": {
     "type": "date",
-    "required": false
-  },
-  "plan_payment_id": {
-    "type": "text",
     "required": false
   }
 }
@@ -99,10 +114,19 @@ You need to update your PocketBase `users` collection schema:
 
 **How to do this:**
 1. Open PocketBase Admin UI (usually `http://localhost:8090/_/`)
-2. Go to Collections → users
+2. Go to Collections → **user_profiles** (NOT users!)
 3. Click "Edit collection"
-4. Add the fields above
-5. Save changes
+4. Update the `role` field options
+5. Add the new fields above
+6. Save changes
+
+**Why user_profiles?**
+- Keeps authentication separate from business logic
+- You already have a `role` field there
+- Easier to extend without touching core auth
+- Better for GDPR compliance
+
+See `USER_PROFILES_SCHEMA_UPDATE.md` for detailed explanation.
 
 ### Phase 2: Email Verification (Recommended)
 

@@ -69,16 +69,13 @@ export const auth = {
   // Register new user
   async register(email: string, password: string, name: string, username: string) {
     try {
+      // 1. Create user (authentication only)
       const userData = {
         email,
         password,
         passwordConfirm: password,
         name,
-        username,
-        role: 'job_seeker', // Default role for new users
-        plan: 'free',       // Default plan
-        verified: false,    // Requires email verification
-        active: true        // Account is active by default
+        username
       };
 
       const user = await pb.collection('users').create(userData);
@@ -86,10 +83,10 @@ export const auth = {
       // Auto-login after registration
       const authData = await pb.collection('users').authWithPassword(email, password);
       
-      // Create user profile after successful registration
+      // Create user profile with role and plan after successful registration
       try {
         await this.createUserProfile(authData.record.id, name);
-        console.log('✅ User profile created successfully');
+        console.log('✅ User profile created with role and plan');
       } catch (profileError) {
         console.warn('⚠️ Failed to create user profile:', profileError);
         // Don't fail registration if profile creation fails
@@ -272,6 +269,10 @@ export const auth = {
         user: userId,
         first_name: firstName,
         last_name: lastName,
+        role: 'job_seeker',  // Default role for new users
+        plan: 'free',        // Default plan
+        verified: false,     // Requires email verification
+        active: true,        // Account active by default
         profile_completed: false,
         onboarding_data: {
           registration_date: new Date().toISOString(),
@@ -281,7 +282,7 @@ export const auth = {
       };
 
       const profile = await pb.collection('user_profiles').create(profileData);
-      console.log('✅ User profile created:', profile.id);
+      console.log('✅ User profile created with role and plan:', profile.id);
       
       return { success: true, profile };
     } catch (error: any) {

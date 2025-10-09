@@ -40,8 +40,8 @@ app/src/
 │   ├── register/+page.svelte    # Added honeypot, timing, rate limiting
 │   └── login/+page.svelte       # Added honeypot, timing, rate limiting
 ├── lib/
-│   ├── types/index.ts           # Updated User interface with role/plan
-│   ├── stores/auth.ts           # Set default role on registration
+│   ├── types/index.ts           # Added UserProfile interface (uses user_profiles)
+│   ├── stores/auth.ts           # Creates profile with role/plan on registration
 │   └── pocketbase.ts            # Added CSRF documentation
 ```
 
@@ -97,14 +97,17 @@ if (result.success) {
 
 **Yes, one required step:**
 
-Update your PocketBase `users` collection to add these fields:
-- `role` (select: job_seeker, moderator, admin)
-- `verified` (boolean)
-- `active` (boolean)
-- `plan_expires` (date, optional)
-- `plan_payment_id` (text, optional)
+Update your PocketBase `user_profiles` collection (NOT users!) to add these fields:
+- `role` (select: job_seeker, moderator, admin) - UPDATE existing field
+- `plan` (select: free, pro, enterprise) - ADD new field
+- `verified` (boolean) - ADD new field
+- `active` (boolean) - ADD new field
+- `plan_expires` (date, optional) - ADD new field
+- `plan_payment_id` (text, optional) - ADD new field
 
-**How:** Open PocketBase Admin UI → Collections → users → Edit → Add fields
+**How:** Open PocketBase Admin UI → Collections → **user_profiles** → Edit → Update/Add fields
+
+**Why user_profiles?** Keeps auth separate from business logic. See `USER_PROFILES_SCHEMA_UPDATE.md` for details.
 
 ## 🚀 Quick Start
 
@@ -123,10 +126,23 @@ Update your PocketBase `users` collection to add these fields:
 ### 3. Use Permissions in Code
 ```svelte
 <script>
-  import { currentUser } from '$lib/stores/auth';
+  import { onMount } from 'svelte';
+  import { pb } from '$lib/pocketbase';
   import { hasPermission, PERMISSIONS } from '$lib/utils/permissions';
   
-  $: canExport = hasPermission($currentUser, PERMISSIONS.EXPORT_PDF);
+  let userProfile = null;
+  
+  onMount(async () => {
+    const userId = pb.authStore.model?.id;
+    if (userId) {
+      const profiles = await pb.collection('user_profiles').getFullList({
+        filter: `user = "${userId}"`
+      });
+      userProfile = profiles[0] || null;
+    }
+  });
+  
+  $: canExport = hasPermission(userProfile, PERMISSIONS.EXPORT_PDF);
 </script>
 
 {#if canExport}
