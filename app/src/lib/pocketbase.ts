@@ -5,6 +5,8 @@ import { POCKETBASE_URL } from './config';
 import type { Resume, User } from './types/resume';
 
 // Initialize PocketBase client
+// Note: PocketBase provides built-in CSRF protection via secure HTTP-only cookies
+// The auth token includes CSRF validation automatically
 export const pb = new PocketBase(POCKETBASE_URL);
 
 // User store

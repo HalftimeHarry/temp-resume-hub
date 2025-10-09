@@ -8,7 +8,19 @@ export interface User {
   avatar?: string;
   bio?: string;
   website?: string;
+  
+  // Role system - defines user type and base permissions
+  role: 'job_seeker' | 'admin' | 'moderator';
+  
+  // Plan system - defines subscription tier (separate from roles)
   plan: 'free' | 'pro' | 'enterprise';
+  plan_expires?: string; // ISO date string for subscription expiry
+  plan_payment_id?: string; // Reference to payment/subscription
+  
+  // Status flags
+  verified: boolean; // Email verification status
+  active: boolean; // Account active status
+  
   created: string;
   updated: string;
 }

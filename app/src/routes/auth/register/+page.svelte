@@ -3,6 +3,8 @@
   import { authStore } from '$lib/stores/auth';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+  import { onMount } from 'svelte';
+  import { rateLimiter, RATE_LIMITS, formatRetryTime } from '$lib/utils/rate-limiter';
   
   let email = '';
   let password = '';
@@ -12,7 +14,46 @@
   let isLoading = false;
   let error = '';
   
+  // Spam prevention
+  let honeypot = ''; // Hidden field that bots will fill
+  let formStartTime = 0;
+  
+  onMount(() => {
+    formStartTime = Date.now();
+  });
+  
   async function handleRegister() {
+    // Honeypot check - if filled, it's a bot
+    if (honeypot !== '') {
+      console.warn('Honeypot triggered - potential bot');
+      error = 'Invalid submission. Please try again.';
+      return;
+    }
+    
+    // Timing check - reject if too fast (< 3 seconds) or too slow (> 30 minutes)
+    const submitTime = Date.now() - formStartTime;
+    if (submitTime < 3000) {
+      error = 'Please take your time filling out the form';
+      return;
+    }
+    if (submitTime > 1800000) { // 30 minutes
+      error = 'Form session expired. Please refresh and try again';
+      return;
+    }
+    
+    // Rate limiting check
+    const rateLimitKey = `register:${email}`;
+    const rateCheck = rateLimiter.checkLimit(
+      rateLimitKey,
+      RATE_LIMITS.REGISTRATION.maxAttempts,
+      RATE_LIMITS.REGISTRATION.windowMs,
+      RATE_LIMITS.REGISTRATION.blockDurationMs
+    );
+    
+    if (!rateCheck.allowed) {
+      error = `Too many registration attempts. Please try again in ${formatRetryTime(rateCheck.retryAfter || 60)}.`;
+      return;
+    }
     
     if (!email || !password || !name || !username) {
       error = 'Please fill in all fields';
@@ -142,6 +183,18 @@
           required
         />
       </div>
+      
+      <!-- Honeypot field - hidden from users, visible to bots -->
+      <input
+        type="text"
+        name="website_url"
+        id="website_url"
+        bind:value={honeypot}
+        autocomplete="off"
+        tabindex="-1"
+        aria-hidden="true"
+        style="position: absolute; left: -9999px; opacity: 0; height: 0; width: 0;"
+      />
       
       <button
         class="w-full bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"

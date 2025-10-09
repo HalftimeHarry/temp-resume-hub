@@ -75,7 +75,10 @@ export const auth = {
         passwordConfirm: password,
         name,
         username,
-        plan: 'free'
+        role: 'job_seeker', // Default role for new users
+        plan: 'free',       // Default plan
+        verified: false,    // Requires email verification
+        active: true        // Account is active by default
       };
 
       const user = await pb.collection('users').create(userData);
