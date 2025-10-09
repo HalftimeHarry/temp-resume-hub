@@ -1,6 +1,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { authStore } from '$lib/stores/auth';
+  import { pb } from '$lib/pocketbase';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { onMount } from 'svelte';
@@ -57,7 +58,27 @@
       console.log('🔐 Login Debug: Login result:', result);
       
       if (result.success) {
-        console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
+        console.log('🔐 Login Debug: Login successful, checking user role');
+        
+        // Check user role and redirect accordingly
+        const userId = result.user?.id;
+        if (userId) {
+          try {
+            const profiles = await pb.collection('user_profiles').getFullList({
+              filter: `user = "${userId}"`
+            });
+            
+            if (profiles.length > 0 && profiles[0].role === 'admin') {
+              console.log('🔐 Login Debug: User is admin, redirecting to admin dashboard');
+              window.location.href = '/dashboard/admin';
+              return;
+            }
+          } catch (profileError) {
+            console.error('🔐 Login Debug: Error checking profile:', profileError);
+          }
+        }
+        
+        console.log('🔐 Login Debug: Redirecting to regular dashboard');
         window.location.href = '/dashboard';
       } else {
         console.log('🔐 Login Debug: Login failed:', result.error);
