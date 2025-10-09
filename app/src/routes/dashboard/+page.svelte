@@ -97,6 +97,7 @@
     };
   } = {};
   let importDebugText = '';
+  let currentUserProfile: any = null;
   
   $: resumes = $userResumes;
   $: analytics = userAnalytics;
@@ -136,10 +137,14 @@
             filter: `user = "${userId}"`
           });
           
-          if (profiles.length > 0 && profiles[0].role === 'admin') {
-            // Redirect admins to admin dashboard
-            goto('/dashboard/admin');
-            return;
+          if (profiles.length > 0) {
+            currentUserProfile = profiles[0];
+            
+            if (profiles[0].role === 'admin') {
+              // Redirect admins to admin dashboard
+              goto('/dashboard/admin');
+              return;
+            }
           }
         } catch (error) {
           console.error('Error checking user role:', error);
@@ -338,7 +343,32 @@
         <div class="flex items-center space-x-3">
           <img src="/icon.svg" alt="Digital Resume Hub" class="h-8 w-8" />
           <div class="hidden sm:block">
-            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+              {#if currentUserProfile?.role}
+                <span class="text-xs px-2 py-1 rounded border {
+                  currentUserProfile.role === 'admin' ? 'bg-red-100 text-red-800 border-red-200' :
+                  currentUserProfile.role === 'moderator' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                  'bg-blue-100 text-blue-800 border-blue-200'
+                }">
+                  {currentUserProfile.role === 'job_seeker' ? 'Job Seeker' :
+                   currentUserProfile.role === 'moderator' ? 'Moderator' :
+                   currentUserProfile.role === 'admin' ? 'Admin' :
+                   currentUserProfile.role}
+                </span>
+              {/if}
+              {#if currentUserProfile?.plan && currentUserProfile.plan !== 'free'}
+                <span class="text-xs px-2 py-1 rounded border {
+                  currentUserProfile.plan === 'enterprise' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                  currentUserProfile.plan === 'pro' ? 'bg-green-100 text-green-800 border-green-200' :
+                  'bg-gray-100 text-gray-800 border-gray-200'
+                }">
+                  {currentUserProfile.plan === 'pro' ? 'Pro' :
+                   currentUserProfile.plan === 'enterprise' ? 'Enterprise' :
+                   currentUserProfile.plan}
+                </span>
+              {/if}
+            </div>
             <p class="text-sm text-gray-600">Welcome back, {user?.name || 'User'}!</p>
           </div>
           <div class="sm:hidden">
