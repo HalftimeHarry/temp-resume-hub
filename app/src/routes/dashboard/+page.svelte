@@ -129,26 +129,31 @@
     }
 
     try {
-      // Check user role and redirect admins to admin dashboard
+      // Fetch user profile for display (middleware handles role-based redirects)
       const userId = pb.authStore.model?.id;
+      console.log('📊 Dashboard: User ID:', userId);
+      
       if (userId) {
         try {
+          console.log('📊 Dashboard: Fetching user profile...');
           const profiles = await pb.collection('user_profiles').getFullList({
             filter: `user = "${userId}"`
           });
           
+          console.log('📊 Dashboard: Profiles found:', profiles.length);
+          
           if (profiles.length > 0) {
             currentUserProfile = profiles[0];
-            
-            if (profiles[0].role === 'admin') {
-              // Redirect admins to admin dashboard
-              goto('/dashboard/admin');
-              return;
-            }
+            console.log('📊 Dashboard: User role:', profiles[0].role);
+            console.log('📊 Dashboard: User plan:', profiles[0].plan);
+          } else {
+            console.warn('📊 Dashboard: No profile found for user');
           }
         } catch (error) {
-          console.error('Error checking user role:', error);
+          console.error('📊 Dashboard: Error checking user role:', error);
         }
+      } else {
+        console.warn('📊 Dashboard: No user ID found');
       }
       
       // Load user's resumes
@@ -442,9 +447,22 @@
           </button>
           {#if user}
             <div class="flex items-center gap-2 ml-2" on:click={() => console.log('User info area clicked!')}>
-              <div class="hidden md:flex items-center gap-1 text-sm text-gray-700">
+              <div class="hidden md:flex items-center gap-2 text-sm text-gray-700">
                 <User class="h-4 w-4 text-gray-500" />
                 <span>{user.email}</span>
+                {#if currentUserProfile}
+                  <span class="text-xs px-2 py-1 rounded border font-medium {
+                    currentUserProfile.role === 'admin' ? 'bg-red-100 text-red-800 border-red-300' :
+                    currentUserProfile.role === 'moderator' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                    'bg-blue-100 text-blue-800 border-blue-300'
+                  }">
+                    Role: {currentUserProfile.role || 'unknown'}
+                  </span>
+                {:else}
+                  <span class="text-xs px-2 py-1 rounded border bg-gray-100 text-gray-600 border-gray-300">
+                    Loading role...
+                  </span>
+                {/if}
               </div>
               <button
                 class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"

@@ -10,6 +10,8 @@ declare global {
 				name?: string;
 				avatar?: string;
 			};
+			userProfile?: any;
+			userRole?: string;
 		}
 		// interface PageData {}
 		// interface PageState {}

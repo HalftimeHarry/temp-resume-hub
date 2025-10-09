@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { Button } from '$lib/components/ui/button';
   import { Users, UserCheck, Crown, FileText, TrendingUp, Shield } from 'lucide-svelte';
@@ -11,6 +12,17 @@
   $: users = data.users;
   $: profiles = data.profiles;
   $: recentActivity = data.recentActivity;
+  
+  onMount(() => {
+    console.log('🎨 Admin Dashboard Client: Component mounted');
+    console.log('🎨 Admin Dashboard Client: Data received:', data);
+    console.log('🎨 Admin Dashboard Client: Profile:', data.profile);
+    console.log('🎨 Admin Dashboard Client: User role:', data.profile?.role);
+    console.log('🎨 Admin Dashboard Client: User plan:', data.profile?.plan);
+    console.log('🎨 Admin Dashboard Client: Stats:', stats);
+    console.log('🎨 Admin Dashboard Client: Total users:', users?.length);
+    console.log('🎨 Admin Dashboard Client: Total profiles:', profiles?.length);
+  });
   
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -55,7 +67,17 @@
         <div class="flex items-center gap-3">
           <Shield class="w-8 h-8 text-red-600" />
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              {#if data.profile}
+                <span class="text-xs px-2 py-1 rounded border bg-red-100 text-red-800 border-red-300 font-medium">
+                  Role: {data.profile.role}
+                </span>
+                <span class="text-xs px-2 py-1 rounded border bg-gray-100 text-gray-800 border-gray-300">
+                  Plan: {data.profile.plan}
+                </span>
+              {/if}
+            </div>
             <p class="text-sm text-gray-600">System management and analytics</p>
           </div>
         </div>

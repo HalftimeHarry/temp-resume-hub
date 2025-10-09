@@ -39,16 +39,48 @@ if (browser) {
   }
   
   // Listen for auth changes
-  pb.authStore.onChange((auth) => {
+  pb.authStore.onChange(async (auth) => {
     console.log('🔐 Auth Debug: Auth state changed:', auth);
     if (auth && pb.authStore.model) {
       console.log('🔐 Auth Debug: User logged in:', pb.authStore.model);
       currentUser.set(convertToUser(pb.authStore.model));
       isAuthenticated.set(true);
+      
+      // Fetch and log user role
+      try {
+        const profiles = await pb.collection('user_profiles').getFullList({
+          filter: `user = "${pb.authStore.model.id}"`
+        });
+        
+        if (profiles.length > 0) {
+          console.log('🔐 Auth Debug: User role:', profiles[0].role);
+          console.log('🔐 Auth Debug: User plan:', profiles[0].plan);
+        } else {
+          console.log('🔐 Auth Debug: No profile found for user');
+        }
+      } catch (error) {
+        console.error('🔐 Auth Debug: Error fetching profile:', error);
+      }
+      
+      // Save auth to cookie for server-side access
+      // PocketBase stores auth as JSON with token and model
+      const authData = {
+        token: pb.authStore.token,
+        model: pb.authStore.model
+      };
+      const authCookieValue = JSON.stringify(authData);
+      document.cookie = `pb_auth=${encodeURIComponent(authCookieValue)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+      console.log('🔐 Auth Debug: Saved auth to cookie');
+      console.log('🔐 Auth Debug: Cookie value length:', authCookieValue.length);
+      console.log('🔐 Auth Debug: All cookies:', document.cookie);
     } else {
       console.log('🔐 Auth Debug: User logged out');
       currentUser.set(null);
       isAuthenticated.set(false);
+      
+      // Clear auth cookie
+      document.cookie = 'pb_auth=; path=/; max-age=0';
+      console.log('🔐 Auth Debug: Cleared auth cookie');
     }
   });
   
@@ -59,8 +91,27 @@ if (browser) {
   isLoading.set(false);
   
   // Debug current auth state every 5 seconds
-  setInterval(() => {
-    console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', pb.authStore.model?.email || 'None');
+  setInterval(async () => {
+    const email = pb.authStore.model?.email || 'None';
+    const userId = pb.authStore.model?.id;
+    
+    if (userId) {
+      try {
+        const profiles = await pb.collection('user_profiles').getFullList({
+          filter: `user = "${userId}"`
+        });
+        
+        if (profiles.length > 0) {
+          console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role:', profiles[0].role, 'Plan:', profiles[0].plan);
+        } else {
+          console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role: NO PROFILE');
+        }
+      } catch (error) {
+        console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role: ERROR');
+      }
+    } else {
+      console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email);
+    }
   }, 5000);
 }
 
@@ -94,6 +145,17 @@ export const auth = {
       
       currentUser.set(convertToUser(authData.record));
       isAuthenticated.set(true);
+      
+      // Save auth to cookie for server-side access
+      if (browser) {
+        const authData = {
+          token: pb.authStore.token,
+          model: pb.authStore.model
+        };
+        const authCookieValue = JSON.stringify(authData);
+        document.cookie = `pb_auth=${encodeURIComponent(authCookieValue)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+        console.log('🔐 Auth Debug: Saved auth to cookie after registration');
+      }
       
       return { success: true, user: authData.record };
     } catch (error: any) {
@@ -132,6 +194,17 @@ export const auth = {
       currentUser.set(convertToUser(authData.record));
       isAuthenticated.set(true);
       
+      // Save auth to cookie for server-side access
+      if (browser) {
+        const authData = {
+          token: pb.authStore.token,
+          model: pb.authStore.model
+        };
+        const authCookieValue = JSON.stringify(authData);
+        document.cookie = `pb_auth=${encodeURIComponent(authCookieValue)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
+        console.log('🔐 Auth Debug: Saved auth to cookie after login');
+      }
+      
       return { success: true, user: authData.record };
     } catch (error: any) {
       console.error('Login error:', error);
@@ -148,6 +221,12 @@ export const auth = {
     try {
       console.log('Clearing PocketBase auth store');
       pb.authStore.clear();
+      
+      // Clear auth cookie
+      if (browser) {
+        document.cookie = 'pb_auth=; path=/; max-age=0';
+        console.log('🔐 Auth Debug: Cleared auth cookie on logout');
+      }
       console.log('PocketBase auth store cleared');
       
       // Also clear the cookie explicitly

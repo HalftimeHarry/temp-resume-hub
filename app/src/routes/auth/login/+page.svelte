@@ -58,42 +58,10 @@
       console.log('🔐 Login Debug: Login result:', result);
       
       if (result.success) {
-        console.log('🔐 Login Debug: Login successful, checking user role');
+        console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
+        console.log('🔐 Login Debug: Server hooks will handle role-based redirect');
         
-        // Check user role and redirect accordingly
-        const userId = result.user?.id;
-        console.log('🔐 Login Debug: User ID:', userId);
-        
-        if (userId) {
-          try {
-            console.log('🔐 Login Debug: Fetching user profile...');
-            const profiles = await pb.collection('user_profiles').getFullList({
-              filter: `user = "${userId}"`
-            });
-            
-            console.log('🔐 Login Debug: Profiles found:', profiles.length);
-            if (profiles.length > 0) {
-              console.log('🔐 Login Debug: User role:', profiles[0].role);
-              console.log('🔐 Login Debug: Full profile:', profiles[0]);
-              
-              if (profiles[0].role === 'admin') {
-                console.log('🔐 Login Debug: User is admin, redirecting to /dashboard/admin');
-                window.location.href = '/dashboard/admin';
-                return;
-              } else {
-                console.log('🔐 Login Debug: User is not admin, role is:', profiles[0].role);
-              }
-            } else {
-              console.warn('🔐 Login Debug: No profile found for user');
-            }
-          } catch (profileError) {
-            console.error('🔐 Login Debug: Error checking profile:', profileError);
-          }
-        } else {
-          console.warn('🔐 Login Debug: No user ID found in result');
-        }
-        
-        console.log('🔐 Login Debug: Redirecting to regular dashboard');
+        // Redirect to dashboard - hooks will redirect admins to /dashboard/admin
         window.location.href = '/dashboard';
       } else {
         console.log('🔐 Login Debug: Login failed:', result.error);
