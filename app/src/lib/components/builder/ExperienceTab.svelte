@@ -5,37 +5,32 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Trash2, Plus } from 'lucide-svelte';
 	import { generateId } from '$lib/utils.js';
-	import { afterUpdate } from 'svelte';
 
-	$: experiences = $builderData.experience || [];
-	$: isValid = experiences.length > 0 && experiences.some(exp =>
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
+	}
+
+	let { onNext, onPrevious }: Props = $props();
+
+	let experiences = $derived($builderData.experience || []);
+	let isValid = $derived(experiences.length > 0 && experiences.some(exp =>
 		exp.company?.trim() !== '' &&
 		exp.position?.trim() !== '' &&
 		exp.startDate?.trim() !== ''
-	);
+	));
 
-	// Debug logging
-	$: {
+	// Debug logging and update step completion status
+	$effect(() => {
 		console.log('ExperienceTab: experiences updated', experiences);
 		console.log('ExperienceTab: isValid', isValid);
-	}
-
-	$: {
 		console.log('ExperienceTab: Updating step completion status, isValid:', isValid);
+		
 		if (isValid) {
 			console.log('ExperienceTab: Marking step as complete');
 			markStepComplete('experience');
 		} else {
 			console.log('ExperienceTab: Marking step as incomplete');
-			markStepIncomplete('experience');
-		}
-	}
-
-	// Ensure we update step completion status when component mounts
-	afterUpdate(() => {
-		if (isValid) {
-			markStepComplete('experience');
-		} else {
 			markStepIncomplete('experience');
 		}
 	});
@@ -63,9 +58,6 @@
 			endDate: current ? '' : experiences.find(exp => exp.id === id)?.endDate || ''
 		});
 	}
-
-	export let onNext: () => void;
-	export let onPrevious: () => void;
 </script>
 
 <div class="space-y-6">
@@ -193,7 +185,7 @@
 			Previous
 		</Button>
 		<Button on:click={onNext}>
-			Next: Education
+			Save & Continue
 		</Button>
 	</div>
 </div>

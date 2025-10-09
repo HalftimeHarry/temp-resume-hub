@@ -93,28 +93,12 @@ export interface ClientTemplateConfig {
 }
 
 /**
- * Extended template type that combines database and client-side templates
+ * Extended template type for client-side templates
  */
 export interface ExtendedResumeTemplate extends ResumeTemplate {
-  isClientSide?: boolean;
   targeting?: {
     industries: string[];
     experience_levels: string[];
     job_types: string[];
   };
-}
-
-/**
- * Template source type to track where templates come from
- */
-export type TemplateSource = 'client' | 'database' | 'hybrid';
-
-/**
- * Template loading options
- */
-export interface TemplateLoadOptions {
-  source?: TemplateSource;
-  includeClientTemplates?: boolean;
-  includeDatabaseTemplates?: boolean;
-  preferClientTemplates?: boolean;
 }

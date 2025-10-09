@@ -6,22 +6,37 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Trash2, Plus, User, BookOpen, Heart, Code } from 'lucide-svelte';
 
-	$: projects = $builderData.projects;
-	$: profile = $userProfile;
-	$: isFirstTimeJobSeeker = profile && ['student', 'entry'].includes(profile.experience_level);
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
+	}
+
+	let { onNext, onPrevious }: Props = $props();
+
+	let projects = $derived($builderData.projects);
+	let profile = $derived($userProfile);
+	let isFirstTimeJobSeeker = $derived(profile && ['student', 'entry'].includes(profile.experience_level));
 	
-	$: isValid = projects.length > 0 && projects.some(project =>
+	let isValid = $derived(projects.length > 0 && projects.some(project =>
 		project.name?.trim() !== '' &&
 		project.description?.trim() !== ''
-	);
+	));
 
 	// Update step completion status based on validation
-	$: {
+	$effect(() => {
 		if (isValid) {
 			markStepComplete('projects');
 		} else {
 			markStepIncomplete('projects');
 		}
+	});
+
+	function handleNext() {
+		onNext?.();
+	}
+
+	function handlePrevious() {
+		onPrevious?.();
 	}
 	
 	function addNewProject() {
@@ -105,12 +120,12 @@
 	}
 
 	// Check if profile data is available for import
-	$: hasProfileData = profile && (
+	let hasProfileData = $derived(profile && (
 		profile.academic_projects?.trim() ||
 		profile.personal_projects?.trim() ||
 		profile.volunteer_experience?.trim() ||
 		profile.extracurricular_activities?.trim()
-	);
+	));
 </script>
 
 <div class="space-y-6">
@@ -281,4 +296,14 @@
 			</Button>
 		</div>
 	{/if}
+
+	<!-- Navigation Buttons -->
+	<div class="flex justify-between mt-8 pt-6 border-t">
+		<Button variant="outline" on:click={handlePrevious}>
+			← Previous
+		</Button>
+		<Button on:click={handleNext}>
+			Save & Continue
+		</Button>
+	</div>
 </div>

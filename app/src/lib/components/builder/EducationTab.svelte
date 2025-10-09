@@ -4,27 +4,31 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Trash2, Plus } from 'lucide-svelte';
 
-	$: education = $builderData.education;
-	$: isValid = education.length > 0 && education.some(edu =>
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
+	}
+
+	let { onNext, onPrevious }: Props = $props();
+
+	let education = $derived($builderData.education);
+	let isValid = $derived(education.length > 0 && education.some(edu =>
 		edu.institution?.trim() !== '' &&
 		edu.degree?.trim() !== '' &&
 		edu.startDate?.trim() !== ''
-	);
+	));
 
-	// Debug logging
-	$: {
+	// Debug logging and update step completion status
+	$effect(() => {
 		console.log('EducationTab: education updated', education);
 		console.log('EducationTab: isValid', isValid);
-	}
-
-	// Update step completion status based on validation
-	$: {
+		
 		if (isValid) {
 			markStepComplete('education');
 		} else {
 			markStepIncomplete('education');
 		}
-	}
+	});
 	
 	function addNewEducation() {
 		addEducation({
@@ -51,9 +55,6 @@
 			endDate: current ? '' : education.find(edu => edu.id === id)?.endDate || ''
 		});
 	}
-
-	export let onNext: () => void;
-	export let onPrevious: () => void;
 </script>
 
 <div class="space-y-6">
@@ -208,7 +209,7 @@
 			Previous
 		</Button>
 		<Button on:click={onNext}>
-			Next: Skills
+			Save & Continue
 		</Button>
 	</div>
 </div>

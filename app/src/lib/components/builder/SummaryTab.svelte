@@ -2,46 +2,38 @@
 	import { builderData, updateSummary, markStepComplete, markStepIncomplete, characterLimits } from '$lib/stores/resumeBuilder.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { onMount, afterUpdate } from 'svelte';
 
-	$: summary = $builderData.summary;
-	$: maxLength = characterLimits.summary;
-	$: remainingChars = maxLength - summary.length;
-	$: isValid = summary.trim().length >= 50 && summary.length <= maxLength;
-	$: console.log('SummaryTab isValid:', isValid);
-	$: console.log('SummaryTab isValid:', isValid);
+	interface Props {
+		onNext?: () => void;
+		onPrevious?: () => void;
+	}
 
-	$: {
+	let { onNext, onPrevious }: Props = $props();
+
+	let summary = $derived($builderData.summary);
+	let maxLength = $derived(characterLimits.summary);
+	let remainingChars = $derived(maxLength - summary.length);
+	let isValid = $derived(summary.trim().length >= 50 && summary.length <= maxLength);
+
+	$effect(() => {
+		console.log('SummaryTab isValid:', isValid);
 		if (isValid) {
 			markStepComplete('summary');
 		} else {
 			markStepIncomplete('summary');
 		}
-	}
+	});
 
 	function handleInput(value: string) {
 		console.log('Summary input changed:', value);
 		updateSummary(value);
 	}
 
-	// Log when the component is mounted
-	onMount(() => {
-		console.log('SummaryTab mounted');
-	});
-
-	// Log when the component is updated
-	afterUpdate(() => {
-		console.log('SummaryTab updated');
-	});
-
 	const examples = [
 		"Recent Computer Science graduate with strong foundation in programming languages including Java and Python. Eager to apply problem-solving skills and learn new technologies in a collaborative team environment. Seeking an entry-level software developer position.",
 		"Motivated business student with internship experience in marketing and customer service. Excellent communication skills and proficiency in Microsoft Office Suite. Looking to start a career in business development where I can contribute to company growth.",
 		"Detail-oriented Marketing graduate with hands-on experience in social media management and content creation. Strong analytical skills with experience in Google Analytics. Seeking to leverage creativity and data-driven approach in a digital marketing role."
 	];
-
-	export let onNext: () => void;
-	export let onPrevious: () => void;
 
 	function handleNext() {
 		console.log('Next clicked');
@@ -137,7 +129,7 @@
 			Previous
 		</Button>
 		<Button disabled={!isValid} on:click={handleNext}>
-			Next: Experience
+			Save & Continue
 		</Button>
 	</div>
 </div>

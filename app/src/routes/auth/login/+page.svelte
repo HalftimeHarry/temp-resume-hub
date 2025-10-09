@@ -1,15 +1,54 @@
 <script>
   import { goto } from '$app/navigation';
   import { authStore } from '$lib/stores/auth';
+  import { pb } from '$lib/pocketbase';
   import { Input } from '$lib/components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+  import { onMount } from 'svelte';
+  import { rateLimiter, RATE_LIMITS, formatRetryTime } from '$lib/utils/rate-limiter';
   
   let email = '';
   let password = '';
   let isLoading = false;
   let error = '';
   
+  // Spam prevention
+  let honeypot = '';
+  let formStartTime = 0;
+  
+  onMount(() => {
+    formStartTime = Date.now();
+  });
+  
   async function handleLogin() {
+    // Honeypot check
+    if (honeypot !== '') {
+      console.warn('Honeypot triggered - potential bot');
+      error = 'Invalid submission. Please try again.';
+      return;
+    }
+    
+    // Timing check
+    const submitTime = Date.now() - formStartTime;
+    if (submitTime < 2000) { // 2 seconds for login (faster than registration)
+      error = 'Please take your time';
+      return;
+    }
+    
+    // Rate limiting check
+    const rateLimitKey = `login:${email}`;
+    const rateCheck = rateLimiter.checkLimit(
+      rateLimitKey,
+      RATE_LIMITS.LOGIN.maxAttempts,
+      RATE_LIMITS.LOGIN.windowMs,
+      RATE_LIMITS.LOGIN.blockDurationMs
+    );
+    
+    if (!rateCheck.allowed) {
+      error = `Too many login attempts. Please try again in ${formatRetryTime(rateCheck.retryAfter || 60)}.`;
+      return;
+    }
+    
     console.log('🔐 Login Debug: Attempting login for:', email);
     isLoading = true;
     error = '';
@@ -20,6 +59,9 @@
       
       if (result.success) {
         console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
+        console.log('🔐 Login Debug: Server hooks will handle role-based redirect');
+        
+        // Redirect to dashboard - hooks will redirect admins to /dashboard/admin
         window.location.href = '/dashboard';
       } else {
         console.log('🔐 Login Debug: Login failed:', result.error);
@@ -82,6 +124,18 @@
           required
         />
       </div>
+      
+      <!-- Honeypot field -->
+      <input
+        type="text"
+        name="website_url"
+        id="website_url"
+        bind:value={honeypot}
+        autocomplete="off"
+        tabindex="-1"
+        aria-hidden="true"
+        style="position: absolute; left: -9999px; opacity: 0; height: 0; width: 0;"
+      />
       
       <button
         class="w-full bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"

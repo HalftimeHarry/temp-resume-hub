@@ -6,57 +6,63 @@
 	import { validateEmail, validatePhone } from '$lib/utils.js';
 	import { User } from 'lucide-svelte';
 
-	// Ensure we always have a defined object before reactive assignments run
-	let personalInfo = { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '' };
-	$: personalInfo = $builderData?.personalInfo ?? personalInfo;
-	
-	// Local fields bound to inputs; initialize safely from the placeholder object
-	let fullName = personalInfo.fullName || '';
-	let email = personalInfo.email || '';
-	let phone = personalInfo.phone || '';
-	let location = personalInfo.location || '';
-	let linkedin = personalInfo.linkedin || '';
-	let website = personalInfo.website || '';
-	
-	// When the store personalInfo changes (e.g., after selecting a template), update local fields
-	$: if (personalInfo) {
-		fullName = personalInfo.fullName || '';
-		email = personalInfo.email || '';
-		phone = personalInfo.phone || '';
-		location = personalInfo.location || '';
-		linkedin = personalInfo.linkedin || '';
-		website = personalInfo.website || '';
+	interface Props {
+		onNext?: () => void;
 	}
+
+	let { onNext }: Props = $props();
+
+	let personalInfo = $derived($builderData?.personalInfo ?? { fullName: '', email: '', phone: '', location: '', linkedin: '', website: '' });
+	
+	// Local fields bound to inputs
+	let fullName = $state(personalInfo.fullName || '');
+	let email = $state(personalInfo.email || '');
+	let phone = $state(personalInfo.phone || '');
+	let location = $state(personalInfo.location || '');
+	let linkedin = $state(personalInfo.linkedin || '');
+	let website = $state(personalInfo.website || '');
+	
+	// When the store personalInfo changes, update local fields
+	$effect(() => {
+		if (personalInfo) {
+			fullName = personalInfo.fullName || '';
+			email = personalInfo.email || '';
+			phone = personalInfo.phone || '';
+			location = personalInfo.location || '';
+			linkedin = personalInfo.linkedin || '';
+			website = personalInfo.website || '';
+		}
+	});
 	
 	// Sync local fields back to the store
-	$: updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
+	$effect(() => {
+		updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
+	});
 	
 	// More permissive phone validation: require at least 7 digits when provided
-	$: digitsPhone = (phone || '').replace(/\D/g, '');
-	$: phoneOk = phone ? digitsPhone.length >= 7 : true;
+	let digitsPhone = $derived((phone || '').replace(/\D/g, ''));
+	let phoneOk = $derived(phone ? digitsPhone.length >= 7 : true);
 	// Step validity: require name, email; phone/location optional
-	$: isValid = fullName.trim() !== '' && email.trim() !== '' && validateEmail(email);
+	let isValid = $derived(fullName.trim() !== '' && email.trim() !== '' && validateEmail(email));
 	
 	// Update step completion status based on validation
-	$: {
+	$effect(() => {
 		if (isValid) {
 			markStepComplete('personal');
 		} else {
 			markStepIncomplete('personal');
 		}
-	}
-	
-	export let onNext: () => void;
+	});
 
 	// Check if data comes from profile
-	$: profile = $userProfile;
-	$: hasProfileData = profile && (
+	let profile = $derived($userProfile);
+	let hasProfileData = $derived(profile && (
 		(profile.first_name && profile.last_name && fullName.includes(profile.first_name)) ||
 		(profile.phone && phone === profile.phone) ||
 		(profile.location && location === profile.location) ||
 		(profile.linkedin_url && linkedin === profile.linkedin_url) ||
 		(profile.portfolio_url && website === profile.portfolio_url)
-	);
+	));
 
 	function handleNext() {
 		console.log('Next clicked');
@@ -164,7 +170,7 @@
 
 	<div class="flex justify-end">
 		<Button disabled={!isValid} on:click={handleNext}>
-			Next: Summary
+			Save & Continue
 		</Button>
 	</div>
 </div>

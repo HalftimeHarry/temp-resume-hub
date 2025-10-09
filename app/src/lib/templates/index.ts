@@ -12,9 +12,7 @@ export {
 
 export type {
   ClientTemplateConfig,
-  ExtendedResumeTemplate,
-  TemplateSource,
-  TemplateLoadOptions
+  ExtendedResumeTemplate
 } from './types';
 
 import type { ResumeTemplate } from '$lib/types/resume';
@@ -38,13 +36,12 @@ export function clientConfigToResumeTemplate(id: string, config: ClientTemplateC
     styleConfig: undefined,
     styles: undefined,
     isPremium: config.isPremium,
-    isPopular: false, // Client templates are not marked as popular by default
+    isPopular: false,
     createdBy: 'system',
     createdAt: new Date().toISOString(),
     usageCount: 0,
     rating: 0,
     tags: config.tags,
-    isClientSide: true,
     targeting: config.targeting
   };
 }
@@ -68,23 +65,7 @@ export function getClientTemplateAsResumeTemplate(id: string): ExtendedResumeTem
   return clientConfigToResumeTemplate(id, config);
 }
 
-/**
- * Merge client and database templates with client templates taking precedence
- */
-export function mergeTemplates(
-  clientTemplates: ExtendedResumeTemplate[],
-  databaseTemplates: ResumeTemplate[]
-): ExtendedResumeTemplate[] {
-  const clientIds = new Set(clientTemplates.map(t => t.id));
-  
-  // Filter out database templates that have client-side overrides
-  const filteredDbTemplates = databaseTemplates
-    .filter(t => !clientIds.has(t.id))
-    .map(t => ({ ...t, isClientSide: false }));
-  
-  // Client templates first, then database templates
-  return [...clientTemplates, ...filteredDbTemplates];
-}
+
 
 /**
  * Template categories available in client-side configurations
