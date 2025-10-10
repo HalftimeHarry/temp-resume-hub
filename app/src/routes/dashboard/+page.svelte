@@ -63,6 +63,7 @@
   let viewMode: 'grid' | 'list' = 'grid';
   let activeTab: 'resumes' | 'analytics' | 'templates' = 'resumes';
   let mobileMenuOpen = false;
+  let isNavigating = false;
   
   // Debug reactive statement
   $: {
@@ -97,7 +98,9 @@
     };
   } = {};
   let importDebugText = '';
-  let currentUserProfile: any = null;
+  
+  // Use the userProfile store instead of a separate variable
+  $: currentUserProfile = $userProfile;
   
   $: resumes = $userResumes;
   $: analytics = userAnalytics;
@@ -117,6 +120,9 @@
   }
 
   onMount(async () => {
+    // Reset navigation state
+    isNavigating = false;
+    
     // Add click outside handler for mobile menu (browser only)
     if (typeof document !== 'undefined') {
       document.addEventListener('click', handleClickOutside);
@@ -129,32 +135,9 @@
     }
 
     try {
-      // Fetch user profile for display (middleware handles role-based redirects)
-      const userId = pb.authStore.model?.id;
-      console.log('📊 Dashboard: User ID:', userId);
-      
-      if (userId) {
-        try {
-          console.log('📊 Dashboard: Fetching user profile...');
-          const profiles = await pb.collection('user_profiles').getFullList({
-            filter: `user = "${userId}"`
-          });
-          
-          console.log('📊 Dashboard: Profiles found:', profiles.length);
-          
-          if (profiles.length > 0) {
-            currentUserProfile = profiles[0];
-            console.log('📊 Dashboard: User role:', profiles[0].role);
-            console.log('📊 Dashboard: User plan:', profiles[0].plan);
-          } else {
-            console.warn('📊 Dashboard: No profile found for user');
-          }
-        } catch (error) {
-          console.error('📊 Dashboard: Error checking user role:', error);
-        }
-      } else {
-        console.warn('📊 Dashboard: No user ID found');
-      }
+      // Note: User profile is automatically loaded by the userProfile store
+      // when the user logs in, so we don't need to fetch it here
+      console.log('📊 Dashboard: Current user profile:', $userProfile);
       
       // Load user's resumes
       const loadedResumes = await resumeStore.loadUserResumes();
@@ -348,32 +331,7 @@
         <div class="flex items-center space-x-3">
           <img src="/icon.svg" alt="Digital Resume Hub" class="h-8 w-8" />
           <div class="hidden sm:block">
-            <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-              {#if currentUserProfile?.role}
-                <span class="text-xs px-2 py-1 rounded border {
-                  currentUserProfile.role === 'admin' ? 'bg-red-100 text-red-800 border-red-200' :
-                  currentUserProfile.role === 'moderator' ? 'bg-purple-100 text-purple-800 border-purple-200' :
-                  'bg-blue-100 text-blue-800 border-blue-200'
-                }">
-                  {currentUserProfile.role === 'job_seeker' ? 'Job Seeker' :
-                   currentUserProfile.role === 'moderator' ? 'Moderator' :
-                   currentUserProfile.role === 'admin' ? 'Admin' :
-                   currentUserProfile.role}
-                </span>
-              {/if}
-              {#if currentUserProfile?.plan && currentUserProfile.plan !== 'free'}
-                <span class="text-xs px-2 py-1 rounded border {
-                  currentUserProfile.plan === 'enterprise' ? 'bg-purple-100 text-purple-800 border-purple-200' :
-                  currentUserProfile.plan === 'pro' ? 'bg-green-100 text-green-800 border-green-200' :
-                  'bg-gray-100 text-gray-800 border-gray-200'
-                }">
-                  {currentUserProfile.plan === 'pro' ? 'Pro' :
-                   currentUserProfile.plan === 'enterprise' ? 'Enterprise' :
-                   currentUserProfile.plan}
-                </span>
-              {/if}
-            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
             <p class="text-sm text-gray-600">Welcome back, {user?.name || 'User'}!</p>
           </div>
           <div class="sm:hidden">
@@ -446,24 +404,35 @@
             + New Resume
           </button>
           {#if user}
-            <div class="flex items-center gap-2 ml-2" on:click={() => console.log('User info area clicked!')}>
+            <div class="flex items-center gap-2 ml-2">
               <div class="hidden md:flex items-center gap-2 text-sm text-gray-700">
                 <User class="h-4 w-4 text-gray-500" />
                 <span>{user.email}</span>
-                {#if currentUserProfile}
-                  <span class="text-xs px-2 py-1 rounded border font-medium {
-                    currentUserProfile.role === 'admin' ? 'bg-red-100 text-red-800 border-red-300' :
-                    currentUserProfile.role === 'moderator' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                    'bg-blue-100 text-blue-800 border-blue-300'
-                  }">
-                    Role: {currentUserProfile.role || 'unknown'}
-                  </span>
-                {:else}
-                  <span class="text-xs px-2 py-1 rounded border bg-gray-100 text-gray-600 border-gray-300">
-                    Loading role...
-                  </span>
-                {/if}
               </div>
+              {#if currentUserProfile?.role === 'admin'}
+                <button
+                  class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-red-600 text-white hover:bg-red-700 h-8 gap-1.5 rounded-md px-3"
+                  title="Admin Dashboard"
+                  disabled={isNavigating}
+                  on:click={async () => {
+                    if (isNavigating) return;
+                    isNavigating = true;
+                    try {
+                      await goto('/admin');
+                    } catch (e) {
+                      console.error('Navigation error:', e);
+                      isNavigating = false;
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                  <span class="hidden lg:inline">{isNavigating ? 'Loading...' : 'Admin'}</span>
+                </button>
+              {/if}
               <button
                 class="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5"
                 title="Settings"
@@ -501,6 +470,32 @@
                   Complete
                 </button>
               </div>
+            {/if}
+
+            <!-- Admin Dashboard Button (mobile) -->
+            {#if currentUserProfile?.role === 'admin'}
+              <button
+                class="w-full bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 active:bg-red-800 disabled:opacity-50 text-center font-medium transition-colors duration-200 shadow-sm flex items-center justify-center gap-2"
+                disabled={isNavigating}
+                on:click={async () => {
+                  if (isNavigating) return;
+                  isNavigating = true;
+                  mobileMenuOpen = false;
+                  try {
+                    await goto('/admin');
+                  } catch (e) {
+                    console.error('Navigation error:', e);
+                    isNavigating = false;
+                  }
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+                {isNavigating ? 'Loading...' : 'Admin Dashboard'}
+              </button>
             {/if}
 
             <!-- New Resume Button -->

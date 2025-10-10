@@ -2,25 +2,18 @@ import { redirect } from '@sveltejs/kit';
 import PocketBase from 'pocketbase';
 import { POCKETBASE_URL } from '$lib/config';
 import type { PageServerLoad } from './$types';
+import { getSession } from '$lib/server/session';
 
 export const load: PageServerLoad = async ({ locals, cookies }) => {
   console.log('🔒 Admin Dashboard Server: Load function called');
   console.log('🔒 Admin Dashboard Server: User:', locals.user?.email);
   console.log('🔒 Admin Dashboard Server: Role:', locals.userRole);
   
-  // Middleware should have already checked auth and role
-  // This is a safety check
+  // Check if user is authenticated
   if (!locals.user) {
     console.log('🔒 Admin Dashboard Server: No user in locals, redirecting to login');
     throw redirect(303, '/auth/login');
   }
-  
-  if (locals.userRole !== 'admin') {
-    console.log('🔒 Admin Dashboard Server: User is not admin, redirecting to dashboard');
-    throw redirect(303, '/dashboard');
-  }
-  
-  console.log('🔒 Admin Dashboard Server: Access granted - Loading admin data');
   
   // Create PocketBase instance with auth from cookies
   const pb = new PocketBase(POCKETBASE_URL);
@@ -28,15 +21,42 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
   
   if (authCookie) {
     try {
-      const authData = JSON.parse(decodeURIComponent(authCookie));
+      // The cookie is in JSON format: {token, model}
+      const authData = JSON.parse(authCookie);
       pb.authStore.save(authData.token, authData.model);
     } catch (error) {
-      console.error('🔒 Admin Dashboard Server: Error parsing auth cookie:', error);
+      console.error('🔒 Admin Dashboard Server: Error loading auth from cookie:', error);
+      // Continue without PocketBase auth - we have locals.user from hooks
     }
   }
 
   try {
-    const profile = locals.userProfile;
+    // Get role from locals (set by hooks with session data)
+    let profile = locals.userProfile;
+    let userRole = locals.userRole;
+    
+    // If not in locals, try session
+    if (!userRole) {
+      const session = getSession(cookies);
+      if (session && session.userId === locals.user.id) {
+        console.log('🔒 Admin Dashboard Server: Using session data');
+        userRole = session.role;
+        profile = {
+          id: session.profileId,
+          user: session.userId,
+          role: session.role,
+          plan: session.plan
+        };
+      }
+    }
+    
+    // Check if user is admin
+    if (userRole !== 'admin') {
+      console.log('🔒 Admin Dashboard Server: User is not admin (role:', userRole, '), redirecting to dashboard');
+      throw redirect(303, '/dashboard');
+    }
+    
+    console.log('🔒 Admin Dashboard Server: Access granted - Loading admin data');
 
     // Load admin dashboard data
     console.log('🔒 Admin Dashboard Server: Loading admin dashboard data...');
@@ -87,13 +107,35 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
     console.error('🔒 Admin Dashboard Server: ERROR:', error);
     console.error('🔒 Admin Dashboard Server: Error type:', error.constructor.name);
     console.error('🔒 Admin Dashboard Server: Error status:', error.status);
+    console.error('🔒 Admin Dashboard Server: Error message:', error.message);
     
     // If it's a redirect, re-throw it
     if (error.status === 303) {
       throw error;
     }
     
-    // Otherwise redirect to regular dashboard
+    // Don't redirect on auto-cancellation - return empty data instead
+    if (error.message && error.message.includes('autocancelled')) {
+      console.log('🔒 Admin Dashboard Server: Request auto-cancelled, returning empty data');
+      return {
+        profile: locals.userProfile || null,
+        users: [],
+        profiles: [],
+        recentActivity: [],
+        stats: {
+          totalUsers: 0,
+          totalProfiles: 0,
+          activeUsers: 0,
+          verifiedUsers: 0,
+          proUsers: 0,
+          enterpriseUsers: 0,
+          totalResumes: 0
+        }
+      };
+    }
+    
+    // Only redirect to dashboard on real errors
+    console.error('🔒 Admin Dashboard Server: Redirecting to dashboard due to error');
     throw redirect(303, '/dashboard');
   }
 };
