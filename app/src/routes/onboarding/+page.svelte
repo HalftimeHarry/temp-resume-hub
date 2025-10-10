@@ -21,14 +21,13 @@
       return;
     }
     
-    // Load user profile to check if already completed
+    // Load user profile
     if ($currentUser) {
       await userProfileStore.loadProfile($currentUser.id);
       
-      // If profile is already complete, redirect to dashboard
+      // If profile exists and is complete, skip welcome screen and go directly to profile editing
       if ($userProfile?.profile_completed) {
-        goto('/dashboard');
-        return;
+        currentStep = 'profile';
       }
     }
   });
@@ -38,7 +37,15 @@
   }
   
   function handleProfileSaved(event: CustomEvent) {
-    currentStep = 'complete';
+    // If profile was already complete (user was editing), redirect to dashboard
+    if ($userProfile?.profile_completed) {
+      setTimeout(() => {
+        goto('/dashboard');
+      }, 1500);
+    } else {
+      // New profile completion, show completion screen
+      currentStep = 'complete';
+    }
   }
   
   function handleProfileSkipped() {

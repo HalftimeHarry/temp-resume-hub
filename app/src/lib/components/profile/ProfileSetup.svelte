@@ -12,6 +12,7 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
   import { Progress } from '$lib/components/ui/progress';
+  import { toast } from 'svelte-sonner';
   
   const dispatch = createEventDispatcher();
   
@@ -188,12 +189,21 @@
       const result = await userProfileStore.saveProfile(formData);
       
       if (result) {
+        toast.success('Profile saved successfully!', {
+          description: 'Your profile has been updated.'
+        });
         dispatch('profileSaved', { profile: result });
       } else {
         error = 'Failed to save profile. Please try again.';
+        toast.error('Failed to save profile', {
+          description: error
+        });
       }
     } catch (err: any) {
       error = err.message || 'An error occurred while saving your profile.';
+      toast.error('Failed to save profile', {
+        description: error
+      });
     } finally {
       isSubmitting = false;
     }
