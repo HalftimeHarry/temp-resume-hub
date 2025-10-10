@@ -53,6 +53,9 @@ export const userProfile = writable<UserProfile | null>(null);
 export const isLoadingProfile = writable(false);
 export const profileError = writable<string | null>(null);
 
+// Track ongoing profile load to prevent race conditions
+let profileLoadPromise: Promise<UserProfile | null> | null = null;
+
 // Derived stores
 export const profileCompletionPercentage = derived(userProfile, ($profile) => {
   if (!$profile) return 0;
@@ -94,47 +97,68 @@ export const isProfileComplete = derived(profileCompletionPercentage, ($percenta
 export const userProfileStore = {
   // Load user profile
   async loadProfile(userId?: string): Promise<UserProfile | null> {
+    const targetUserId = userId || pb.authStore.model?.id;
+    if (!targetUserId) {
+      console.warn('⚠️ No user ID provided for profile load');
+      return null;
+    }
+    
+    // If there's already a profile load in progress for the same user, return that promise
+    if (profileLoadPromise) {
+      console.log('🔄 Profile load already in progress, reusing existing promise');
+      return profileLoadPromise;
+    }
+    
     isLoadingProfile.set(true);
     profileError.set(null);
     
-    try {
-      const targetUserId = userId || pb.authStore.model?.id;
-      if (!targetUserId) {
-        throw new Error('No user ID provided');
-      }
-      
-      console.log('🔄 Loading user profile for:', targetUserId);
-      
-      const profiles = await pb.collection('user_profiles').getFullList({
-        filter: `user = "${targetUserId}"`
-      });
-      
-      if (profiles.length === 0) {
-        console.log('📝 No profile found, user needs to complete profile');
-        userProfile.set(null);
+    // Create and store the promise
+    profileLoadPromise = (async () => {
+      try {
+        console.log('🔄 Loading user profile for:', targetUserId);
+        
+        const profiles = await pb.collection('user_profiles').getFullList({
+          filter: `user = "${targetUserId}"`
+        });
+        
+        if (profiles.length === 0) {
+          console.log('📝 No profile found, user needs to complete profile');
+          userProfile.set(null);
+          return null;
+        }
+        
+        const profile = profiles[0] as UserProfile;
+        console.log('✅ User profile loaded:', profile.id);
+        
+        userProfile.set(profile);
+        return profile;
+        
+      } catch (error: any) {
+        console.error('❌ Error loading user profile:', error);
+        
+        // Don't treat auto-cancellation as a real error
+        if (error.message && error.message.includes('autocancelled')) {
+          console.log('ℹ️ Profile load was auto-cancelled, likely due to a newer request');
+          return null;
+        }
+        
+        profileError.set(error.message || 'Failed to load profile');
+        
+        // If collection doesn't exist, that's expected during development
+        if (error.status === 404) {
+          console.warn('⚠️ user_profiles collection not found');
+          profileError.set('Profile system not yet set up');
+        }
+        
         return null;
+      } finally {
+        isLoadingProfile.set(false);
+        // Clear the promise after completion
+        profileLoadPromise = null;
       }
-      
-      const profile = profiles[0] as UserProfile;
-      console.log('✅ User profile loaded:', profile.id);
-      
-      userProfile.set(profile);
-      return profile;
-      
-    } catch (error: any) {
-      console.error('❌ Error loading user profile:', error);
-      profileError.set(error.message || 'Failed to load profile');
-      
-      // If collection doesn't exist, that's expected during development
-      if (error.status === 404) {
-        console.warn('⚠️ user_profiles collection not found');
-        profileError.set('Profile system not yet set up');
-      }
-      
-      return null;
-    } finally {
-      isLoadingProfile.set(false);
-    }
+    })();
+    
+    return profileLoadPromise;
   },
   
   // Create or update profile
@@ -284,13 +308,24 @@ export const userProfileStore = {
   }
 };
 
-// Auto-load profile when user changes
+// Auto-load profile when user changes (with debounce to prevent race conditions)
+let profileLoadTimeout: ReturnType<typeof setTimeout> | null = null;
 currentUser.subscribe(async (user) => {
+  // Clear any pending profile load
+  if (profileLoadTimeout) {
+    clearTimeout(profileLoadTimeout);
+  }
+  
   if (user) {
-    console.log('👤 User changed, loading profile for:', user.email);
-    await userProfileStore.loadProfile(user.id);
+    console.log('👤 User changed, scheduling profile load for:', user.email);
+    // Debounce profile loading by 100ms to avoid race conditions
+    profileLoadTimeout = setTimeout(async () => {
+      await userProfileStore.loadProfile(user.id);
+      profileLoadTimeout = null;
+    }, 100);
   } else {
     console.log('👤 User logged out, clearing profile');
     userProfile.set(null);
+    profileLoadPromise = null; // Clear any ongoing load
   }
 });

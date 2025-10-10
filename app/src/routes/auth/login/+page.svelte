@@ -54,15 +54,46 @@
     error = '';
     
     try {
+      console.log('🔐 Login Debug: Calling authStore.login...');
       const result = await authStore.login(email, password);
       console.log('🔐 Login Debug: Login result:', result);
+      console.log('🔐 Login Debug: Result success?', result?.success);
       
       if (result.success) {
-        console.log('🔐 Login Debug: Login successful, redirecting to dashboard');
-        console.log('🔐 Login Debug: Server hooks will handle role-based redirect');
+        console.log('🔐 Login Debug: Login successful');
         
-        // Redirect to dashboard - hooks will redirect admins to /dashboard/admin
-        window.location.href = '/dashboard';
+        // Add a small delay to ensure cookie is written
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check user role to determine redirect destination
+        try {
+          console.log('🔐 Login Debug: Loading user profile...');
+          const profileResult = await authStore.loadUserProfile();
+          console.log('🔐 Login Debug: Profile result:', profileResult);
+          
+          if (profileResult.success && profileResult.profile) {
+            const userRole = profileResult.profile.role;
+            console.log('🔐 Login Debug: User role:', userRole);
+            
+            // Redirect based on role
+            if (userRole === 'admin') {
+              console.log('🔐 Login Debug: Redirecting admin to /admin');
+              window.location.href = '/admin';
+            } else {
+              console.log('🔐 Login Debug: Redirecting user to /dashboard');
+              window.location.href = '/dashboard';
+            }
+          } else {
+            // No profile found, redirect to regular dashboard
+            console.log('🔐 Login Debug: No profile found, redirecting to /dashboard');
+            window.location.href = '/dashboard';
+          }
+        } catch (profileError) {
+          console.error('🔐 Login Debug: Error loading profile:', profileError);
+          // Fallback to regular dashboard
+          console.log('🔐 Login Debug: Fallback redirect to /dashboard');
+          window.location.href = '/dashboard';
+        }
       } else {
         console.log('🔐 Login Debug: Login failed:', result.error);
         error = result.error || 'Login failed';

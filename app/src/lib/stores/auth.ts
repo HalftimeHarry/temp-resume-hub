@@ -46,21 +46,8 @@ if (browser) {
       currentUser.set(convertToUser(pb.authStore.model));
       isAuthenticated.set(true);
       
-      // Fetch and log user role
-      try {
-        const profiles = await pb.collection('user_profiles').getFullList({
-          filter: `user = "${pb.authStore.model.id}"`
-        });
-        
-        if (profiles.length > 0) {
-          console.log('🔐 Auth Debug: User role:', profiles[0].role);
-          console.log('🔐 Auth Debug: User plan:', profiles[0].plan);
-        } else {
-          console.log('🔐 Auth Debug: No profile found for user');
-        }
-      } catch (error) {
-        console.error('🔐 Auth Debug: Error fetching profile:', error);
-      }
+      // Note: Profile loading is handled by userProfile.ts store subscription
+      // to avoid race conditions with multiple simultaneous requests
       
       // Save auth to cookie for server-side access
       // PocketBase stores auth as JSON with token and model
@@ -71,8 +58,6 @@ if (browser) {
       const authCookieValue = JSON.stringify(authData);
       document.cookie = `pb_auth=${encodeURIComponent(authCookieValue)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Strict`;
       console.log('🔐 Auth Debug: Saved auth to cookie');
-      console.log('🔐 Auth Debug: Cookie value length:', authCookieValue.length);
-      console.log('🔐 Auth Debug: All cookies:', document.cookie);
     } else {
       console.log('🔐 Auth Debug: User logged out');
       currentUser.set(null);
@@ -89,30 +74,6 @@ if (browser) {
   console.log('🔐 Auth Debug: Skipping automatic auth refresh to preserve auth state');
   
   isLoading.set(false);
-  
-  // Debug current auth state every 5 seconds
-  setInterval(async () => {
-    const email = pb.authStore.model?.email || 'None';
-    const userId = pb.authStore.model?.id;
-    
-    if (userId) {
-      try {
-        const profiles = await pb.collection('user_profiles').getFullList({
-          filter: `user = "${userId}"`
-        });
-        
-        if (profiles.length > 0) {
-          console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role:', profiles[0].role, 'Plan:', profiles[0].plan);
-        } else {
-          console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role: NO PROFILE');
-        }
-      } catch (error) {
-        console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email, 'Role: ERROR');
-      }
-    } else {
-      console.log('🔐 Auth Debug: Current state - isAuthenticated:', pb.authStore.isValid, 'User:', email);
-    }
-  }, 5000);
 }
 
 // Auth functions
@@ -205,6 +166,7 @@ export const auth = {
         console.log('🔐 Auth Debug: Saved auth to cookie after login');
       }
       
+      console.log('🔐 Auth Debug: Login function returning success');
       return { success: true, user: authData.record };
     } catch (error: any) {
       console.error('Login error:', error);
