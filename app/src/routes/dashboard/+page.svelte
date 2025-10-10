@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { goto, afterNavigate } from '$app/navigation';
   import { currentUser, isAuthenticated, authStore } from '$lib/stores/auth';
   import { pb } from '$lib/pocketbase';
   import { userResumes, resumeStore } from '$lib/stores/resume';
@@ -118,6 +118,11 @@
       goto('/auth/login');
     }
   }
+
+  // Reset navigation state after any navigation
+  afterNavigate(() => {
+    isNavigating = false;
+  });
 
   onMount(async () => {
     // Reset navigation state

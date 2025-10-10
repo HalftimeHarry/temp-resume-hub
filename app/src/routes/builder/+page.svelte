@@ -297,8 +297,18 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		try {
 			const result = await publishResume();
 			console.log('Published:', result);
+			toast.success('Resume published successfully!', {
+				description: 'Your resume is now live and ready to share.'
+			});
+			// Redirect to dashboard after successful publish
+			setTimeout(() => {
+				goto('/dashboard');
+			}, 1500);
 		} catch (error) {
 			console.error('Failed to publish:', error);
+			toast.error('Failed to publish resume', {
+				description: error instanceof Error ? error.message : 'Please try again.'
+			});
 		}
 	}
 
@@ -609,8 +619,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						</div>
 					</div>
 
-					<!-- Mobile menu button -->
-					<div class="sm:hidden">
+					<!-- Mobile/Medium menu button -->
+					<div class="lg:hidden">
 						<button
 							class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
 							data-mobile-menu-button
@@ -629,8 +639,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						</button>
 					</div>
 
-					<!-- Desktop navigation -->
-					<div class="hidden sm:flex items-center gap-2">
+					<!-- Desktop navigation (large screens only) -->
+					<div class="hidden lg:flex items-center gap-2">
 						{#if $userProfile}
 							<Button 
 								variant="ghost" 
@@ -659,9 +669,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						>
 							{unsavedChanges ? 'Save Draft' : 'Saved'}
 						</Button>
-						<Button size="sm" on:click={handlePublish}>
-							Publish Resume
-						</Button>
 						{#if $currentUser}
 							<div class="flex items-center gap-2 text-sm text-muted-foreground ml-4">
 								<User class="w-4 h-4" />
@@ -677,9 +684,9 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					</div>
 				</div>
 
-				<!-- Mobile menu -->
+				<!-- Mobile/Medium menu -->
 				{#if mobileMenuOpen}
-					<div class="sm:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+					<div class="lg:hidden mobile-menu-container transition-all duration-200 ease-in-out">
 						<div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
 							<!-- Back to Dashboard Button -->
 							<button
@@ -714,12 +721,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									disabled={!unsavedChanges}
 								>
 									{unsavedChanges ? 'Save Draft' : 'Saved'}
-								</button>
-								<button
-									class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 active:bg-green-800 text-center font-medium transition-colors duration-200"
-									on:click={() => { handlePublish(); mobileMenuOpen = false; }}
-								>
-									Publish Resume
 								</button>
 							</div>
 
@@ -1037,19 +1038,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 												{ id: 'projects', type: 'projects', title: 'Projects', visible: $builderData.projects.length > 0, order: 3, data: $builderData.projects }
 											]
 										}} />
-									</div>
-									
-									<!-- Preview Actions -->
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-										<Button variant="outline" class="h-auto p-4 flex flex-col items-center gap-2">
-											<FileText class="w-6 h-6" />
-											<span>Download PDF</span>
-										</Button>
-
-										<Button class="h-auto p-4 flex flex-col items-center gap-2" on:click={handlePublish}>
-											<FileCheck class="w-6 h-6" />
-											<span>Publish Resume</span>
-										</Button>
 									</div>
 								{:else}
 									<div class="bg-green-50 border border-green-200 p-4 rounded-lg">
