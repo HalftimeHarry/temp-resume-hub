@@ -8,13 +8,8 @@ import { pb } from '$lib/pocketbase';
 import { currentUser } from './auth';
 
 // Type definitions matching PocketBase collection structure
-export interface EmailNotifications {
-  resume_tips: boolean;
-  new_templates: boolean;
-  weekly_digest: boolean;
-  achievement_updates: boolean;
-  marketing_emails: boolean;
-}
+// Note: email_notifications is stored as a simple boolean in PocketBase
+// Detailed email preferences can be added to notification_settings JSON field if needed
 
 export interface TemplatePreferences {
   preferred_categories: string[];
@@ -54,6 +49,14 @@ export interface PrivacySettings {
 }
 
 export interface NotificationSettings {
+  // Email notification preferences (detailed)
+  email: {
+    resume_tips: boolean;
+    new_templates: boolean;
+    weekly_digest: boolean;
+    achievement_updates: boolean;
+    marketing_emails: boolean;
+  };
   in_app_notifications: {
     auto_save_confirmations: boolean;
     completion_reminders: boolean;
@@ -79,7 +82,7 @@ export interface UIPreferences {
 export interface UserSettings {
   id?: string;
   user: string;
-  email_notifications: EmailNotifications;
+  email_notifications: boolean; // Simple boolean as per PocketBase schema
   analytics_enabled: boolean;
   public_profile: boolean;
   template_preferences: TemplatePreferences;
@@ -94,13 +97,7 @@ export interface UserSettings {
 
 // Default settings that match the collection structure
 export const defaultSettings: Omit<UserSettings, 'id' | 'user' | 'created' | 'updated'> = {
-  email_notifications: {
-    resume_tips: true,
-    new_templates: false,
-    weekly_digest: true,
-    achievement_updates: true,
-    marketing_emails: false
-  },
+  email_notifications: true, // Simple boolean - master toggle for email notifications
   analytics_enabled: true,
   public_profile: false,
   template_preferences: {
@@ -137,6 +134,13 @@ export const defaultSettings: Omit<UserSettings, 'id' | 'user' | 'created' | 'up
     allow_analytics_tracking: true
   },
   notification_settings: {
+    email: {
+      resume_tips: true,
+      new_templates: false,
+      weekly_digest: true,
+      achievement_updates: true,
+      marketing_emails: false
+    },
     in_app_notifications: {
       auto_save_confirmations: true,
       completion_reminders: true,
@@ -205,7 +209,7 @@ export const userSettingsStore = {
         return await this.createDefaultSettings(targetUserId);
       }
       
-      const userSettingsData = settings[0] as UserSettings;
+      const userSettingsData = settings[0] as unknown as UserSettings;
       console.log('✅ User settings loaded:', userSettingsData.id);
       
       userSettings.set(userSettingsData);
@@ -238,8 +242,9 @@ export const userSettingsStore = {
       });
       
       console.log('✅ Default settings created:', newSettings.id);
-      userSettings.set(newSettings);
-      return newSettings;
+      const typedSettings = newSettings as unknown as UserSettings;
+      userSettings.set(typedSettings);
+      return typedSettings;
       
     } catch (error: any) {
       console.error('❌ Error creating default settings:', error);
@@ -262,7 +267,8 @@ export const userSettingsStore = {
       const updatedSettings = await pb.collection('user_settings').update(currentSettings.id, settingsData);
       
       console.log('✅ Settings updated successfully');
-      userSettings.set(updatedSettings);
+      const typedSettings = updatedSettings as unknown as UserSettings;
+      userSettings.set(typedSettings);
       return true;
       
     } catch (error: any) {
@@ -288,7 +294,8 @@ export const userSettingsStore = {
       });
       
       console.log('✅ Setting category updated:', category);
-      userSettings.set(updatedSettings);
+      const typedSettings = updatedSettings as unknown as UserSettings;
+      userSettings.set(typedSettings);
       return true;
       
     } catch (error: any) {

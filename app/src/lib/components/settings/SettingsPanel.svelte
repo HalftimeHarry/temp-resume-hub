@@ -622,8 +622,8 @@
                     <p class="text-xs text-gray-500">Weekly resume improvement tips</p>
                   </div>
                   <Switch 
-                    checked={$userSettings.email_notifications.resume_tips}
-                    onCheckedChange={(checked) => updateNestedSetting('email_notifications', '', 'resume_tips', checked)}
+                    checked={$userSettings.notification_settings.email.resume_tips}
+                    onCheckedChange={(checked) => updateNestedSetting('notification_settings', 'email', 'resume_tips', checked)}
                   />
                 </div>
                 
@@ -633,8 +633,8 @@
                     <p class="text-xs text-gray-500">Notifications about new templates</p>
                   </div>
                   <Switch 
-                    checked={$userSettings.email_notifications.new_templates}
-                    onCheckedChange={(checked) => updateNestedSetting('email_notifications', '', 'new_templates', checked)}
+                    checked={$userSettings.notification_settings.email.new_templates}
+                    onCheckedChange={(checked) => updateNestedSetting('notification_settings', 'email', 'new_templates', checked)}
                   />
                 </div>
                 
@@ -644,8 +644,8 @@
                     <p class="text-xs text-gray-500">Summary of your resume activity</p>
                   </div>
                   <Switch 
-                    checked={$userSettings.email_notifications.weekly_digest}
-                    onCheckedChange={(checked) => updateNestedSetting('email_notifications', '', 'weekly_digest', checked)}
+                    checked={$userSettings.notification_settings.email.weekly_digest}
+                    onCheckedChange={(checked) => updateNestedSetting('notification_settings', 'email', 'weekly_digest', checked)}
                   />
                 </div>
                 
@@ -655,8 +655,8 @@
                     <p class="text-xs text-gray-500">Notifications about milestones</p>
                   </div>
                   <Switch 
-                    checked={$userSettings.email_notifications.achievement_updates}
-                    onCheckedChange={(checked) => updateNestedSetting('email_notifications', '', 'achievement_updates', checked)}
+                    checked={$userSettings.notification_settings.email.achievement_updates}
+                    onCheckedChange={(checked) => updateNestedSetting('notification_settings', 'email', 'achievement_updates', checked)}
                   />
                 </div>
               </div>

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { builderData, updatePersonalInfo, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
+	import { builderData, updatePersonalInfo, updatePurpose, updateTargetIndustry, markStepComplete, markStepIncomplete } from '$lib/stores/resumeBuilder.js';
 	import { userProfile } from '$lib/stores/userProfile.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { validateEmail, validatePhone } from '$lib/utils.js';
-	import { User } from 'lucide-svelte';
+	import { User, Target, Briefcase } from 'lucide-svelte';
 
 	interface Props {
 		onNext?: () => void;
@@ -21,6 +21,8 @@
 	let location = $state(personalInfo.location || '');
 	let linkedin = $state(personalInfo.linkedin || '');
 	let website = $state(personalInfo.website || '');
+	let purpose = $state($builderData?.purpose || '');
+	let target_industry = $state($builderData?.target_industry || '');
 	
 	// When the store personalInfo changes, update local fields
 	$effect(() => {
@@ -34,9 +36,28 @@
 		}
 	});
 	
+	// Sync builder data changes to local fields
+	$effect(() => {
+		purpose = $builderData?.purpose || '';
+		target_industry = $builderData?.target_industry || '';
+	});
+	
 	// Sync local fields back to the store
 	$effect(() => {
 		updatePersonalInfo({ fullName, email, phone, location, linkedin, website });
+	});
+	
+	// Sync purpose and target_industry
+	$effect(() => {
+		if (purpose !== $builderData?.purpose) {
+			updatePurpose(purpose);
+		}
+	});
+	
+	$effect(() => {
+		if (target_industry !== $builderData?.target_industry) {
+			updateTargetIndustry(target_industry);
+		}
 	});
 	
 	// More permissive phone validation: require at least 7 digits when provided
@@ -155,6 +176,49 @@
 			placeholder="johndoe.com"
 			bind:value={website}
 			/>
+		</div>
+	</div>
+
+	<!-- Resume Purpose and Target Industry -->
+	<div class="border-t pt-6 mt-6">
+		<div class="flex items-center gap-2 mb-4">
+			<Target class="w-5 h-5 text-primary" />
+			<h3 class="text-lg font-semibold">Resume Purpose & Target</h3>
+		</div>
+		<p class="text-sm text-muted-foreground mb-4">
+			Help tailor your resume by specifying its purpose and target industry. This information helps organize and optimize your resumes.
+		</p>
+		
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+			<div class="space-y-2">
+				<label for="purpose" class="text-sm font-medium flex items-center gap-2">
+					<Briefcase class="w-4 h-4" />
+					Purpose
+				</label>
+				<Input
+					id="purpose"
+					placeholder="e.g., Frontend Developer - Tech Startup"
+					bind:value={purpose}
+				/>
+				<p class="text-xs text-muted-foreground">
+					Describe the specific role or purpose for this resume
+				</p>
+			</div>
+
+			<div class="space-y-2">
+				<label for="target_industry" class="text-sm font-medium flex items-center gap-2">
+					<Target class="w-4 h-4" />
+					Target Industry
+				</label>
+				<Input
+					id="target_industry"
+					placeholder="e.g., Technology, Healthcare, Finance"
+					bind:value={target_industry}
+				/>
+				<p class="text-xs text-muted-foreground">
+					The industry you're targeting with this resume
+				</p>
+			</div>
 		</div>
 	</div>
 

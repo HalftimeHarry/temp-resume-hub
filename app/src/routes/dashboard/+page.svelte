@@ -50,11 +50,15 @@
     Settings,
     Sparkles,
     Menu,
-    X
+    X,
+    Briefcase,
+    Target
    } from 'lucide-svelte';
   import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
   import { AlertCircle, CheckCircle } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
+  import IndustrySelectorModal from '$lib/components/resume/IndustrySelectorModal.svelte';
+  import { retargetResume } from '$lib/services/ResumeRetargeting';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
   import { POCKETBASE_URL } from '$lib/config';
@@ -64,6 +68,9 @@
   let activeTab: 'resumes' | 'analytics' | 'templates' = 'resumes';
   let mobileMenuOpen = false;
   let isNavigating = false;
+  let industryFilter: string = 'all';
+  let sortBy: 'date' | 'industry' | 'purpose' | 'title' = 'date';
+  let showFilters = false;
   
   // Debug reactive statement
   $: {
@@ -83,6 +90,8 @@
   let showShareDialog = false;
   let isImporting = false;
   let showImportDialog = false;
+  let showIndustrySelector = false;
+  let resumeToRetarget: Resume | null = null;
   let csvData = '';
   let importDebug: {
     startedAt?: string;
@@ -106,11 +115,50 @@
   $: analytics = userAnalytics;
   $: user = $currentUser;
   
-  // Filter resumes based on search query
-  $: filteredResumes = resumes.filter(resume =>
-    (resume.title && resume.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (resume.content?.personalInfo && resume.content.personalInfo.fullName && resume.content.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Get unique industries from resumes
+  $: availableIndustries = Array.from(
+    new Set(
+      resumes
+        .map(r => r.target_industry)
+        .filter(Boolean)
+    )
+  ).sort();
+
+  // Filter and sort resumes
+  $: filteredResumes = (() => {
+    let filtered = resumes.filter(resume => {
+      // Search filter
+      const matchesSearch = !searchQuery || 
+        (resume.title && resume.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resume.purpose && resume.purpose.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resume.target_industry && resume.target_industry.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (resume.content?.personalInfo && resume.content.personalInfo.fullName && 
+         resume.content.personalInfo.fullName.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      // Industry filter
+      const matchesIndustry = industryFilter === 'all' || resume.target_industry === industryFilter;
+      
+      return matchesSearch && matchesIndustry;
+    });
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(b.updated).getTime() - new Date(a.updated).getTime();
+        case 'industry':
+          return (a.target_industry || '').localeCompare(b.target_industry || '');
+        case 'purpose':
+          return (a.purpose || '').localeCompare(b.purpose || '');
+        case 'title':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  })();
   
   // Redirect to login if not authenticated
   $: {
@@ -227,6 +275,67 @@
     } catch (error) {
       console.error('Failed to duplicate resume:', error);
       toast.error('Failed to duplicate resume');
+    }
+  }
+
+  function duplicateForIndustry(resume: Resume) {
+    resumeToRetarget = resume;
+    showIndustrySelector = true;
+  }
+
+  async function handleIndustrySelected(event: CustomEvent<{ industry: string; purpose: string }>) {
+    if (!resumeToRetarget) return;
+
+    try {
+      isLoading = true;
+      const { industry, purpose } = event.detail;
+
+      toast.success(`Adapting resume for ${industry}...`, {
+        description: 'This may take a moment while we optimize the content.'
+      });
+
+      // Use the retargeting service to adapt the resume
+      const result = await retargetResume(resumeToRetarget, {
+        targetIndustry: industry,
+        purpose: purpose,
+        preserveStructure: true
+      });
+
+      // Generate a unique slug
+      const baseSlug = resumeToRetarget.slug || resumeToRetarget.id;
+      const industrySlug = industry.toLowerCase().replace(/\s+/g, '-');
+      const timestamp = Date.now().toString().slice(-6);
+      const newSlug = `${baseSlug}-${industrySlug}-${timestamp}`;
+
+      // Create the new resume with adapted content
+      const newResume = await pb.collection('resumes').create({
+        ...result.resume,
+        slug: newSlug
+      });
+
+      // Refresh the resumes list
+      await loadResumes();
+
+      // Show success with details of what was changed
+      const changesText = result.changes.length > 0 
+        ? result.changes.join('. ') 
+        : 'Content adapted for target industry';
+
+      toast.success('Resume duplicated and adapted!', {
+        description: changesText,
+        duration: 5000
+      });
+
+      // Navigate to edit the new resume
+      goto(`/builder?edit=${newResume.id}`);
+    } catch (error) {
+      console.error('Failed to duplicate resume for industry:', error);
+      toast.error('Failed to duplicate resume', {
+        description: 'Please try again or contact support if the issue persists.'
+      });
+    } finally {
+      isLoading = false;
+      resumeToRetarget = null;
     }
   }
   
@@ -758,12 +867,17 @@
           
           <div class="flex items-center space-x-2">
             <Button
-              variant="outline"
+              variant={showFilters ? 'default' : 'outline'}
               size="sm"
-              disabled
+              on:click={() => showFilters = !showFilters}
             >
               <Filter class="h-4 w-4 mr-1" />
               Filter
+              {#if industryFilter !== 'all'}
+                <Badge variant="secondary" class="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  1
+                </Badge>
+              {/if}
             </Button>
             
             <Button
@@ -782,6 +896,64 @@
             </Button>
           </div>
         </div>
+
+        <!-- Filter and Sort Panel -->
+        {#if showFilters}
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 md:p-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+              <!-- Industry Filter -->
+              <div>
+                <label for="industry-filter" class="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
+                  Filter by Industry
+                </label>
+                <select
+                  id="industry-filter"
+                  bind:value={industryFilter}
+                  class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Industries</option>
+                  {#each availableIndustries as industry}
+                    <option value={industry}>{industry}</option>
+                  {/each}
+                </select>
+              </div>
+
+              <!-- Sort By -->
+              <div>
+                <label for="sort-by" class="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
+                  Sort By
+                </label>
+                <select
+                  id="sort-by"
+                  bind:value={sortBy}
+                  class="w-full px-2 md:px-3 py-1.5 md:py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="date">Last Updated</option>
+                  <option value="title">Title (A-Z)</option>
+                  <option value="industry">Industry</option>
+                  <option value="purpose">Purpose</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            {#if industryFilter !== 'all'}
+              <div class="mt-3 flex items-center gap-2">
+                <span class="text-sm text-gray-600">Active filters:</span>
+                <Badge variant="secondary" class="flex items-center gap-1">
+                  {industryFilter}
+                  <button
+                    on:click={() => industryFilter = 'all'}
+                    class="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    aria-label="Clear filter"
+                  >
+                    <X class="w-3 h-3" />
+                  </button>
+                </Badge>
+              </div>
+            {/if}
+          </div>
+        {/if}
         
         <!-- Resumes Grid/List -->
         {#if isLoading}
@@ -815,24 +987,61 @@
             {:else}
               <Search class="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes found</h3>
-              <p class="text-gray-600">Try adjusting your search query</p>
+              <p class="text-gray-600 mb-4">
+                {#if searchQuery || industryFilter !== 'all'}
+                  Try adjusting your search or filters
+                {:else}
+                  Try adjusting your search query
+                {/if}
+              </p>
+              {#if industryFilter !== 'all'}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  on:click={() => {
+                    industryFilter = 'all';
+                    searchQuery = '';
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              {/if}
             {/if}
           </div>
         {:else}
           <div class="grid grid-cols-1 {viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : ''} gap-4">
             {#each filteredResumes as resume (resume.id)}
-              <Card class="group hover:shadow-lg transition-shadow {viewMode === 'list' ? 'flex' : ''}">
+              <Card class="group hover:shadow-lg transition-shadow {viewMode === 'list' ? 'flex' : ''} {resume.target_industry ? 'border-l-4 border-l-blue-500' : ''}">
                 <CardContent class="p-6 {viewMode === 'list' ? 'flex-1 flex items-center justify-between' : ''}">
                   <div class="{viewMode === 'list' ? 'flex-1' : ''}">
                     <!-- Header with title and status -->
                     <div class="flex items-start justify-between mb-3">
-                      <div class="flex-1">
+                      <div class="flex-1 min-w-0">
                         <h3 class="font-semibold text-gray-900 truncate {viewMode === 'list' ? 'text-lg' : ''}">{resume.title}</h3>
+                        
+                        <!-- Purpose - Prominent Display -->
+                        {#if resume.purpose}
+                          <div class="mt-2 flex items-start gap-1.5">
+                            <Briefcase class="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
+                            <p class="text-sm font-medium text-purple-900 line-clamp-2">{resume.purpose}</p>
+                          </div>
+                        {/if}
+                        
+                        <!-- Industry Badge -->
+                        {#if resume.target_industry}
+                          <div class="mt-2 flex flex-wrap gap-2">
+                            <Badge variant="outline" class="text-xs bg-blue-50 text-blue-700 border-blue-200 inline-flex items-center">
+                              <Target class="w-3 h-3 mr-1 flex-shrink-0" />
+                              <span class="truncate max-w-[150px]">{resume.target_industry}</span>
+                            </Badge>
+                          </div>
+                        {/if}
+                        
                         {#if resume.target_job}
-                          <p class="text-sm text-gray-600 mt-1">{resume.target_job}</p>
+                          <p class="text-sm text-gray-600 mt-1.5">{resume.target_job}</p>
                         {/if}
                         {#if resume.target_company}
-                          <p class="text-xs text-gray-500">• {resume.target_company}</p>
+                          <p class="text-xs text-gray-500 mt-0.5">• {resume.target_company}</p>
                         {/if}
                       </div>
                       
@@ -946,33 +1155,53 @@
                     {/if}
                   </div>
                   
-                  <div class="flex items-center space-x-2 {viewMode === 'list' ? 'ml-4' : ''}">
-                    <Button variant="outline" size="sm" on:click={() => viewResume(resume)}>
-                      <Eye class="h-4 w-4 mr-1" />
-                      View
+                  <div class="flex items-center gap-2 {viewMode === 'list' ? 'ml-4' : ''} flex-wrap">
+                    <Button variant="outline" size="sm" on:click={() => viewResume(resume)} class="flex-shrink-0">
+                      <Eye class="h-4 w-4 sm:mr-1" />
+                      <span class="hidden sm:inline">View</span>
                     </Button>
-                    <Button size="sm" on:click={() => editResume(resume.id)}>
-                      <Edit3 class="h-4 w-4 mr-1" />
-                      Edit
+                    <Button size="sm" on:click={() => editResume(resume.id)} class="flex-shrink-0">
+                      <Edit3 class="h-4 w-4 sm:mr-1" />
+                      <span class="hidden sm:inline">Edit</span>
                     </Button>
                     
                     {#if viewMode === 'list'}
-                      <Button variant="outline" size="sm" on:click={() => shareResume(resume)}>
+                      <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="hidden md:flex flex-shrink-0">
                         <Share2 class="h-4 w-4 mr-1" />
                         Share
                       </Button>
-                      <Button variant="outline" size="sm" on:click={() => duplicateResume(resume)}>
+                      <Button variant="outline" size="sm" on:click={() => duplicateResume(resume)} class="hidden md:flex flex-shrink-0">
                         <Copy class="h-4 w-4 mr-1" />
                         Duplicate
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        class="text-red-600 hover:text-red-700"
+                        class="text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex-shrink-0"
+                        on:click={() => duplicateForIndustry(resume)}
+                      >
+                        <Sparkles class="h-4 w-4 sm:mr-1" />
+                        <span class="hidden sm:inline">Retarget</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        class="text-red-600 hover:text-red-700 hidden lg:flex flex-shrink-0"
                         on:click={() => deleteResume(resume.id, resume.title)}
                       >
                         <Trash2 class="h-4 w-4 mr-1" />
                         Delete
+                      </Button>
+                    {:else}
+                      <!-- Grid view - show retarget button -->
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        class="text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex-shrink-0"
+                        on:click={() => duplicateForIndustry(resume)}
+                      >
+                        <Sparkles class="h-4 w-4 sm:mr-1" />
+                        <span class="hidden sm:inline">Retarget</span>
                       </Button>
                     {/if}
                   </div>
@@ -1012,6 +1241,18 @@
 </div>
 
 <!-- Share Dialog - Simplified for now -->
+
+<!-- Industry Selector Modal -->
+<IndustrySelectorModal
+  bind:open={showIndustrySelector}
+  currentIndustry={resumeToRetarget?.target_industry}
+  resumeTitle={resumeToRetarget?.title || ''}
+  on:select={handleIndustrySelected}
+  on:close={() => {
+    showIndustrySelector = false;
+    resumeToRetarget = null;
+  }}
+/>
 
 <style>
   .line-clamp-1 {
