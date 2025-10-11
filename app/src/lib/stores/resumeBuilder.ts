@@ -132,13 +132,16 @@ const defaultBuilderData: ResumeBuilderData = {
   projects: [],
   settings: defaultSettings,
   currentStep: 'personal',
-  completedSteps: ['personal', 'summary', 'experience', 'education', 'skills']
+  completedSteps: ['personal', 'summary', 'experience', 'education', 'skills'],
+  purpose: undefined,
+  target_industry: undefined
 };
 
 // Stores
 export const builderData = writable<ResumeBuilderData>(defaultBuilderData);
 export const currentStep = writable<string>('personal');
 export const isLoading = writable<boolean>(false);
+export const isGenerating = writable<boolean>(false);
 export const hasUnsavedChanges = writable<boolean>(false);
 
 // Derived stores
@@ -353,6 +356,16 @@ export function markStepIncomplete(stepId: string) {
   }));
 }
 
+export function updatePurpose(purpose: string) {
+  builderData.update(data => ({ ...data, purpose }));
+  hasUnsavedChanges.set(true);
+}
+
+export function updateTargetIndustry(target_industry: string) {
+  builderData.update(data => ({ ...data, target_industry }));
+  hasUnsavedChanges.set(true);
+}
+
 export function resetBuilder() {
   builderData.set(defaultBuilderData);
   currentStep.set('personal');
@@ -404,7 +417,9 @@ export async function saveResume() {
         settings: currentData.settings
       },
       template: currentData.settings.template || 'default-template-id',
-      is_public: false
+      is_public: false,
+      purpose: currentData.purpose,
+      target_industry: currentData.target_industry
     };
 
     const record = await pb.collection('resumes').create(resumeData);
@@ -458,7 +473,9 @@ export async function loadResumeForEditing(resumeId: string) {
       projects: resume.content?.projects || defaultBuilderData.projects,
       settings,
       currentStep: 'personal',
-      completedSteps: ['personal', 'summary', 'experience', 'education', 'skills']
+      completedSteps: ['personal', 'summary', 'experience', 'education', 'skills'],
+      purpose: resume.purpose,
+      target_industry: resume.target_industry
     });
     
     // Mark as no unsaved changes since we just loaded
@@ -471,6 +488,176 @@ export async function loadResumeForEditing(resumeId: string) {
     throw error;
   } finally {
     isLoading.set(false);
+  }
+}
+
+/**
+ * Generate resume content from user profile using ResumeGenerator service
+ * 
+ * @param options - Generation options including sections to generate, target industry, and strategy
+ * @throws Error if user profile or template is not available
+ */
+export async function generateFromProfile(options: {
+  sections: string[];
+  targetIndustry?: string;
+  strategy?: 'auto' | 'experienced' | 'first-time' | 'career-change';
+  keywordIntensity?: 'light' | 'moderate' | 'aggressive';
+}): Promise<void> {
+  isGenerating.set(true);
+  
+  try {
+    // Get current user profile
+    let profile: any;
+    const unsubscribeProfile = userProfile.subscribe(p => {
+      profile = p;
+    });
+    unsubscribeProfile();
+    
+    if (!profile) {
+      throw new Error('User profile not available. Please complete your profile first.');
+    }
+    
+    // Get current builder data to find template
+    const currentData = get(builderData);
+    const templateId = currentData.settings.template;
+    
+    if (!templateId) {
+      throw new Error('No template selected. Please select a template first.');
+    }
+    
+    // Get template from templateStore
+    const currentTemplate = await templateStore.getTemplate(templateId);
+    
+    if (!currentTemplate) {
+      throw new Error('Template not found. Please select a valid template.');
+    }
+    
+    // Import ResumeGenerator
+    const { ResumeGenerator } = await import('$lib/services/ResumeGenerator');
+    
+    // Create generator instance with keyword intensity
+    const generator = new ResumeGenerator(
+      profile,
+      currentTemplate,
+      options.targetIndustry,
+      options.keywordIntensity || 'moderate'
+    );
+    
+    // Generate complete draft
+    const generatedData = generator.generateDraft();
+    
+    // Selectively update only requested sections, preserving user edits
+    const updates: Partial<ResumeBuilderData> = {};
+    const completedSteps = [...currentData.completedSteps];
+    
+    // Update personal info if requested
+    if (options.sections.includes('personal')) {
+      // Only update empty fields to preserve user edits
+      updates.personalInfo = {
+        ...currentData.personalInfo,
+        fullName: currentData.personalInfo.fullName || generatedData.personalInfo.fullName,
+        email: currentData.personalInfo.email || generatedData.personalInfo.email,
+        phone: currentData.personalInfo.phone || generatedData.personalInfo.phone,
+        location: currentData.personalInfo.location || generatedData.personalInfo.location,
+        website: currentData.personalInfo.website || generatedData.personalInfo.website,
+        linkedin: currentData.personalInfo.linkedin || generatedData.personalInfo.linkedin,
+        github: currentData.personalInfo.github || generatedData.personalInfo.github,
+      };
+      
+      if (!completedSteps.includes('personal')) {
+        completedSteps.push('personal');
+      }
+    }
+    
+    // Update summary if requested
+    if (options.sections.includes('summary')) {
+      // Only update if current summary is empty or is the default placeholder
+      const isDefaultSummary = currentData.summary === defaultBuilderData.summary;
+      const isEmpty = !currentData.summary || currentData.summary.trim().length === 0;
+      
+      if (isEmpty || isDefaultSummary) {
+        updates.summary = generatedData.summary;
+      }
+      
+      if (!completedSteps.includes('summary')) {
+        completedSteps.push('summary');
+      }
+    }
+    
+    // Update experience if requested
+    if (options.sections.includes('experience')) {
+      // Only update if current experience is empty or contains only default data
+      const hasDefaultExperience = currentData.experience.length === 1 && 
+        currentData.experience[0].company === 'ABC Company';
+      const isEmpty = currentData.experience.length === 0;
+      
+      if (isEmpty || hasDefaultExperience) {
+        updates.experience = generatedData.experience;
+      }
+      
+      if (!completedSteps.includes('experience')) {
+        completedSteps.push('experience');
+      }
+    }
+    
+    // Update education if requested
+    if (options.sections.includes('education')) {
+      // Only update if current education is empty or contains only default data
+      const hasDefaultEducation = currentData.education.length === 1 && 
+        currentData.education[0].institution === 'San Diego State University';
+      const isEmpty = currentData.education.length === 0;
+      
+      if (isEmpty || hasDefaultEducation) {
+        updates.education = generatedData.education;
+      }
+      
+      if (!completedSteps.includes('education')) {
+        completedSteps.push('education');
+      }
+    }
+    
+    // Update skills if requested
+    if (options.sections.includes('skills')) {
+      // Only update if current skills are empty or contain only default data
+      const hasDefaultSkills = currentData.skills.length === 4 && 
+        currentData.skills.some(s => s.name === 'JavaScript');
+      const isEmpty = currentData.skills.length === 0;
+      
+      if (isEmpty || hasDefaultSkills) {
+        updates.skills = generatedData.skills;
+      }
+      
+      if (!completedSteps.includes('skills')) {
+        completedSteps.push('skills');
+      }
+    }
+    
+    // Update projects if requested
+    if (options.sections.includes('projects')) {
+      // Only update if current projects are empty
+      if (currentData.projects.length === 0) {
+        updates.projects = generatedData.projects;
+      }
+      
+      if (!completedSteps.includes('projects')) {
+        completedSteps.push('projects');
+      }
+    }
+    
+    // Apply updates to store
+    builderData.update(data => ({
+      ...data,
+      ...updates,
+      completedSteps
+    }));
+    
+    hasUnsavedChanges.set(true);
+    
+  } catch (error) {
+    console.error('Failed to generate from profile:', error);
+    throw error;
+  } finally {
+    isGenerating.set(false);
   }
 }
 
@@ -1163,5 +1350,90 @@ function updateStepCompletionFromData() {
   // Skills step - mark complete if has sufficient skills
   if (currentData.skills.length >= 3) {
     markStepComplete('skills');
+  }
+}
+
+/**
+ * Quick generate resume sections from profile using strategy pattern
+ */
+export async function quickGenerateFromProfile(options: {
+  sections: string[];
+  targetIndustry?: string;
+  strategyName?: string;
+}): Promise<{ success: boolean; message: string }> {
+  const profile = get(userProfile);
+  const currentData = get(builderData);
+  
+  if (!profile) {
+    return { success: false, message: 'No profile data available' };
+  }
+
+  try {
+    // Dynamically import the strategy module
+    const { ResumeStrategyFactory } = await import('$lib/services/ResumeStrategies');
+    const { templateStore: templates } = await import('$lib/stores/templates');
+    
+    // Get current template
+    const allTemplates = get(templates);
+    const currentTemplate = allTemplates?.find(t => t.id === currentData.settings.template);
+    
+    if (!currentTemplate) {
+      return { success: false, message: 'No template selected' };
+    }
+
+    // Select strategy (use manual override if provided)
+    const selection = ResumeStrategyFactory.selectStrategy(profile, options.strategyName);
+    
+    // Generate resume data using the selected strategy
+    const generatedData = selection.strategy.generateResume(
+      profile,
+      currentTemplate,
+      options.targetIndustry
+    );
+
+    // Update only the selected sections
+    builderData.update(data => {
+      const updated = { ...data };
+
+      if (options.sections.includes('personalInfo')) {
+        updated.personalInfo = generatedData.personalInfo;
+      }
+
+      if (options.sections.includes('summary')) {
+        updated.summary = generatedData.summary;
+      }
+
+      if (options.sections.includes('experience')) {
+        updated.experience = generatedData.experience;
+      }
+
+      if (options.sections.includes('education')) {
+        updated.education = generatedData.education;
+      }
+
+      if (options.sections.includes('skills')) {
+        updated.skills = generatedData.skills;
+      }
+
+      if (options.sections.includes('projects')) {
+        updated.projects = generatedData.projects;
+      }
+
+      return updated;
+    });
+
+    // Mark steps as complete
+    validateAndMarkStepsComplete();
+
+    return {
+      success: true,
+      message: `Successfully generated using ${selection.strategyName} strategy`
+    };
+  } catch (error) {
+    console.error('Quick generate error:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to generate resume'
+    };
   }
 }

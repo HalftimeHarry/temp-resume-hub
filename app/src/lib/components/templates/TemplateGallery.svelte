@@ -10,6 +10,8 @@
     isLoadingTemplates 
   } from '$lib/stores/templates';
   import { resumeStore } from '$lib/stores/resume';
+  import { userProfile } from '$lib/stores/userProfile';
+  import { getTemplateRecommendations, type RecommendationResult } from '$lib/services/TemplateRecommendation';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Badge } from '$lib/components/ui/badge';
@@ -26,7 +28,8 @@
     Filter,
     Grid3X3,
     List,
-    Sparkles
+    Sparkles,
+    Info
   } from 'lucide-svelte';
   import * as Dialog from '$lib/components/ui/dialog';
   import { isAuthenticated } from '$lib/stores/auth';
@@ -34,6 +37,10 @@
   
   export let showFeatured = true;
   export let compact = false;
+  
+  // Recommendations
+  let recommendations: RecommendationResult[] = [];
+  let recommendationsMap = new Map<string, RecommendationResult>();
   
   let searchQuery = '';
   let viewMode: 'grid' | 'list' = 'grid';
@@ -47,11 +54,50 @@
   onMount(() => {
     try {
       templateStore.loadTemplates();
+      updateRecommendations();
     } catch (error) {
       console.error('Failed to load templates:', error);
       toast.error('Failed to load templates');
     }
   });
+  
+  // Update recommendations when profile or templates change
+  $: if ($userProfile && $templates.length > 0) {
+    updateRecommendations();
+  }
+  
+  function updateRecommendations() {
+    if (!$userProfile || $templates.length === 0) {
+      recommendations = [];
+      recommendationsMap.clear();
+      return;
+    }
+    
+    try {
+      recommendations = getTemplateRecommendations($userProfile, $templates);
+      recommendationsMap = new Map(
+        recommendations.map(rec => [rec.template.id, rec])
+      );
+    } catch (error) {
+      console.error('Failed to get recommendations:', error);
+      recommendations = [];
+      recommendationsMap.clear();
+    }
+  }
+  
+  function getRecommendation(templateId: string): RecommendationResult | undefined {
+    return recommendationsMap.get(templateId);
+  }
+  
+  function isRecommended(templateId: string): boolean {
+    const rec = getRecommendation(templateId);
+    return rec?.isRecommended || false;
+  }
+  
+  function getRecommendationReasons(templateId: string): string[] {
+    const rec = getRecommendation(templateId);
+    return rec?.score.reasons || [];
+  }
   
   function handleSearch() {
     if (searchQuery.trim()) {
@@ -356,6 +402,15 @@
               
               <!-- Badges -->
               <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                {#if isRecommended(template.id)}
+                  <Badge 
+                    class="bg-purple-600 text-white hover:bg-purple-700 cursor-help"
+                    title={`Why recommended?\n${getRecommendationReasons(template.id).join('\n')}`}
+                  >
+                    <Sparkles class="h-3 w-3 mr-1" />
+                    Recommended
+                  </Badge>
+                {/if}
                 {#if template.isPremium}
                   <Badge class="bg-yellow-500 text-white">
                     <Crown class="h-3 w-3 mr-1" />
@@ -400,6 +455,77 @@
                 </div>
                 
                 <Badge variant="outline">{template.category}</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        {/each}
+      </div>
+      
+      <Separator class="my-8" />
+    </div>
+  {/if}
+  
+  <!-- Recommended Templates -->
+  {#if recommendations.length > 0 && recommendations.filter(r => r.isRecommended).length > 0}
+    <div class="mb-8">
+      <div class="flex items-center gap-2 mb-4">
+        <Sparkles class="h-5 w-5 text-purple-600" />
+        <h2 class="text-lg font-semibold">Recommended for You</h2>
+        <Info 
+          class="h-4 w-4 text-gray-400 cursor-help" 
+          title="Based on your profile, industry, and experience level"
+        />
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {#each recommendations.filter(r => r.isRecommended) as rec}
+          <Card class="group hover:shadow-lg transition-shadow cursor-pointer">
+            <div class="aspect-[3/4] bg-gray-100 rounded-t-lg overflow-hidden relative">
+              {#if rec.template.thumbnail}
+                <img 
+                  src={rec.template.thumbnail} 
+                  alt={rec.template.name}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                />
+              {:else}
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                  <Eye class="h-12 w-12" />
+                </div>
+              {/if}
+              
+              <!-- Recommended Badge -->
+              <div class="absolute top-2 left-2">
+                <Badge 
+                  class="bg-purple-600 text-white hover:bg-purple-700 cursor-help"
+                  title={`Match Score: ${rec.score.score}/100\nWhy recommended?\n${rec.score.reasons.join('\n')}`}
+                >
+                  <Sparkles class="h-3 w-3 mr-1" />
+                  #{rec.rank} Match
+                </Badge>
+              </div>
+              
+              <!-- Preview Overlay -->
+              <div
+                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                role="button"
+                tabindex="0"
+                on:click={() => previewTemplate(rec.template.id)}
+                on:keydown={(e) => { if (e.key === 'Enter') previewTemplate(rec.template.id) }}
+              >
+                <div class="text-white font-medium bg-black/30 rounded-md px-3 py-1 flex items-center gap-2">
+                  <Eye class="h-4 w-4" />
+                  <span>Preview</span>
+                </div>
+              </div>
+            </div>
+            
+            <CardContent class="p-4">
+              <h3 class="font-semibold text-gray-900 mb-1">{rec.template.name}</h3>
+              <p class="text-sm text-gray-600 mb-2 line-clamp-2">{rec.template.description}</p>
+              
+              <div class="flex items-center justify-between">
+                <Badge variant="outline">{rec.template.category}</Badge>
+                <span class="text-xs text-purple-600 font-medium">{rec.score.score}% match</span>
               </div>
             </CardContent>
           </Card>
@@ -459,6 +585,15 @@
               
               <!-- Badges -->
               <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                {#if isRecommended(template.id)}
+                  <Badge 
+                    class="bg-purple-600 text-white hover:bg-purple-700 cursor-help"
+                    title={`Why recommended?\n${getRecommendationReasons(template.id).join('\n')}`}
+                  >
+                    <Sparkles class="h-3 w-3 mr-1" />
+                    Recommended
+                  </Badge>
+                {/if}
                 {#if template.isPremium}
                   <Badge class="bg-yellow-500 text-white">
                     <Crown class="h-3 w-3 mr-1" />

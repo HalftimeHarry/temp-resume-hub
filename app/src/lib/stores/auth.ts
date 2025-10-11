@@ -198,6 +198,17 @@ export const auth = {
         console.log('Auth cookie cleared');
       }
       
+      // Clear generation preferences
+      if (browser) {
+        try {
+          const { generationPreferences } = await import('$lib/stores/generationPreferences');
+          generationPreferences.clear();
+          console.log('🔐 Auth Debug: Cleared generation preferences on logout');
+        } catch (error) {
+          console.error('Failed to clear generation preferences:', error);
+        }
+      }
+      
       console.log('Setting currentUser to null');
       currentUser.set(null);
       console.log('Setting isAuthenticated to false');

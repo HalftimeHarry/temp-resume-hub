@@ -9,11 +9,13 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import { templates as allTemplates, templateStore } from '$lib/stores/templates.js';
 	import type { ExtendedResumeTemplate } from '$lib/templates';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus, Menu, X } from 'lucide-svelte';
+	import { FileText, User, FileCheck, Briefcase, Award, Code, Settings, Eye, ArrowLeft, LogOut, ChevronDown, Download, UserPlus, Menu, X, Sparkles, Target } from 'lucide-svelte';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import { toast } from 'svelte-sonner';
+	import QuickGenerateModal from '$lib/components/builder/QuickGenerateModal.svelte';
 	
 	let mobileMenuOpen = false;
+	let showQuickGenerateModal = false;
 
 	// Debug reactive statement
 	$: {
@@ -643,6 +645,16 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					<div class="hidden lg:flex items-center gap-2">
 						{#if $userProfile}
 							<Button 
+								variant="default"
+								size="sm"
+								on:click={() => showQuickGenerateModal = true}
+								title="Quick generate resume from profile"
+								class="bg-purple-600 hover:bg-purple-700"
+							>
+								<Sparkles class="w-4 h-4 mr-1" />
+								Quick Generate
+							</Button>
+							<Button 
 								variant="ghost" 
 								size="sm"
 								on:click={handleImportProfile}
@@ -700,6 +712,13 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 							<!-- Action Buttons -->
 							<div class="space-y-2">
 								{#if $userProfile}
+									<button
+										class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 active:bg-purple-800 text-center font-medium transition-colors duration-200 shadow-sm"
+										on:click={() => { showQuickGenerateModal = true; mobileMenuOpen = false; }}
+									>
+										<Sparkles class="h-4 w-4 mr-1 inline" />
+										Quick Generate
+									</button>
 									<button
 										class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
 										on:click={() => { handleImportProfile(); mobileMenuOpen = false; }}
@@ -1011,6 +1030,36 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 									</div>
 								</div>
 
+								<!-- Resume Metadata -->
+								{#if $builderData.purpose || $builderData.target_industry}
+									<div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+										<h3 class="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+											<Target class="w-5 h-5" />
+											Resume Metadata
+										</h3>
+										<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+											{#if $builderData.purpose}
+												<div>
+													<div class="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1">
+														<Briefcase class="w-3 h-3" />
+														Purpose
+													</div>
+													<p class="text-sm text-blue-900">{$builderData.purpose}</p>
+												</div>
+											{/if}
+											{#if $builderData.target_industry}
+												<div>
+													<div class="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1">
+														<Target class="w-3 h-3" />
+														Target Industry
+													</div>
+													<p class="text-sm text-blue-900">{$builderData.target_industry}</p>
+												</div>
+											{/if}
+										</div>
+									</div>
+								{/if}
+
 								{#if $isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills')}
 									<!-- Resume Preview -->
 									<div class="border rounded-lg overflow-hidden bg-white">
@@ -1087,3 +1136,10 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		scrollbar-width: none;
 	}
 </style>
+
+<!-- Quick Generate Modal -->
+<QuickGenerateModal
+	bind:open={showQuickGenerateModal}
+	currentTemplate={selectedTemplate}
+	on:close={() => showQuickGenerateModal = false}
+/>

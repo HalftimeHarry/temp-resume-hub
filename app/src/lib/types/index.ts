@@ -65,6 +65,13 @@ export interface UserProfile {
   achievements_awards?: string;
   relevant_coursework?: string;
   
+  // Structured data (JSON strings or arrays)
+  work_experience?: string | any[]; // JSON string or array of experience objects
+  education?: string | any[]; // JSON string or array of education objects
+  projects?: string | any[]; // JSON string or array of project objects
+  professional_summary?: string;
+  github_url?: string;
+  
   created: string;
   updated: string;
 }
@@ -120,6 +127,8 @@ export interface Resume {
   is_public: boolean;
   view_count: number;
   last_viewed?: string;
+  purpose?: string; // e.g., "Frontend Developer - Tech Startup"
+  target_industry?: string; // e.g., "Technology", "Healthcare", "Finance"
   created: string;
   updated: string;
 }

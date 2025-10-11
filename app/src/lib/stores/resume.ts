@@ -85,6 +85,8 @@ export const resumeStore = {
         template: templateId,
         is_public: false,
         slug: generateSlug(title),
+        purpose: undefined, // Will be set by user
+        target_industry: profile?.target_industry, // Default from profile
         
         // Enhanced fields
         download_count: 0,

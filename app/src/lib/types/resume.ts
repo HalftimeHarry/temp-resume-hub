@@ -211,6 +211,8 @@ export interface Resume {
   target_company?: string;
   industry_focus?: string;
   experience_level?: string;
+  purpose?: string; // e.g., "Frontend Developer - Tech Startup"
+  target_industry?: string; // e.g., "Technology", "Healthcare", "Finance"
   
   // Quality & Optimization
   optimization_score?: number;
@@ -399,4 +401,6 @@ export interface ResumeBuilderData {
   settings: BuilderSettings;
   currentStep: string;
   completedSteps: string[];
+  purpose?: string; // e.g., "Frontend Developer - Tech Startup"
+  target_industry?: string; // e.g., "Technology", "Healthcare", "Finance"
 }
