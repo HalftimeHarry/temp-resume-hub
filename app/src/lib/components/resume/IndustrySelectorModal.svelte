@@ -16,10 +16,13 @@
 	export let open = false;
 	export let currentIndustry: string | undefined = undefined;
 	export let resumeTitle: string = '';
+	export let mode: 'duplicate' | 'builder' = 'duplicate';
 
 	const dispatch = createEventDispatcher<{
 		select: { industry: string; purpose: string };
 		close: void;
+		quickGenerate: void;
+		skip: void;
 	}>();
 
 	// Common industries with descriptions
@@ -135,6 +138,16 @@
 		selectedIndustry = '';
 		customPurpose = '';
 	}
+
+	function handleQuickGenerate() {
+		dispatch('quickGenerate');
+		handleClose();
+	}
+
+	function handleSkip() {
+		dispatch('skip');
+		handleClose();
+	}
 </script>
 
 <Dialog bind:open>
@@ -142,11 +155,14 @@
 		<DialogHeader>
 			<DialogTitle class="flex items-center gap-2">
 				<Sparkles class="w-5 h-5 text-purple-600" />
-				Duplicate Resume for Different Industry
+				{mode === 'builder' ? 'Select Your Target Industry' : 'Duplicate Resume for Different Industry'}
 			</DialogTitle>
 			<DialogDescription>
-				Select a target industry to create a tailored version of your resume. We'll adapt the
-				content, keywords, and focus to match the new industry.
+				{#if mode === 'builder'}
+					Choose your target industry to get started with industry-specific boilerplate content, professional summary, and relevant skills.
+				{:else}
+					Select a target industry to create a tailored version of your resume. We'll adapt the content, keywords, and focus to match the new industry.
+				{/if}
 			</DialogDescription>
 		</DialogHeader>
 
@@ -248,11 +264,23 @@
 			{/if}
 		</div>
 
-		<DialogFooter>
-			<Button variant="outline" on:click={handleClose}>Cancel</Button>
-			<Button on:click={handleConfirm} disabled={!selectedIndustry}>
+		<DialogFooter class="flex-col sm:flex-row gap-2">
+			{#if mode === 'builder'}
+				<div class="flex gap-2 w-full sm:w-auto">
+					<Button variant="outline" on:click={handleSkip} class="flex-1 sm:flex-none">
+						Skip for Now
+					</Button>
+					<Button variant="secondary" on:click={handleQuickGenerate} class="flex-1 sm:flex-none">
+						<Sparkles class="w-4 h-4 mr-2" />
+						Quick Generate
+					</Button>
+				</div>
+			{:else}
+				<Button variant="outline" on:click={handleClose}>Cancel</Button>
+			{/if}
+			<Button on:click={handleConfirm} disabled={!selectedIndustry} class="w-full sm:w-auto">
 				<Sparkles class="w-4 h-4 mr-2" />
-				Duplicate & Adapt Resume
+				{mode === 'builder' ? 'Continue with Industry' : 'Duplicate & Adapt Resume'}
 			</Button>
 		</DialogFooter>
 	</DialogContent>

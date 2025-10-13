@@ -403,10 +403,25 @@ export async function saveResume() {
       }
     }
 
+    // Generate title - prioritize target_industry, then purpose, then template name
+    const userName = currentUser.name || currentData.personalInfo.fullName || 'Untitled';
+    let resumeTitle: string;
+    
+    if (currentData.target_industry) {
+      // Use industry if available
+      resumeTitle = `${userName} - ${currentData.target_industry}`;
+    } else if (currentData.purpose) {
+      // Use purpose if no industry
+      resumeTitle = `${userName} - ${currentData.purpose}`;
+    } else {
+      // Fallback to template name
+      resumeTitle = `${userName} - ${templateName}`;
+    }
+
     // Create resume record in PocketBase
     const resumeData = {
       user: currentUser.id,
-      title: `${currentUser.name || currentData.personalInfo.fullName || 'Untitled'} - ${templateName}`,
+      title: resumeTitle,
       content: {
         personalInfo: currentData.personalInfo,
         summary: currentData.summary,
@@ -424,6 +439,10 @@ export async function saveResume() {
 
     const record = await pb.collection('resumes').create(resumeData);
     console.log('Resume saved successfully:', record.id);
+    
+    // Calculate and update completion percentage
+    const { resumeStore } = await import('$lib/stores/resume');
+    await resumeStore.calculateAndUpdateCompletion(record.id);
     
     hasUnsavedChanges.set(false);
     return record;
@@ -717,10 +736,25 @@ export async function publishResume() {
       }
     }
 
+    // Generate title - prioritize target_industry, then purpose, then template name
+    const userName = currentUser.name || currentData.personalInfo.fullName || 'Untitled';
+    let resumeTitle: string;
+    
+    if (currentData.target_industry) {
+      // Use industry if available
+      resumeTitle = `${userName} - ${currentData.target_industry}`;
+    } else if (currentData.purpose) {
+      // Use purpose if no industry
+      resumeTitle = `${userName} - ${currentData.purpose}`;
+    } else {
+      // Fallback to template name
+      resumeTitle = `${userName} - ${templateName}`;
+    }
+
     // Prepare resume data
     const resumeData = {
       user: currentUser.id,
-      title: `${currentUser.name || currentData.personalInfo.fullName || 'Untitled'} - ${templateName}`,
+      title: resumeTitle,
       content: {
         personalInfo: currentData.personalInfo,
         summary: currentData.summary,
@@ -736,7 +770,10 @@ export async function publishResume() {
         }
       },
       template: templateId,
-      is_public: true
+      is_public: true,
+      // Add metadata fields
+      target_industry: currentData.target_industry,
+      purpose: currentData.purpose
     };
 
     console.log('Publishing resume with data:', {
@@ -744,7 +781,10 @@ export async function publishResume() {
       isClientSideTemplate,
       databaseTemplateId: templateId,
       userId: currentUser.id,
-      title: resumeData.title
+      title: resumeData.title,
+      target_industry: currentData.target_industry,
+      skillsCount: currentData.skills.length,
+      skills: currentData.skills.map(s => `${s.name} (${s.category})`)
     });
 
     let record;
@@ -767,6 +807,10 @@ export async function publishResume() {
     const publicUrl = `${window.location.origin}/resume/${record.slug}`;
     
     console.log('Resume published successfully:', publicUrl);
+    
+    // Calculate and update completion percentage
+    const { resumeStore } = await import('$lib/stores/resume');
+    await resumeStore.calculateAndUpdateCompletion(record.id);
     
     hasUnsavedChanges.set(false);
     return { url: publicUrl, record };

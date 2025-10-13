@@ -13,6 +13,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import Logo from '$lib/components/ui/Logo.svelte';
 	import { toast } from 'svelte-sonner';
 	import QuickGenerateModal from '$lib/components/builder/QuickGenerateModal.svelte';
+	import { Badge } from '$lib/components/ui/badge';
 	
 	let mobileMenuOpen = false;
 	let showQuickGenerateModal = false;
@@ -51,7 +52,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	import EducationTab from '$lib/components/builder/EducationTab.svelte';
 	import SkillsTab from '$lib/components/builder/SkillsTab.svelte';
 	import ProjectsTab from '$lib/components/builder/ProjectsTab.svelte';
-	import SettingsTab from '$lib/components/builder/SettingsTab.svelte';
 	
 	// Preview Component
 	import ResumePreview from '$lib/components/resume/ResumePreview.svelte';
@@ -70,20 +70,41 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					? smartMergeProfileAndTemplate(templateData, profile)
 					: templateData;
 				
-				// Apply merged data to builder - template data takes precedence for content
+				// If user has selected an industry, ALWAYS preserve industry-specific content
+				// Don't let template selection overwrite industry boilerplate
+				const hasIndustryContent = !!d.target_industry;
+				
+				console.log('🎨 Template selection - Has industry:', d.target_industry, 'Will preserve content:', hasIndustryContent);
+				console.log('🎨 Current skills before template:', d.skills.map(s => `${s.name} (${s.category})`));
+				
+				const newSkills = hasIndustryContent ? d.skills : (
+					Array.isArray(mergedData.skills) && mergedData.skills.length > 0 
+						? mergedData.skills 
+						: getDefaultSkills(full)
+				);
+				
+				console.log('🎨 Skills after template decision:', newSkills.map(s => `${s.name} (${s.category})`));
+				
+				// Apply merged data to builder - preserve industry content if it exists
 				return {
 					...d,
 					personalInfo: mergedData.personalInfo ? { ...d.personalInfo, ...mergedData.personalInfo } : d.personalInfo,
-					summary: mergedData.summary || getDefaultSummary(full),
-					experience: Array.isArray(mergedData.experience) && mergedData.experience.length > 0 
-						? mergedData.experience 
-						: getDefaultExperience(full),
-					education: Array.isArray(mergedData.education) && mergedData.education.length > 0 
-						? mergedData.education 
-						: getDefaultEducation(full),
-					skills: Array.isArray(mergedData.skills) && mergedData.skills.length > 0 
-						? mergedData.skills 
-						: getDefaultSkills(full),
+					// Preserve industry summary if it exists
+					summary: hasIndustryContent ? d.summary : (mergedData.summary || getDefaultSummary(full)),
+					// Preserve industry experience if it exists
+					experience: hasIndustryContent ? d.experience : (
+						Array.isArray(mergedData.experience) && mergedData.experience.length > 0 
+							? mergedData.experience 
+							: getDefaultExperience(full)
+					),
+					// Preserve industry education if it exists
+					education: hasIndustryContent ? d.education : (
+						Array.isArray(mergedData.education) && mergedData.education.length > 0 
+							? mergedData.education 
+							: getDefaultEducation(full)
+					),
+					// Preserve industry skills if they exist
+					skills: newSkills,
 					projects: Array.isArray(mergedData.projects) ? mergedData.projects : d.projects,
 					settings: { ...d.settings, ...(mergedData.settings || {}), template: full.id }
 				};
@@ -105,7 +126,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 			// Skills step - templates provide example skills
 			markStepComplete('skills');
 			
-			currentStep.set('settings');
+			// Start on personal info step instead of settings
+			currentStep.set('personal');
 		} catch (e) {
 			console.error('Failed to apply template:', e);
 		}
@@ -191,7 +213,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					markStepIncomplete('skills');
 				}
 				
-				currentStep.set('settings');
+				// Start on personal info step instead of settings
+				currentStep.set('personal');
 				localStorage.removeItem('builderDraft');
 			} else {
 				// Try to auto-populate from profile first
@@ -219,6 +242,25 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	$: user = $currentUser;
 	$: authenticated = $isAuthenticated;
 	$: loading = $isLoading;
+	
+	// Debug: Log whenever skills change
+	$: if ($builderData.skills) {
+		console.log('🔍 Builder skills changed:', $builderData.skills.map(s => `${s.name} (${s.category})`));
+	}
+
+	// Auto-show Smart Generate modal when landing on builder without content
+	let hasShownQuickGenerate = false;
+	
+	$: if (activeTab === 'personal' && !$builderData.target_industry && !showQuickGenerateModal && !hasShownQuickGenerate) {
+		// Small delay to ensure UI is ready
+		setTimeout(() => {
+			showQuickGenerateModal = true;
+			hasShownQuickGenerate = true;
+			toast.info('Smart Generate', {
+				description: 'Generate your resume from your profile or choose an industry template.'
+			});
+		}, 500);
+	}
 
 	// Reactive statement to handle auth redirect - only redirect if auth is loaded and user is not authenticated
 	$: {
@@ -240,7 +282,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	$: isFirstTimeJobSeeker = profile && ['student', 'entry'].includes(profile.experience_level);
 	
 	$: tabs = isFirstTimeJobSeeker ? [
-		{ id: 'settings', label: 'Get Started', icon: Settings, description: 'Choose industry & design' },
 		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
 		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
 		{ id: 'education', label: 'Education', icon: Award, description: 'Academic background' },
@@ -249,7 +290,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history (optional)' },
 		{ id: 'preview', label: 'Preview', icon: Eye, description: 'Review & publish' }
 	] : [
-		{ id: 'settings', label: 'Get Started', icon: Settings, description: 'Choose industry & design' },
 		{ id: 'personal', label: 'Personal Info', icon: User, description: 'Basic contact details' },
 		{ id: 'summary', label: 'Summary', icon: FileCheck, description: 'Professional summary' },
 		{ id: 'experience', label: 'Experience', icon: Briefcase, description: 'Work history' },
@@ -297,22 +337,46 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 
 	async function handlePublish() {
 		try {
+			// Show loading toast
+			toast.loading('Publishing your resume...', {
+				description: 'Please wait while we save and publish your resume.',
+				id: 'publish-loading'
+			});
+
 			const result = await publishResume();
 			console.log('Published:', result);
-			toast.success('Resume published successfully!', {
-				description: 'Your resume is now live and ready to share.'
+			
+			// Dismiss loading toast
+			toast.dismiss('publish-loading');
+			
+			// Show success with more details
+			toast.success('🎉 Resume Published Successfully!', {
+				description: `Your ${$builderData.target_industry || ''} resume is now live! Redirecting to dashboard...`,
+				duration: 3000
 			});
-			// Redirect to dashboard after successful publish
+
+			// Show a second toast with next steps
 			setTimeout(() => {
-				goto('/dashboard');
-			}, 1500);
+				toast.info('Next Steps', {
+					description: 'View your resume in the dashboard, share it with employers, or create more versions.',
+					duration: 4000
+				});
+			}, 500);
+
+			// Redirect to dashboard after showing messages with success indicator
+			setTimeout(() => {
+				goto('/dashboard?published=true');
+			}, 2000);
 		} catch (error) {
 			console.error('Failed to publish:', error);
+			toast.dismiss('publish-loading');
 			toast.error('Failed to publish resume', {
-				description: error instanceof Error ? error.message : 'Please try again.'
+				description: error instanceof Error ? error.message : 'Please try again or contact support.'
 			});
 		}
 	}
+
+
 
 	// Helper functions to generate default bootstrap content
 	function getDefaultBootstrapContent(template: any) {
@@ -648,11 +712,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								variant="default"
 								size="sm"
 								on:click={() => showQuickGenerateModal = true}
-								title="Quick generate resume from profile"
+								title="Smart generate resume from profile or industry template"
 								class="bg-purple-600 hover:bg-purple-700"
 							>
 								<Sparkles class="w-4 h-4 mr-1" />
-								Quick Generate
+								Smart Generate
 							</Button>
 							<Button 
 								variant="ghost" 
@@ -717,7 +781,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 										on:click={() => { showQuickGenerateModal = true; mobileMenuOpen = false; }}
 									>
 										<Sparkles class="h-4 w-4 mr-1 inline" />
-										Quick Generate
+										Smart Generate
 									</button>
 									<button
 										class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-center font-medium transition-colors duration-200"
@@ -912,84 +976,6 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								onNext={() => handleTabChange(getNextTab('projects'))} 
 								onPrevious={() => handleTabChange(getPreviousTab('projects'))} 
 							/>
-						{:else if activeTab === 'settings'}
-							
-							<div class="space-y-8">
-								<!-- Layout Toggle -->
-								<div class="space-y-4">
-									<h3 class="text-lg font-semibold">Resume Length</h3>
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '1-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '1-page' })}>
-											<div class="font-medium mb-2">1 Page</div>
-											<p class="text-sm text-muted-foreground">
-												Perfect for entry-level positions. Concise and focused.
-											</p>
-										</button>
-										
-										<button class={`p-4 rounded-lg text-left ${$builderData.settings?.layout === '2-page' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ layout: '2-page' })}>
-											<div class="font-medium mb-2">2 Pages Max</div>
-											<p class="text-sm text-muted-foreground">
-												More space for experience and projects.
-											</p>
-										</button>
-									</div>
-								</div>
-
-											<!-- Template Selection (from database) -->
-								<div class="space-y-4">
-									<h3 class="text-lg font-semibold">Choose a Template</h3>
-									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-										{#each $allTemplates as t}
-											<button class="p-3 border rounded-lg text-left hover:border-primary { $builderData.settings?.template === t.id ? 'border-primary bg-primary/5' : '' }" on:click={() => selectTemplate(t)}>
-												<div class="flex items-center gap-3">
-													<img src={t.thumbnail} alt={t.name} class="w-12 h-16 object-cover rounded border" />
-													<div>
-														<div class="font-medium">{t.name}</div>
-														<div class="text-xs text-muted-foreground line-clamp-1">{t.category}</div>
-														{#if t.isClientSide}
-															<div class="text-xs text-green-600 font-medium">✨ Enhanced</div>
-														{/if}
-													</div>
-												</div>
-												<div class="mt-2 text-xs text-blue-600 hover:underline" on:click|stopPropagation={() => goto(`/templates/${t.id}/preview`)}>Preview</div>
-											</button>
-										{/each}
-									</div>
-								</div>
-
-								<!-- Color Scheme -->
-								<div class="space-y-4">
-									<h3 class="text-lg font-semibold">Color Scheme</h3>
-									<div class="grid grid-cols-4 gap-4">
-									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'blue' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'blue' })}>
-									<div class="w-6 h-6 bg-blue-500 rounded mx-auto mb-1"></div>
-									<div class="text-sm">Blue</div>
-									</button>
-									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'green' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'green' })}>
-									<div class="w-6 h-6 bg-green-500 rounded mx-auto mb-1"></div>
-									<div class="text-sm">Green</div>
-									</button>
-									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'purple' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'purple' })}>
-									<div class="w-6 h-6 bg-purple-500 rounded mx-auto mb-1"></div>
-									<div class="text-sm">Purple</div>
-									</button>
-									<button class={`p-3 rounded-lg text-center ${$builderData.settings?.colorScheme === 'black' ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary'}`} on:click={() => updateSettings({ colorScheme: 'black' })}>
-									<div class="w-6 h-6 bg-gray-800 rounded mx-auto mb-1"></div>
-									<div class="text-sm">Black</div>
-									</button>
-									</div>
-								</div>
-							</div>
-
-							<div class="mt-8 flex justify-between">
-								<Button variant="outline" on:click={() => handleTabChange(getPreviousTab('settings'))}>
-									← Previous
-								</Button>
-								<Button on:click={() => handleTabChange('preview')} disabled={!$isStepComplete('personal') || !$isStepComplete('summary') || !$isStepComplete('experience') || !$isStepComplete('education') || !$isStepComplete('skills')}>
-									Next: Preview
-								</Button>
-							</div>
-
 						{:else if activeTab === 'preview'}
 
 							<div class="space-y-6">
@@ -1037,7 +1023,7 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 											<Target class="w-5 h-5" />
 											Resume Metadata
 										</h3>
-										<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+										<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
 											{#if $builderData.purpose}
 												<div>
 													<div class="text-xs text-blue-600 font-medium mb-1 flex items-center gap-1">
@@ -1057,6 +1043,23 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 												</div>
 											{/if}
 										</div>
+										
+										<!-- Quick Publish Button -->
+										{#if $isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills')}
+											<div class="pt-3 border-t border-blue-200">
+												<Button 
+													class="w-full bg-green-600 hover:bg-green-700 text-white"
+													on:click={handlePublish}
+													disabled={!$isStepComplete('personal') || !$isStepComplete('summary') || !$isStepComplete('experience') || !$isStepComplete('education') || !$isStepComplete('skills')}
+												>
+													<Sparkles class="w-4 h-4 mr-2" />
+													Publish Resume Now
+												</Button>
+												<p class="text-xs text-blue-600 text-center mt-2">
+													Your resume is ready! Click to publish and share with employers.
+												</p>
+											</div>
+										{/if}
 									</div>
 								{/if}
 
@@ -1098,16 +1101,25 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 								{/if}
 							</div>
 
-							<div class="mt-8 flex justify-between">
+							<div class="mt-8 flex justify-between items-center">
 								<Button variant="outline" on:click={() => handleTabChange(getPreviousTab('preview'))}>
 									← Previous
 								</Button>
-								<Button
-									on:click={handlePublish}
-									disabled={!($isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills'))}
-								>
-									Publish Resume
-								</Button>
+								<div class="flex flex-col items-end gap-2">
+									<Button
+										class="bg-green-600 hover:bg-green-700 text-white"
+										on:click={handlePublish}
+										disabled={!($isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills'))}
+									>
+										<Sparkles class="w-4 h-4 mr-2" />
+										Publish Resume
+									</Button>
+									{#if $isStepComplete('personal') && $isStepComplete('summary') && $isStepComplete('experience') && $isStepComplete('education') && $isStepComplete('skills')}
+										<p class="text-xs text-muted-foreground">
+											All sections complete ✓
+										</p>
+									{/if}
+								</div>
 							</div>
 						{/if}
 						</div>
@@ -1137,9 +1149,11 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 	}
 </style>
 
-<!-- Quick Generate Modal -->
+<!-- Smart Generate Modal -->
 <QuickGenerateModal
 	bind:open={showQuickGenerateModal}
 	currentTemplate={selectedTemplate}
 	on:close={() => showQuickGenerateModal = false}
 />
+
+<!-- Industry Selector Modal -->
