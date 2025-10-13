@@ -11,6 +11,8 @@
 	import type { UserProfile } from '$lib/types';
 	import type { ExtendedResumeTemplate } from '$lib/templates/types';
 	import { toast } from 'svelte-sonner';
+	import { getIndustryBoilerplate, mergeSkillsWithBoilerplate } from '$lib/services/IndustryBoilerplates';
+	import { builderData } from '$lib/stores/resumeBuilder';
 
 	export let open = false;
 	export let currentTemplate: ExtendedResumeTemplate | null = null;
@@ -33,23 +35,26 @@
 		projects: true
 	};
 
-	// Industry options
+	// Industry options - matching IndustryBoilerplates
 	const industries = [
-		{ value: '', label: 'Auto-detect from profile' },
-		{ value: 'software-engineering', label: 'Software Engineering' },
-		{ value: 'web-development', label: 'Web Development' },
-		{ value: 'data-science', label: 'Data Science' },
-		{ value: 'design', label: 'Design' },
-		{ value: 'marketing', label: 'Marketing' },
-		{ value: 'sales', label: 'Sales' },
-		{ value: 'finance', label: 'Finance' },
-		{ value: 'healthcare', label: 'Healthcare' },
-		{ value: 'education', label: 'Education' },
-		{ value: 'other', label: 'Other' }
+		{ value: '', label: 'Auto-detect from profile', icon: '🤖' },
+		{ value: 'Technology', label: 'Technology', icon: '💻', description: 'Software, IT, SaaS' },
+		{ value: 'Healthcare', label: 'Healthcare', icon: '🏥', description: 'Medical, Pharmaceutical' },
+		{ value: 'Finance', label: 'Finance', icon: '💰', description: 'Banking, Investment' },
+		{ value: 'Education', label: 'Education', icon: '📚', description: 'Teaching, Training' },
+		{ value: 'Retail', label: 'Retail', icon: '🛍️', description: 'Sales, E-commerce' },
+		{ value: 'Manufacturing', label: 'Manufacturing', icon: '🏭', description: 'Production, Operations' },
+		{ value: 'Marketing', label: 'Marketing', icon: '📢', description: 'Digital, Advertising' },
+		{ value: 'Consulting', label: 'Consulting', icon: '💼', description: 'Strategy, Advisory' },
+		{ value: 'Real Estate', label: 'Real Estate', icon: '🏢', description: 'Property, Construction' },
+		{ value: 'Hospitality', label: 'Hospitality', icon: '🏨', description: 'Hotels, Restaurants' },
+		{ value: 'Legal', label: 'Legal', icon: '⚖️', description: 'Law, Compliance' },
+		{ value: 'Media & Entertainment', label: 'Media & Entertainment', icon: '🎬', description: 'Publishing, Broadcasting' }
 	];
 
 	let targetIndustry = '';
 	let strategyInfo: { name: string; confidence: number; reasons: string[] } | null = null;
+	let useBoilerplate = false; // Toggle between profile generation and industry boilerplate
 
 	// Load preferences when modal opens
 	$: if (open && $generationPreferences) {
@@ -61,6 +66,11 @@
 	$: if ($userProfile && open) {
 		updateStrategyRecommendation($userProfile);
 		analyzeUserProfile($userProfile);
+		
+		// Auto-suggest boilerplate if profile is incomplete
+		if (profileAnalysis && !profileAnalysis.isReadyForGeneration) {
+			useBoilerplate = true;
+		}
 	}
 
 	function updateStrategyRecommendation(profile: UserProfile) {
@@ -132,11 +142,6 @@
 			return;
 		}
 
-		if (!$userProfile) {
-			toast.error('No profile data available');
-			return;
-		}
-
 		// Save current preferences before generating
 		generationPreferences.set({
 			selectedSections,
@@ -145,14 +150,56 @@
 		});
 
 		try {
-			await generateFromProfile({
-				sections,
-				targetIndustry: targetIndustry || $userProfile.target_industry || '',
-				strategy: strategyInfo?.name as 'auto' | 'experienced' | 'first-time' | 'career-change' | undefined
-			});
+			// If using boilerplate or no profile, apply industry boilerplate
+			if (useBoilerplate || !$userProfile) {
+				if (!targetIndustry) {
+					toast.error('Please select an industry');
+					return;
+				}
+				
+				const boilerplate = getIndustryBoilerplate(targetIndustry);
+				if (!boilerplate) {
+					toast.error('Industry template not found');
+					return;
+				}
 
-			toast.success('Resume sections generated successfully!');
-			handleClose();
+				builderData.update(d => {
+					const updates: any = { ...d, target_industry: targetIndustry };
+					
+					if (selectedSections.summary) {
+						updates.summary = boilerplate.summary;
+					}
+					if (selectedSections.skills) {
+						updates.skills = mergeSkillsWithBoilerplate(d.skills, boilerplate.skills);
+					}
+					if (selectedSections.experience) {
+						updates.experience = boilerplate.experience;
+					}
+					if (selectedSections.education) {
+						updates.education = boilerplate.education;
+					}
+					
+					return updates;
+				});
+
+				toast.success('Industry template applied successfully!');
+				handleClose();
+			} else {
+				// Use profile-based generation
+				if (!$userProfile) {
+					toast.error('No profile data available');
+					return;
+				}
+
+				await generateFromProfile({
+					sections,
+					targetIndustry: targetIndustry || $userProfile.target_industry || '',
+					strategy: strategyInfo?.name as 'auto' | 'experienced' | 'first-time' | 'career-change' | undefined
+				});
+
+				toast.success('Resume sections generated successfully!');
+				handleClose();
+			}
 		} catch (error) {
 			console.error('Generation error:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Failed to generate resume';
@@ -218,10 +265,10 @@
 					</div>
 					<div>
 						<h2 id="modal-title" class="text-xl font-semibold text-gray-900">
-							Quick Generate from Profile
+							Smart Generate Resume
 						</h2>
 						<p class="text-sm text-gray-500 mt-0.5">
-							Automatically populate your resume using your profile data
+							Generate from your profile or use an industry template
 						</p>
 					</div>
 				</div>
@@ -237,8 +284,30 @@
 
 			<!-- Content -->
 			<div class="px-6 py-6 space-y-6">
+				<!-- Generation Mode Toggle -->
+				<div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+					<label class="flex items-start gap-3 cursor-pointer">
+						<input
+							type="checkbox"
+							bind:checked={useBoilerplate}
+							disabled={$storeIsGenerating}
+							class="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+						/>
+						<div class="flex-1">
+							<div class="font-medium text-gray-900">Use Industry Template</div>
+							<p class="text-sm text-gray-600 mt-1">
+								{#if useBoilerplate}
+									Generate using industry-specific boilerplate content (recommended if your profile is incomplete)
+								{:else}
+									Generate from your profile data (recommended if your profile is complete)
+								{/if}
+							</p>
+						</div>
+					</label>
+				</div>
+
 				<!-- Strategy Recommendation -->
-				{#if strategyInfo}
+				{#if strategyInfo && !useBoilerplate}
 					<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
 						<div class="flex items-start gap-3">
 							<div class="flex-1">
@@ -265,7 +334,7 @@
 				{/if}
 
 				<!-- Profile Completeness Warning -->
-				{#if showProfileWarning && $userProfile}
+				{#if showProfileWarning && $userProfile && !useBoilerplate}
 					<ProfileCompleteness profile={$userProfile} compact={true} showActions={true} />
 				{/if}
 
@@ -324,29 +393,56 @@
 
 				<!-- Target Industry -->
 				<div>
-					<label for="industry" class="block text-sm font-medium text-gray-700 mb-2">
-						Target Industry
+					<label class="block text-sm font-medium text-gray-700 mb-3">
+						Target Industry {useBoilerplate ? '(Required)' : '(Optional)'}
 					</label>
-					<select
-						id="industry"
-						bind:value={targetIndustry}
-						on:change={handleIndustryChange}
-						disabled={$storeIsGenerating}
-						class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-					>
+					<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
 						{#each industries as industry}
-							<option value={industry.value}>{industry.label}</option>
+							<button
+								type="button"
+								on:click={() => {
+									targetIndustry = industry.value;
+									handleIndustryChange();
+								}}
+								disabled={$storeIsGenerating}
+								class="text-left p-3 border-2 rounded-lg transition-all hover:border-purple-300 hover:bg-purple-50 disabled:opacity-50 {targetIndustry === industry.value
+									? 'border-purple-500 bg-purple-50'
+									: 'border-gray-200'}"
+							>
+								<div class="flex items-center gap-2">
+									<span class="text-xl">{industry.icon}</span>
+									<div class="flex-1 min-w-0">
+										<div class="text-sm font-medium text-gray-900 truncate">
+											{industry.label}
+										</div>
+										{#if industry.description}
+											<div class="text-xs text-gray-500 truncate">
+												{industry.description}
+											</div>
+										{/if}
+									</div>
+								</div>
+							</button>
 						{/each}
-					</select>
-					<p class="mt-1.5 text-xs text-gray-500">
-						Leave as "Auto-detect" to use your profile's target industry
+					</div>
+					<p class="mt-2 text-xs text-gray-500">
+						{#if useBoilerplate}
+							Select an industry to use its template content
+						{:else}
+							Select to tailor content, or leave as "Auto-detect" to use your profile's industry
+						{/if}
 					</p>
 				</div>
 
 				<!-- Info Box -->
 				<div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
 					<p class="text-sm text-gray-600">
-						<strong class="text-gray-900">Note:</strong> This will populate the selected sections with data from your profile. Empty fields will be filled, but existing content you've edited will be preserved.
+						<strong class="text-gray-900">Note:</strong> 
+						{#if useBoilerplate}
+							This will populate the selected sections with industry-specific template content. You can edit everything afterwards.
+						{:else}
+							This will populate the selected sections with data from your profile. Empty fields will be filled, but existing content you've edited will be preserved.
+						{/if}
 					</p>
 				</div>
 			</div>

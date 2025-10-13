@@ -58,6 +58,7 @@
   import { AlertCircle, CheckCircle } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
   import IndustrySelectorModal from '$lib/components/resume/IndustrySelectorModal.svelte';
+  import ResumeSettingsModal from '$lib/components/dashboard/ResumeSettingsModal.svelte';
   import { retargetResume } from '$lib/services/ResumeRetargeting';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
@@ -71,6 +72,8 @@
   let industryFilter: string = 'all';
   let sortBy: 'date' | 'industry' | 'purpose' | 'title' = 'date';
   let showFilters = false;
+  let showResumeSettings = false;
+  let selectedResumeForSettings: Resume | null = null;
   
   // Debug reactive statement
   $: {
@@ -92,6 +95,8 @@
   let showImportDialog = false;
   let showIndustrySelector = false;
   let resumeToRetarget: Resume | null = null;
+  let showDeleteDialog = false;
+  let resumeToDelete: { id: string; title: string } | null = null;
   let csvData = '';
   let importDebug: {
     startedAt?: string;
@@ -181,6 +186,23 @@
       document.addEventListener('click', handleClickOutside);
     }
     
+    // Check if user just published a resume
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('published') === 'true') {
+        // Show congratulations message
+        setTimeout(() => {
+          toast.success('🎉 Congratulations!', {
+            description: 'Your resume has been published and is now live in your dashboard. You can share it with employers or create more versions.',
+            duration: 5000
+          });
+        }, 500);
+        
+        // Clean up URL
+        window.history.replaceState({}, '', '/dashboard');
+      }
+    }
+    
     // Only load data if authenticated
     if (!$isAuthenticated) {
       isLoading = false;
@@ -253,6 +275,11 @@
     goto(`/resume/${identifier}`);
   }
   
+  function openResumeSettings(resume: Resume) {
+    selectedResumeForSettings = resume;
+    showResumeSettings = true;
+  }
+  
   function shareResume(resume: Resume) {
     selectedResume = resume;
     showShareDialog = true;
@@ -284,7 +311,16 @@
   }
 
   async function handleIndustrySelected(event: CustomEvent<{ industry: string; purpose: string }>) {
-    if (!resumeToRetarget) return;
+    // Store reference to avoid race conditions
+    const targetResume = resumeToRetarget;
+    
+    if (!targetResume) {
+      console.error('No resume to retarget');
+      toast.error('No resume selected', {
+        description: 'Please try selecting a resume again.'
+      });
+      return;
+    }
 
     try {
       isLoading = true;
@@ -295,14 +331,15 @@
       });
 
       // Use the retargeting service to adapt the resume
-      const result = await retargetResume(resumeToRetarget, {
+      const result = await retargetResume(targetResume, {
         targetIndustry: industry,
         purpose: purpose,
         preserveStructure: true
       });
 
-      // Generate a unique slug
-      const baseSlug = resumeToRetarget.slug || resumeToRetarget.id;
+      // Generate a unique slug - handle null/undefined slug and title
+      const safeTitle = targetResume.title || 'resume';
+      const baseSlug = targetResume.slug || safeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-') || targetResume.id;
       const industrySlug = industry.toLowerCase().replace(/\s+/g, '-');
       const timestamp = Date.now().toString().slice(-6);
       const newSlug = `${baseSlug}-${industrySlug}-${timestamp}`;
@@ -339,15 +376,26 @@
     }
   }
   
-  async function deleteResume(resumeId: string, title: string) {
-    if (confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
-      try {
-        await resumeStore.delete(resumeId);
-        toast.success('Resume deleted successfully');
-      } catch (error) {
-        console.error('Failed to delete resume:', error);
-        toast.error('Failed to delete resume');
-      }
+  function deleteResume(resumeId: string, title: string) {
+    resumeToDelete = { id: resumeId, title };
+    showDeleteDialog = true;
+  }
+
+  async function confirmDelete() {
+    if (!resumeToDelete) return;
+    
+    try {
+      await resumeStore.delete(resumeToDelete.id);
+      toast.success('Resume deleted successfully', {
+        description: `"${resumeToDelete.title}" has been permanently deleted.`
+      });
+      showDeleteDialog = false;
+      resumeToDelete = null;
+    } catch (error) {
+      console.error('Failed to delete resume:', error);
+      toast.error('Failed to delete resume', {
+        description: error instanceof Error ? error.message : 'Please try again.'
+      });
     }
   }
   
@@ -1164,6 +1212,9 @@
                       <Edit3 class="h-4 w-4 sm:mr-1" />
                       <span class="hidden sm:inline">Edit</span>
                     </Button>
+                    <Button variant="outline" size="sm" on:click={() => openResumeSettings(resume)} class="flex-shrink-0" title="Resume Settings">
+                      <Settings class="h-4 w-4" />
+                    </Button>
                     
                     {#if viewMode === 'list'}
                       <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="hidden md:flex flex-shrink-0">
@@ -1186,14 +1237,14 @@
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        class="text-red-600 hover:text-red-700 hidden lg:flex flex-shrink-0"
+                        class="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                         on:click={() => deleteResume(resume.id, resume.title)}
                       >
-                        <Trash2 class="h-4 w-4 mr-1" />
-                        Delete
+                        <Trash2 class="h-4 w-4 sm:mr-1" />
+                        <span class="hidden sm:inline">Delete</span>
                       </Button>
                     {:else}
-                      <!-- Grid view - show retarget button -->
+                      <!-- Grid view - show retarget and delete buttons -->
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -1202,6 +1253,15 @@
                       >
                         <Sparkles class="h-4 w-4 sm:mr-1" />
                         <span class="hidden sm:inline">Retarget</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        class="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                        on:click={() => deleteResume(resume.id, resume.title)}
+                      >
+                        <Trash2 class="h-4 w-4 sm:mr-1" />
+                        <span class="hidden sm:inline">Delete</span>
                       </Button>
                     {/if}
                   </div>
@@ -1253,6 +1313,58 @@
     resumeToRetarget = null;
   }}
 />
+
+<!-- Resume Settings Modal -->
+{#if selectedResumeForSettings}
+  <ResumeSettingsModal
+    resume={selectedResumeForSettings}
+    bind:open={showResumeSettings}
+    on:updated={async () => {
+      // Reload resumes to reflect changes
+      await resumeStore.loadUserResumes();
+    }}
+    on:close={() => {
+      showResumeSettings = false;
+      selectedResumeForSettings = null;
+    }}
+  />
+{/if}
+
+<!-- Delete Confirmation Dialog -->
+<Dialog bind:open={showDeleteDialog}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle class="flex items-center gap-2 text-red-600">
+        <AlertCircle class="w-5 h-5" />
+        Delete Resume?
+      </DialogTitle>
+      <DialogDescription>
+        Are you sure you want to delete <strong>"{resumeToDelete?.title}"</strong>?
+        <br /><br />
+        This action cannot be undone. The resume and all its data will be permanently deleted.
+      </DialogDescription>
+    </DialogHeader>
+    <DialogFooter class="gap-2">
+      <Button 
+        variant="outline" 
+        on:click={() => {
+          showDeleteDialog = false;
+          resumeToDelete = null;
+        }}
+      >
+        Cancel
+      </Button>
+      <Button 
+        variant="destructive"
+        on:click={confirmDelete}
+        class="bg-red-600 hover:bg-red-700"
+      >
+        <Trash2 class="w-4 h-4 mr-2" />
+        Delete Resume
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
 <style>
   .line-clamp-1 {

@@ -448,8 +448,8 @@
 {#if loading}
 	<div class="min-h-screen flex items-center justify-center">
 		<div class="text-center">
-			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4">🌀</div>
-			<p class="text-muted-foreground">⏳ Loading resume...</p>
+			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+			<p class="text-muted-foreground">Loading resume...</p>
 		</div>
 	</div>
 {:else if error}
@@ -468,20 +468,8 @@
 				<div class="flex items-center justify-between h-16">
 					<!-- Left side: Logo and title -->
 					<div class="flex items-center space-x-3">
-						<div class="hidden sm:block">
-							<a href="/" class={`flex items-center gap-2 hover:underline ${getColorClasses().primary}`}>
-								<ArrowLeft class="w-4 h-4" />
-								Dashboard
-							</a>
-						</div>
 						<Logo size="sm" showText={false} />
-						<div class="hidden sm:block">
-							<h1 class="text-xl font-semibold">Resume View</h1>
-							<p class="text-sm text-gray-600">Public resume preview</p>
-						</div>
-						<div class="sm:hidden">
-							<h1 class="text-xl font-bold text-gray-900">Resume View</h1>
-						</div>
+						<h1 class="text-xl font-bold text-gray-900">Resume View</h1>
 					</div>
 
 					<!-- Mobile menu button -->
@@ -506,7 +494,14 @@
 
 					<!-- Desktop navigation -->
 					<div class="hidden sm:flex items-center gap-2">
-						<!-- Demo Premium Toggle (for testing) -->
+						<a
+							href="/dashboard"
+							class="px-3 py-2 text-sm rounded-lg transition-colors text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+							title="Back to Dashboard"
+						>
+							<ArrowLeft class="w-4 h-4" />
+							Dashboard
+						</a>
 						<button
 							class="px-3 py-2 text-sm rounded-lg transition-colors bg-blue-100 text-blue-800 hover:bg-blue-200 flex items-center gap-2"
 							on:click={handlePrint}
@@ -542,7 +537,7 @@
 						<div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
 							<!-- Back to Dashboard Button -->
 							<a
-								href="/"
+								href="/dashboard"
 								class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 active:bg-blue-800 text-center font-medium transition-colors duration-200 shadow-sm flex items-center justify-center"
 								on:click={() => { mobileMenuOpen = false; }}
 							>
