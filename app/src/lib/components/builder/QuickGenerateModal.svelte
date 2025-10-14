@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Sparkles, X, Loader2, RotateCcw, AlertCircle } from 'lucide-svelte';
 	import { userProfile } from '$lib/stores/userProfile';
-	import { generateFromProfile, isGenerating as storeIsGenerating } from '$lib/stores/resumeBuilder';
+	import { generateFromProfile, isGenerating as storeIsGenerating, publishResume } from '$lib/stores/resumeBuilder';
 	import { generationPreferences } from '$lib/stores/generationPreferences';
 	import { ResumeStrategyFactory } from '$lib/services/ResumeStrategies';
 	import { analyzeProfile, type ProfileAnalysisResult } from '$lib/services/ProfileAnalysis';
@@ -13,9 +13,11 @@
 	import { toast } from 'svelte-sonner';
 	import { getIndustryBoilerplate, mergeSkillsWithBoilerplate } from '$lib/services/IndustryBoilerplates';
 	import { builderData } from '$lib/stores/resumeBuilder';
+	import { goto } from '$app/navigation';
 
 	export let open = false;
 	export let currentTemplate: ExtendedResumeTemplate | null = null;
+	export let mode: 'populate' | 'create' = 'populate'; // New prop to control behavior
 
 	const dispatch = createEventDispatcher<{
 		close: void;
@@ -166,6 +168,30 @@
 				builderData.update(d => {
 					const updates: any = { ...d, target_industry: targetIndustry };
 					
+					// Ensure personal info is populated
+					if (selectedSections.personal) {
+						if ($userProfile) {
+							updates.personalInfo = {
+								...d.personalInfo,
+								fullName: $userProfile.first_name && $userProfile.last_name 
+									? `${$userProfile.first_name} ${$userProfile.last_name}`
+									: d.personalInfo.fullName || 'Professional',
+								email: d.personalInfo.email || 'noreply@example.com',
+								phone: $userProfile.phone || d.personalInfo.phone || '',
+								location: $userProfile.location || d.personalInfo.location || '',
+								linkedin: $userProfile.linkedin_url || d.personalInfo.linkedin || '',
+								website: $userProfile.portfolio_url || d.personalInfo.website || ''
+							};
+						} else {
+							// Fallback if no profile
+							updates.personalInfo = {
+								...d.personalInfo,
+								fullName: d.personalInfo.fullName || 'Professional',
+								email: d.personalInfo.email || 'noreply@example.com'
+							};
+						}
+					}
+					
 					if (selectedSections.summary) {
 						updates.summary = boilerplate.summary;
 					}
@@ -182,8 +208,30 @@
 					return updates;
 				});
 
-				toast.success('Industry template applied successfully!');
-				handleClose();
+				// If in 'create' mode, publish the resume and redirect to dashboard
+				if (mode === 'create') {
+					toast.loading('Creating your resume...', { id: 'create-resume' });
+					
+					try {
+						const result = await publishResume();
+						toast.dismiss('create-resume');
+						toast.success('Resume created successfully!');
+						handleClose();
+						
+						// Redirect to dashboard with created flag
+						setTimeout(() => {
+							goto(`/dashboard?created=true&resumeId=${result.record.id}`);
+						}, 500);
+					} catch (error) {
+						toast.dismiss('create-resume');
+						console.error('Failed to create resume:', error);
+						toast.error('Failed to create resume. Please try again.');
+					}
+				} else {
+					// In 'populate' mode, just update the builder
+					toast.success('Industry template applied successfully!');
+					handleClose();
+				}
 			} else {
 				// Use profile-based generation
 				if (!$userProfile) {
@@ -197,8 +245,30 @@
 					strategy: strategyInfo?.name as 'auto' | 'experienced' | 'first-time' | 'career-change' | undefined
 				});
 
-				toast.success('Resume sections generated successfully!');
-				handleClose();
+				// If in 'create' mode, publish the resume and redirect to dashboard
+				if (mode === 'create') {
+					toast.loading('Creating your resume...', { id: 'create-resume' });
+					
+					try {
+						const result = await publishResume();
+						toast.dismiss('create-resume');
+						toast.success('Resume created successfully!');
+						handleClose();
+						
+						// Redirect to dashboard with created flag
+						setTimeout(() => {
+							goto(`/dashboard?created=true&resumeId=${result.record.id}`);
+						}, 500);
+					} catch (error) {
+						toast.dismiss('create-resume');
+						console.error('Failed to create resume:', error);
+						toast.error('Failed to create resume. Please try again.');
+					}
+				} else {
+					// In 'populate' mode, just update the builder
+					toast.success('Resume sections generated successfully!');
+					handleClose();
+				}
 			}
 		} catch (error) {
 			console.error('Generation error:', error);

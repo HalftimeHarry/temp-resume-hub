@@ -59,6 +59,7 @@
   import { toast } from 'svelte-sonner';
   import IndustrySelectorModal from '$lib/components/resume/IndustrySelectorModal.svelte';
   import ResumeSettingsModal from '$lib/components/dashboard/ResumeSettingsModal.svelte';
+  import QuickGenerateModal from '$lib/components/builder/QuickGenerateModal.svelte';
   import { retargetResume } from '$lib/services/ResumeRetargeting';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
@@ -74,6 +75,7 @@
   let showFilters = false;
   let showResumeSettings = false;
   let selectedResumeForSettings: Resume | null = null;
+  let showSmartGenerate = false;
   
   // Debug reactive statement
   $: {
@@ -172,9 +174,26 @@
     }
   }
 
-  // Reset navigation state after any navigation
-  afterNavigate(() => {
+  // Reset navigation state after any navigation and reload resumes if needed
+  afterNavigate(async (navigation) => {
     isNavigating = false;
+    
+    // If we're navigating to dashboard with query params, reload resumes
+    if (navigation.to?.url.searchParams.has('created') || 
+        navigation.to?.url.searchParams.has('published')) {
+      console.log('📊 Dashboard: Reloading resumes after navigation');
+      try {
+        const loadedResumes = await resumeStore.loadUserResumes();
+        
+        // Update analytics
+        userAnalytics.totalResumes = loadedResumes.length;
+        userAnalytics.totalViews = loadedResumes.reduce((sum, resume) => sum + (resume.content?.viewCount || 0), 0);
+        userAnalytics.totalDownloads = loadedResumes.reduce((sum, resume) => sum + (resume.content?.downloadCount || 0), 0);
+        userAnalytics.totalShares = loadedResumes.reduce((sum, resume) => sum + (resume.content?.shareCount || 0), 0);
+      } catch (error) {
+        console.error('Failed to reload resumes:', error);
+      }
+    }
   });
 
   onMount(async () => {
@@ -184,23 +203,6 @@
     // Add click outside handler for mobile menu (browser only)
     if (typeof document !== 'undefined') {
       document.addEventListener('click', handleClickOutside);
-    }
-    
-    // Check if user just published a resume
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('published') === 'true') {
-        // Show congratulations message
-        setTimeout(() => {
-          toast.success('🎉 Congratulations!', {
-            description: 'Your resume has been published and is now live in your dashboard. You can share it with employers or create more versions.',
-            duration: 5000
-          });
-        }, 500);
-        
-        // Clean up URL
-        window.history.replaceState({}, '', '/dashboard');
-      }
     }
     
     // Only load data if authenticated
@@ -222,6 +224,49 @@
       userAnalytics.totalViews = loadedResumes.reduce((sum, resume) => sum + (resume.content?.viewCount || 0), 0);
       userAnalytics.totalDownloads = loadedResumes.reduce((sum, resume) => sum + (resume.content?.downloadCount || 0), 0);
       userAnalytics.totalShares = loadedResumes.reduce((sum, resume) => sum + (resume.content?.shareCount || 0), 0);
+      
+      // Check if user just published or created a resume
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const resumeId = urlParams.get('resumeId');
+        const openSettings = urlParams.get('openSettings');
+        const created = urlParams.get('created');
+        
+        if (urlParams.get('published') === 'true') {
+          // Show congratulations message
+          setTimeout(() => {
+            toast.success('🎉 Congratulations!', {
+              description: 'Your resume has been published and is now live!',
+              duration: 5000
+            });
+          }, 500);
+          
+          // Open settings modal if requested
+          if (openSettings === 'true' && resumeId) {
+            const resume = loadedResumes.find(r => r.id === resumeId);
+            if (resume) {
+              setTimeout(() => {
+                selectedResumeForSettings = resume;
+                showResumeSettings = true;
+              }, 1000);
+            }
+          }
+          
+          // Clean up URL
+          window.history.replaceState({}, '', '/dashboard');
+        } else if (created === 'true') {
+          // Show success message for Smart Generate
+          setTimeout(() => {
+            toast.success('✨ Resume Created!', {
+              description: 'Your resume has been generated and is ready to view.',
+              duration: 5000
+            });
+          }, 500);
+          
+          // Clean up URL
+          window.history.replaceState({}, '', '/dashboard');
+        }
+      }
     } catch (error) {
       console.error('Failed to load resumes:', error);
       toast.error('Failed to load resumes');
@@ -559,12 +604,21 @@
             {/if}
           {/if}
           
-          <button
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
-            on:click={createNewResume}
-          >
-            + New Resume
-          </button>
+          <div class="flex gap-2">
+            <button
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
+              on:click={createNewResume}
+            >
+              + New Resume
+            </button>
+            <button
+              class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+              on:click={() => showSmartGenerate = true}
+            >
+              <Sparkles class="h-4 w-4" />
+              Smart Generate
+            </button>
+          </div>
           {#if user}
             <div class="flex items-center gap-2 ml-2">
               <div class="hidden md:flex items-center gap-2 text-sm text-gray-700">
@@ -1025,13 +1079,22 @@
               <FileText class="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes yet</h3>
               <p class="text-gray-600 mb-6">Create your first resume to get started</p>
-              <button
-                class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
-                on:click={createNewResume}
-              >
-                <Plus class="h-4 w-4 mr-2" />
-                Create Resume
-              </button>
+              <div class="flex gap-3 justify-center">
+                <button
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4"
+                  on:click={createNewResume}
+                >
+                  <Plus class="h-4 w-4 mr-2" />
+                  Create Resume
+                </button>
+                <button
+                  class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-purple-600 text-white hover:bg-purple-700 h-10 py-2 px-4"
+                  on:click={() => showSmartGenerate = true}
+                >
+                  <Sparkles class="h-4 w-4 mr-2" />
+                  Smart Generate
+                </button>
+              </div>
             {:else}
               <Search class="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 class="text-lg font-medium text-gray-900 mb-2">No resumes found</h3>
@@ -1381,3 +1444,10 @@
     overflow: hidden;
   }
 </style>
+
+<!-- Smart Generate Modal -->
+<QuickGenerateModal
+  bind:open={showSmartGenerate}
+  mode="create"
+  on:close={() => showSmartGenerate = false}
+/>

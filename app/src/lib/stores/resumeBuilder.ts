@@ -711,30 +711,9 @@ export async function publishResume() {
       }
     }
 
-    // Handle client-side vs database templates
-    let templateId = currentData.settings.template || 'default-template-id';
-    const isClientSideTemplate = templateId && isClientTemplate(templateId);
-    
-    // If using a client-side template, we need a database template ID for the relation field
-    if (isClientSideTemplate) {
-      console.log(`Using client-side template: ${templateId}, finding database fallback`);
-      
-      // Try to find any existing template as fallback for the database relation
-      try {
-        const templates = await pb.collection('templates').getList(1, 1);
-        if (templates.items.length > 0) {
-          const fallbackTemplateId = templates.items[0].id;
-          console.log(`Using database template ${fallbackTemplateId} as fallback for client template ${templateId}`);
-          templateId = fallbackTemplateId;
-        } else {
-          console.warn('No templates found in database, cannot save resume');
-          throw new Error('No database templates available. Please create at least one template in the database.');
-        }
-      } catch (fallbackError) {
-        console.error('Failed to find fallback template:', fallbackError);
-        throw new Error('Unable to save resume: No database templates available');
-      }
-    }
+    // Store the client-side template ID for rendering
+    const clientTemplateId = currentData.settings.template || 'default-template-id';
+    console.log(`Using client-side template for rendering: ${clientTemplateId}`);
 
     // Generate title - prioritize target_industry, then purpose, then template name
     const userName = currentUser.name || currentData.personalInfo.fullName || 'Untitled';
@@ -751,8 +730,8 @@ export async function publishResume() {
       resumeTitle = `${userName} - ${templateName}`;
     }
 
-    // Prepare resume data
-    const resumeData = {
+    // Prepare resume data - using only client-side templates
+    const resumeData: any = {
       user: currentUser.id,
       title: resumeTitle,
       content: {
@@ -764,28 +743,41 @@ export async function publishResume() {
         projects: currentData.projects,
         settings: {
           ...currentData.settings,
-          // Preserve the original template ID in content for client-side templates
-          originalTemplate: isClientSideTemplate ? currentData.settings.template : undefined,
-          clientSideTemplate: isClientSideTemplate
+          // Store the client-side template ID for rendering
+          template: clientTemplateId
         }
       },
-      template: templateId,
       is_public: true,
       // Add metadata fields
-      target_industry: currentData.target_industry,
-      purpose: currentData.purpose
+      target_industry: currentData.target_industry || '',
+      purpose: currentData.purpose || '',
+      // Add required fields
+      status: 'active',
+      version: 1,
+      download_count: 0,
+      share_count: 0,
+      view_count: 0,
+      completion_percentage: 0,
+      optimization_score: 0,
+      ats_score: 0,
+      personalization_level: 'basic'
     };
+    
+    // Note: template field is intentionally omitted - using client-side templates only
 
     console.log('Publishing resume with data:', {
-      originalTemplate: currentData.settings.template,
-      isClientSideTemplate,
-      databaseTemplateId: templateId,
+      clientTemplateId,
       userId: currentUser.id,
       title: resumeData.title,
       target_industry: currentData.target_industry,
       skillsCount: currentData.skills.length,
-      skills: currentData.skills.map(s => `${s.name} (${s.category})`)
+      skills: currentData.skills.map(s => `${s.name} (${s.category})`),
+      personalInfo: currentData.personalInfo,
+      hasEmail: !!currentData.personalInfo.email,
+      hasFullName: !!currentData.personalInfo.fullName
     });
+    
+    console.log('Full resume data being sent:', JSON.stringify(resumeData, null, 2));
 
     let record;
     
@@ -796,9 +788,13 @@ export async function publishResume() {
       record = await pb.collection('resumes').update(currentData.id, resumeData);
     } else {
       // Create new resume with unique slug
-      const slug = `${currentUser.username}-${currentData.personalInfo.fullName?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume'}-${Date.now()}`;
+      const namePart = currentData.personalInfo.fullName 
+        ? currentData.personalInfo.fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        : currentUser.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'resume';
+      const slug = `${currentUser.username || 'user'}-${namePart}-${Date.now()}`;
       resumeData.slug = slug;
-      console.log('Creating new resume');
+      console.log('Creating new resume with slug:', slug);
+      console.log('Resume data being sent:', JSON.stringify(resumeData, null, 2));
       record = await pb.collection('resumes').create(resumeData);
       
       // Update the builder data with the new resume ID
@@ -814,8 +810,23 @@ export async function publishResume() {
     
     hasUnsavedChanges.set(false);
     return { url: publicUrl, record };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to publish resume:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error status:', error?.status);
+    
+    if (error?.data) {
+      console.error('Error data:', JSON.stringify(error.data, null, 2));
+      
+      // Log specific field errors if available
+      if (error.data.data) {
+        console.error('Field validation errors:');
+        Object.entries(error.data.data).forEach(([field, errors]) => {
+          console.error(`  ❌ ${field}:`, errors);
+        });
+      }
+    }
+    
     throw error;
   } finally {
     isLoading.set(false);
