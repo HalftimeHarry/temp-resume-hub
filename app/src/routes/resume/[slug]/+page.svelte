@@ -31,10 +31,24 @@
 		}
 	}
 
-	// Print function
-	function handlePrint() {
+	// Print function with download tracking
+	async function handlePrint() {
 		// Close mobile menu if open
 		mobileMenuOpen = false;
+		
+		// Track download/print
+		if (resume) {
+			try {
+				await pb.collection('resumes').update(resume.id, {
+					download_count: (resume.download_count || 0) + 1,
+					last_downloaded: new Date().toISOString()
+				});
+				console.log('📥 Download/Print tracked for resume:', resume.id);
+			} catch (trackError) {
+				console.error('Failed to track download:', trackError);
+				// Don't fail the print if tracking fails
+			}
+		}
 		
 		// Trigger browser print dialog
 		window.print();
@@ -186,6 +200,20 @@
 				} catch (idError) {
 					console.error('Failed to load resume by slug or ID:', slugError, idError);
 					error = '❌ Resume not found or not public';
+				}
+			}
+			
+			// Track view count if resume was found
+			if (resume) {
+				try {
+					await pb.collection('resumes').update(resume.id, {
+						view_count: (resume.view_count || 0) + 1,
+						last_viewed: new Date().toISOString()
+					});
+					console.log('📊 View tracked for resume:', resume.id);
+				} catch (trackError) {
+					console.error('Failed to track view:', trackError);
+					// Don't fail the page load if tracking fails
 				}
 			}
 		} catch (err) {

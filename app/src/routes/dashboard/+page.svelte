@@ -57,10 +57,8 @@
   import LogoIcon from '$lib/components/ui/LogoIcon.svelte';
   import { AlertCircle, CheckCircle } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
-  import IndustrySelectorModal from '$lib/components/resume/IndustrySelectorModal.svelte';
   import ResumeSettingsModal from '$lib/components/dashboard/ResumeSettingsModal.svelte';
   import QuickGenerateModal from '$lib/components/builder/QuickGenerateModal.svelte';
-  import { retargetResume } from '$lib/services/ResumeRetargeting';
   // Simplified - remove complex components for now
   import type { Resume } from '$lib/types/resume';
   import { POCKETBASE_URL } from '$lib/config';
@@ -95,8 +93,6 @@
   let showShareDialog = false;
   let isImporting = false;
   let showImportDialog = false;
-  let showIndustrySelector = false;
-  let resumeToRetarget: Resume | null = null;
   let showDeleteDialog = false;
   let resumeToDelete: { id: string; title: string } | null = null;
   let csvData = '';
@@ -350,76 +346,7 @@
     }
   }
 
-  function duplicateForIndustry(resume: Resume) {
-    resumeToRetarget = resume;
-    showIndustrySelector = true;
-  }
 
-  async function handleIndustrySelected(event: CustomEvent<{ industry: string; purpose: string }>) {
-    // Store reference to avoid race conditions
-    const targetResume = resumeToRetarget;
-    
-    if (!targetResume) {
-      console.error('No resume to retarget');
-      toast.error('No resume selected', {
-        description: 'Please try selecting a resume again.'
-      });
-      return;
-    }
-
-    try {
-      isLoading = true;
-      const { industry, purpose } = event.detail;
-
-      toast.success(`Adapting resume for ${industry}...`, {
-        description: 'This may take a moment while we optimize the content.'
-      });
-
-      // Use the retargeting service to adapt the resume
-      const result = await retargetResume(targetResume, {
-        targetIndustry: industry,
-        purpose: purpose,
-        preserveStructure: true
-      });
-
-      // Generate a unique slug - handle null/undefined slug and title
-      const safeTitle = targetResume.title || 'resume';
-      const baseSlug = targetResume.slug || safeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-') || targetResume.id;
-      const industrySlug = industry.toLowerCase().replace(/\s+/g, '-');
-      const timestamp = Date.now().toString().slice(-6);
-      const newSlug = `${baseSlug}-${industrySlug}-${timestamp}`;
-
-      // Create the new resume with adapted content
-      const newResume = await pb.collection('resumes').create({
-        ...result.resume,
-        slug: newSlug
-      });
-
-      // Refresh the resumes list
-      await loadResumes();
-
-      // Show success with details of what was changed
-      const changesText = result.changes.length > 0 
-        ? result.changes.join('. ') 
-        : 'Content adapted for target industry';
-
-      toast.success('Resume duplicated and adapted!', {
-        description: changesText,
-        duration: 5000
-      });
-
-      // Navigate to edit the new resume
-      goto(`/builder?edit=${newResume.id}`);
-    } catch (error) {
-      console.error('Failed to duplicate resume for industry:', error);
-      toast.error('Failed to duplicate resume', {
-        description: 'Please try again or contact support if the issue persists.'
-      });
-    } finally {
-      isLoading = false;
-      resumeToRetarget = null;
-    }
-  }
   
   function deleteResume(resumeId: string, title: string) {
     resumeToDelete = { id: resumeId, title };
@@ -611,13 +538,7 @@
             >
               + New Resume
             </button>
-            <button
-              class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
-              on:click={() => showSmartGenerate = true}
-            >
-              <Sparkles class="h-4 w-4" />
-              Smart Generate
-            </button>
+
           </div>
           {#if user}
             <div class="flex items-center gap-2 ml-2">
@@ -1087,13 +1008,6 @@
                   <Plus class="h-4 w-4 mr-2" />
                   Create Resume
                 </button>
-                <button
-                  class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-purple-600 text-white hover:bg-purple-700 h-10 py-2 px-4"
-                  on:click={() => showSmartGenerate = true}
-                >
-                  <Sparkles class="h-4 w-4 mr-2" />
-                  Smart Generate
-                </button>
               </div>
             {:else}
               <Search class="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -1275,27 +1189,15 @@
                       <Edit3 class="h-4 w-4 sm:mr-1" />
                       <span class="hidden sm:inline">Edit</span>
                     </Button>
-                    <Button variant="outline" size="sm" on:click={() => openResumeSettings(resume)} class="flex-shrink-0" title="Resume Settings">
-                      <Settings class="h-4 w-4" />
+                    <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="flex-shrink-0" title="Share Resume">
+                      <Share2 class="h-4 w-4 sm:mr-1" />
+                      <span class="hidden sm:inline">Share</span>
                     </Button>
                     
                     {#if viewMode === 'list'}
-                      <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="hidden md:flex flex-shrink-0">
-                        <Share2 class="h-4 w-4 mr-1" />
-                        Share
-                      </Button>
                       <Button variant="outline" size="sm" on:click={() => duplicateResume(resume)} class="hidden md:flex flex-shrink-0">
                         <Copy class="h-4 w-4 mr-1" />
                         Duplicate
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        class="text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex-shrink-0"
-                        on:click={() => duplicateForIndustry(resume)}
-                      >
-                        <Sparkles class="h-4 w-4 sm:mr-1" />
-                        <span class="hidden sm:inline">Retarget</span>
                       </Button>
                       <Button 
                         variant="outline" 
@@ -1307,16 +1209,7 @@
                         <span class="hidden sm:inline">Delete</span>
                       </Button>
                     {:else}
-                      <!-- Grid view - show retarget and delete buttons -->
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        class="text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex-shrink-0"
-                        on:click={() => duplicateForIndustry(resume)}
-                      >
-                        <Sparkles class="h-4 w-4 sm:mr-1" />
-                        <span class="hidden sm:inline">Retarget</span>
-                      </Button>
+                      <!-- Grid view - show delete button -->
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -1365,17 +1258,7 @@
 
 <!-- Share Dialog - Simplified for now -->
 
-<!-- Industry Selector Modal -->
-<IndustrySelectorModal
-  bind:open={showIndustrySelector}
-  currentIndustry={resumeToRetarget?.target_industry}
-  resumeTitle={resumeToRetarget?.title || ''}
-  on:select={handleIndustrySelected}
-  on:close={() => {
-    showIndustrySelector = false;
-    resumeToRetarget = null;
-  }}
-/>
+
 
 <!-- Resume Settings Modal -->
 {#if selectedResumeForSettings}

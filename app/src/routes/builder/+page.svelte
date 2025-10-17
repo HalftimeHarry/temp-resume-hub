@@ -685,8 +685,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						</div>
 					</div>
 
-					<!-- Mobile/Medium menu button -->
-					<div class="lg:hidden">
+					<!-- Hamburger menu button (all screen sizes) -->
+					<div>
 						<button
 							class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
 							data-mobile-menu-button
@@ -705,8 +705,8 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 						</button>
 					</div>
 
-					<!-- Desktop navigation (large screens only) -->
-					<div class="hidden lg:flex items-center gap-2">
+					<!-- Desktop navigation (hidden - using hamburger menu for all sizes) -->
+					<div class="hidden">
 						{#if $userProfile}
 							<Button 
 								variant="default"
@@ -760,9 +760,9 @@ import { builderData } from '$lib/stores/resumeBuilder.js';
 					</div>
 				</div>
 
-				<!-- Mobile/Medium menu -->
+				<!-- Hamburger menu (all screen sizes) -->
 				{#if mobileMenuOpen}
-					<div class="lg:hidden mobile-menu-container transition-all duration-200 ease-in-out">
+					<div class="mobile-menu-container transition-all duration-200 ease-in-out">
 						<div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-lg">
 							<!-- Back to Dashboard Button -->
 							<button
