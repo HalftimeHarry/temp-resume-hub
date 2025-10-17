@@ -33,7 +33,7 @@ export interface UserProfile {
   profile_completed?: boolean;
   profile_completed_at?: string;
   
-  // New fields for first-time job seekers (editor fields in PocketBase)
+  // First-time job seeker fields (editor fields in PocketBase)
   academic_projects?: string;
   volunteer_experience?: string;
   extracurricular_activities?: string;
@@ -43,6 +43,14 @@ export interface UserProfile {
   soft_skills_examples?: string;
   achievements_awards?: string;
   relevant_coursework?: string;
+  
+  // Role & plan fields
+  role?: 'job_seeker' | 'admin' | 'moderator';
+  plan?: 'free' | 'pro' | 'enterprise';
+  plan_expires?: string;
+  plan_payment_id?: string;
+  verified?: boolean;
+  active?: boolean;
   
   created: string;
   updated: string;
@@ -197,6 +205,7 @@ export const userProfileStore = {
         const createData = {
           user: userId,
           ...profileData,
+          active: true, // Required field - default to true for new profiles
           profile_completed: this.checkProfileCompletion(profileData),
           profile_completed_at: this.checkProfileCompletion(profileData) ? new Date().toISOString() : undefined
         };

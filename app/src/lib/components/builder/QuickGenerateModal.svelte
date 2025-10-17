@@ -167,44 +167,107 @@
 
 				builderData.update(d => {
 					const updates: any = { ...d, target_industry: targetIndustry };
+					const completedSteps = [...d.completedSteps];
 					
-					// Ensure personal info is populated
+					// Ensure personal info is populated with profile data
 					if (selectedSections.personal) {
 						if ($userProfile) {
+							// Only update empty fields to preserve user edits
 							updates.personalInfo = {
 								...d.personalInfo,
-								fullName: $userProfile.first_name && $userProfile.last_name 
-									? `${$userProfile.first_name} ${$userProfile.last_name}`
-									: d.personalInfo.fullName || 'Professional',
-								email: d.personalInfo.email || 'noreply@example.com',
-								phone: $userProfile.phone || d.personalInfo.phone || '',
-								location: $userProfile.location || d.personalInfo.location || '',
-								linkedin: $userProfile.linkedin_url || d.personalInfo.linkedin || '',
-								website: $userProfile.portfolio_url || d.personalInfo.website || ''
+								fullName: d.personalInfo.fullName || 
+									($userProfile.first_name && $userProfile.last_name 
+										? `${$userProfile.first_name} ${$userProfile.last_name}`
+										: ''),
+								email: d.personalInfo.email || '',
+								phone: d.personalInfo.phone || $userProfile.phone || '',
+								location: d.personalInfo.location || $userProfile.location || '',
+								linkedin: d.personalInfo.linkedin || $userProfile.linkedin_url || '',
+								website: d.personalInfo.website || $userProfile.portfolio_url || ''
 							};
-						} else {
-							// Fallback if no profile
-							updates.personalInfo = {
-								...d.personalInfo,
-								fullName: d.personalInfo.fullName || 'Professional',
-								email: d.personalInfo.email || 'noreply@example.com'
-							};
+						}
+						if (!completedSteps.includes('personal')) {
+							completedSteps.push('personal');
 						}
 					}
 					
+					// Only update if current content is empty or default
 					if (selectedSections.summary) {
-						updates.summary = boilerplate.summary;
-					}
-					if (selectedSections.skills) {
-						updates.skills = mergeSkillsWithBoilerplate(d.skills, boilerplate.skills);
-					}
-					if (selectedSections.experience) {
-						updates.experience = boilerplate.experience;
-					}
-					if (selectedSections.education) {
-						updates.education = boilerplate.education;
+						const isEmpty = !d.summary || d.summary.trim().length === 0;
+						if (isEmpty) {
+							updates.summary = boilerplate.summary;
+						}
+						if (!completedSteps.includes('summary')) {
+							completedSteps.push('summary');
+						}
 					}
 					
+					if (selectedSections.skills) {
+						// Merge profile skills with boilerplate skills
+						const profileSkills = $userProfile?.key_skills 
+							? $userProfile.key_skills.split(',').map(s => ({
+								id: generateId(),
+								name: s.trim(),
+								level: 'intermediate' as const,
+								category: 'technical' as const
+							}))
+							: [];
+						updates.skills = mergeSkillsWithBoilerplate([...d.skills, ...profileSkills], boilerplate.skills);
+						if (!completedSteps.includes('skills')) {
+							completedSteps.push('skills');
+						}
+					}
+					
+					if (selectedSections.experience) {
+						const hasDefaultExperience = d.experience.length === 1 && 
+							d.experience[0].company === 'ABC Company';
+						const isEmpty = d.experience.length === 0;
+						
+						if (isEmpty || hasDefaultExperience) {
+							updates.experience = boilerplate.experience;
+						}
+						if (!completedSteps.includes('experience')) {
+							completedSteps.push('experience');
+						}
+					}
+					
+					if (selectedSections.education) {
+						const isEmpty = d.education.length === 0;
+						if (isEmpty) {
+							updates.education = boilerplate.education;
+						}
+						if (!completedSteps.includes('education')) {
+							completedSteps.push('education');
+						}
+					}
+					
+					// Handle projects section - create sample project if empty
+					if (selectedSections.projects) {
+						const isEmpty = d.projects.length === 0;
+						if (isEmpty) {
+							// Create a sample project based on industry
+							updates.projects = [{
+								id: generateId(),
+								name: `${targetIndustry} Project`,
+								description: `Sample project demonstrating skills relevant to ${targetIndustry}. Replace with your actual projects.`,
+								technologies: boilerplate.skills.slice(0, 5).map(s => s.name),
+								link: '',
+								startDate: '',
+								endDate: '',
+								current: false,
+								highlights: [
+									'Key achievement or outcome',
+									'Technologies or skills demonstrated',
+									'Impact or results achieved'
+								]
+							}];
+						}
+						if (!completedSteps.includes('projects')) {
+							completedSteps.push('projects');
+						}
+					}
+					
+					updates.completedSteps = completedSteps;
 					return updates;
 				});
 
@@ -335,10 +398,10 @@
 					</div>
 					<div>
 						<h2 id="modal-title" class="text-xl font-semibold text-gray-900">
-							Smart Generate Resume
+							Generate Resume Content
 						</h2>
 						<p class="text-sm text-gray-500 mt-0.5">
-							Generate from your profile or use an industry template
+							Populate sections with your profile data or industry templates
 						</p>
 					</div>
 				</div>
@@ -354,26 +417,70 @@
 
 			<!-- Content -->
 			<div class="px-6 py-6 space-y-6">
-				<!-- Generation Mode Toggle -->
-				<div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
-					<label class="flex items-start gap-3 cursor-pointer">
-						<input
-							type="checkbox"
-							bind:checked={useBoilerplate}
-							disabled={$storeIsGenerating}
-							class="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-						/>
-						<div class="flex-1">
-							<div class="font-medium text-gray-900">Use Industry Template</div>
-							<p class="text-sm text-gray-600 mt-1">
-								{#if useBoilerplate}
-									Generate using industry-specific boilerplate content (recommended if your profile is incomplete)
-								{:else}
-									Generate from your profile data (recommended if your profile is complete)
-								{/if}
-							</p>
-						</div>
+				<!-- Generation Mode Selection -->
+				<div class="space-y-3">
+					<label class="block text-sm font-medium text-gray-700">
+						Generation Mode
 					</label>
+					
+					<!-- Profile-based Generation -->
+					<button
+						type="button"
+						on:click={() => { useBoilerplate = false; }}
+						disabled={$storeIsGenerating}
+						class="w-full text-left p-4 border-2 rounded-lg transition-all hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 {!useBoilerplate
+							? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+							: 'border-gray-200'}"
+					>
+						<div class="flex items-start gap-3">
+							<div class="p-2 bg-blue-100 rounded-lg mt-0.5">
+								<Sparkles class="w-5 h-5 text-blue-600" />
+							</div>
+							<div class="flex-1">
+								<div class="font-medium text-gray-900 flex items-center gap-2">
+									Generate from My Profile
+									{#if !useBoilerplate}
+										<span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Selected</span>
+									{/if}
+								</div>
+								<p class="text-sm text-gray-600 mt-1">
+									Uses your actual profile data to populate sections. Best for your primary industry/career focus.
+								</p>
+								{#if $userProfile?.target_industry && !useBoilerplate}
+									<p class="text-xs text-blue-600 mt-2">
+										Will use your profile industry: <strong>{$userProfile.target_industry}</strong>
+									</p>
+								{/if}
+							</div>
+						</div>
+					</button>
+					
+					<!-- Industry Template Generation -->
+					<button
+						type="button"
+						on:click={() => { useBoilerplate = true; }}
+						disabled={$storeIsGenerating}
+						class="w-full text-left p-4 border-2 rounded-lg transition-all hover:border-purple-300 hover:bg-purple-50 disabled:opacity-50 {useBoilerplate
+							? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
+							: 'border-gray-200'}"
+					>
+						<div class="flex items-start gap-3">
+							<div class="p-2 bg-purple-100 rounded-lg mt-0.5">
+								<span class="text-xl">📋</span>
+							</div>
+							<div class="flex-1">
+								<div class="font-medium text-gray-900 flex items-center gap-2">
+									Use Industry Template
+									{#if useBoilerplate}
+										<span class="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-0.5 rounded">Selected</span>
+									{/if}
+								</div>
+								<p class="text-sm text-gray-600 mt-1">
+									Hybrid approach: Industry-specific boilerplate mixed with relevant profile data. Perfect for career changes or targeting different industries.
+								</p>
+							</div>
+						</div>
+					</button>
 				</div>
 
 				<!-- Strategy Recommendation -->
@@ -464,10 +571,53 @@
 				<!-- Target Industry -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 mb-3">
-						Target Industry {useBoilerplate ? '(Required)' : '(Optional)'}
+						{#if useBoilerplate}
+							Select Target Industry <span class="text-red-500">*</span>
+						{:else}
+							Target Industry (Optional - Override Profile)
+						{/if}
 					</label>
+					
+					<!-- Auto-detect option for profile mode -->
+					{#if !useBoilerplate}
+						<button
+							type="button"
+							on:click={() => {
+								targetIndustry = '';
+								handleIndustryChange();
+							}}
+							disabled={$storeIsGenerating}
+							class="w-full mb-3 text-left p-3 border-2 rounded-lg transition-all hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 {targetIndustry === ''
+								? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+								: 'border-gray-200'}"
+						>
+							<div class="flex items-center gap-2">
+								<span class="text-xl">🤖</span>
+								<div class="flex-1">
+									<div class="text-sm font-medium text-gray-900">
+										Use Profile Industry
+									</div>
+									<div class="text-xs text-gray-500">
+										{#if $userProfile?.target_industry}
+											Currently set to: <strong>{$userProfile.target_industry}</strong>
+										{:else}
+											No industry set in profile
+										{/if}
+									</div>
+								</div>
+								{#if targetIndustry === ''}
+									<span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded">Active</span>
+								{/if}
+							</div>
+						</button>
+						
+						<p class="text-xs text-gray-600 mb-3">
+							Or select a different industry below to override:
+						</p>
+					{/if}
+					
 					<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-						{#each industries as industry}
+						{#each industries.slice(1) as industry}
 							<button
 								type="button"
 								on:click={() => {
@@ -475,9 +625,11 @@
 									handleIndustryChange();
 								}}
 								disabled={$storeIsGenerating}
-								class="text-left p-3 border-2 rounded-lg transition-all hover:border-purple-300 hover:bg-purple-50 disabled:opacity-50 {targetIndustry === industry.value
-									? 'border-purple-500 bg-purple-50'
-									: 'border-gray-200'}"
+								class="text-left p-3 border-2 rounded-lg transition-all disabled:opacity-50 {targetIndustry === industry.value
+									? useBoilerplate 
+										? 'border-purple-500 bg-purple-50 hover:border-purple-600'
+										: 'border-blue-500 bg-blue-50 hover:border-blue-600'
+									: 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}"
 							>
 								<div class="flex items-center gap-2">
 									<span class="text-xl">{industry.icon}</span>
@@ -495,25 +647,39 @@
 							</button>
 						{/each}
 					</div>
-					<p class="mt-2 text-xs text-gray-500">
-						{#if useBoilerplate}
-							Select an industry to use its template content
-						{:else}
-							Select to tailor content, or leave as "Auto-detect" to use your profile's industry
-						{/if}
-					</p>
+					
+					<div class="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+						<p class="text-xs text-gray-600">
+							{#if useBoilerplate}
+								<strong>Industry Template Mode:</strong> Select an industry to use its boilerplate content mixed with relevant data from your profile.
+							{:else}
+								<strong>Profile Mode:</strong> Uses your profile's industry by default. Select a different industry to tailor the content for that field.
+							{/if}
+						</p>
+					</div>
 				</div>
 
 				<!-- Info Box -->
-				<div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-					<p class="text-sm text-gray-600">
-						<strong class="text-gray-900">Note:</strong> 
-						{#if useBoilerplate}
-							This will populate the selected sections with industry-specific template content. You can edit everything afterwards.
-						{:else}
-							This will populate the selected sections with data from your profile. Empty fields will be filled, but existing content you've edited will be preserved.
-						{/if}
-					</p>
+				<div class="border rounded-lg p-4 {useBoilerplate ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'}">
+					<div class="flex items-start gap-2">
+						<AlertCircle class="w-5 h-5 {useBoilerplate ? 'text-purple-600' : 'text-blue-600'} mt-0.5 flex-shrink-0" />
+						<div class="flex-1">
+							<p class="text-sm font-medium {useBoilerplate ? 'text-purple-900' : 'text-blue-900'} mb-1">
+								{#if useBoilerplate}
+									Industry Template Mode
+								{:else}
+									Profile-Based Generation
+								{/if}
+							</p>
+							<p class="text-sm {useBoilerplate ? 'text-purple-700' : 'text-blue-700'}">
+								{#if useBoilerplate}
+									Selected sections will be populated with industry-specific boilerplate content mixed with relevant data from your profile (name, contact info, skills). Perfect for creating resumes for different industries or career changes.
+								{:else}
+									Selected sections will be populated with your actual profile data. Empty fields will be filled, but any content you've already edited will be preserved. Best for your primary career focus.
+								{/if}
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 

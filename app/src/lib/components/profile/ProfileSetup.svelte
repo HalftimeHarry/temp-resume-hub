@@ -36,7 +36,7 @@
     salary_expectation_min: null,
     salary_expectation_max: null,
     
-    // New fields for first-time job seekers
+    // Fields for first-time job seekers (stored in onboarding_data)
     academic_projects: '',
     volunteer_experience: '',
     extracurricular_activities: '',
@@ -148,7 +148,7 @@
       salary_expectation_min: $userProfile.salary_expectation_min || null,
       salary_expectation_max: $userProfile.salary_expectation_max || null,
       
-      // New fields for first-time job seekers
+      // First-time job seeker fields
       academic_projects: $userProfile.academic_projects || '',
       volunteer_experience: $userProfile.volunteer_experience || '',
       extracurricular_activities: $userProfile.extracurricular_activities || '',
@@ -186,7 +186,26 @@
     error = '';
     
     try {
-      const result = await userProfileStore.saveProfile(formData);
+      // Validate required fields
+      if (!formData.target_industry || !formData.experience_level) {
+        error = 'Please complete all required fields (Industry and Experience Level)';
+        toast.error('Validation Error', {
+          description: error
+        });
+        isSubmitting = false;
+        return;
+      }
+      
+      // Clean up empty string fields - convert to undefined for optional fields
+      const cleanedData = { ...formData };
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === '' && key !== 'target_industry' && key !== 'experience_level') {
+          cleanedData[key] = undefined;
+        }
+      });
+      
+      console.log('💾 Saving profile data:', cleanedData);
+      const result = await userProfileStore.saveProfile(cleanedData);
       
       if (result) {
         toast.success('Profile saved successfully!', {
@@ -200,6 +219,7 @@
         });
       }
     } catch (err: any) {
+      console.error('Profile save error:', err);
       error = err.message || 'An error occurred while saving your profile.';
       toast.error('Failed to save profile', {
         description: error
