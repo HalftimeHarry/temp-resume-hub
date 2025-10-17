@@ -389,10 +389,31 @@
       const timestamp = Date.now().toString().slice(-6);
       const newSlug = `${baseSlug}-${industrySlug}-${timestamp}`;
 
-      // Create the new resume with adapted content
+      // Ensure personalInfo is preserved from original resume
+      const adaptedContent = {
+        ...targetResume.content,
+        ...result.resume.content,
+        personalInfo: targetResume.content?.personalInfo || {
+          fullName: '',
+          email: '',
+          phone: '',
+          location: ''
+        }
+      };
+
+      // Create the new resume with adapted content, preserving all original fields
       const newResume = await pb.collection('resumes').create({
-        ...result.resume,
-        slug: newSlug
+        user: targetResume.user,
+        template: targetResume.template,
+        title: result.resume.title || `${safeTitle} - ${industry}`,
+        slug: newSlug,
+        is_public: false,
+        purpose: purpose,
+        target_industry: industry,
+        content: adaptedContent,
+        completion_percentage: targetResume.completion_percentage || 0,
+        sections_completed: targetResume.sections_completed || 0,
+        sections_total: targetResume.sections_total || 0
       });
 
       // Refresh the resumes list
@@ -611,13 +632,7 @@
             >
               + New Resume
             </button>
-            <button
-              class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
-              on:click={() => showSmartGenerate = true}
-            >
-              <Sparkles class="h-4 w-4" />
-              Smart Generate
-            </button>
+
           </div>
           {#if user}
             <div class="flex items-center gap-2 ml-2">
@@ -1086,13 +1101,6 @@
                 >
                   <Plus class="h-4 w-4 mr-2" />
                   Create Resume
-                </button>
-                <button
-                  class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-purple-600 text-white hover:bg-purple-700 h-10 py-2 px-4"
-                  on:click={() => showSmartGenerate = true}
-                >
-                  <Sparkles class="h-4 w-4 mr-2" />
-                  Smart Generate
                 </button>
               </div>
             {:else}
