@@ -1189,15 +1189,12 @@
                       <Edit3 class="h-4 w-4 sm:mr-1" />
                       <span class="hidden sm:inline">Edit</span>
                     </Button>
-                    <Button variant="outline" size="sm" on:click={() => openResumeSettings(resume)} class="flex-shrink-0" title="Resume Settings">
-                      <Settings class="h-4 w-4" />
+                    <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="flex-shrink-0" title="Share Resume">
+                      <Share2 class="h-4 w-4 sm:mr-1" />
+                      <span class="hidden sm:inline">Share</span>
                     </Button>
                     
                     {#if viewMode === 'list'}
-                      <Button variant="outline" size="sm" on:click={() => shareResume(resume)} class="hidden md:flex flex-shrink-0">
-                        <Share2 class="h-4 w-4 mr-1" />
-                        Share
-                      </Button>
                       <Button variant="outline" size="sm" on:click={() => duplicateResume(resume)} class="hidden md:flex flex-shrink-0">
                         <Copy class="h-4 w-4 mr-1" />
                         Duplicate
