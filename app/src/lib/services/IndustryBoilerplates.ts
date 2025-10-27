@@ -20,41 +20,42 @@ export interface IndustryBoilerplate {
  */
 const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
   'Technology': {
-    summary: 'Results-driven technology professional with expertise in software development and digital innovation. Proven ability to design, develop, and deploy scalable solutions. Strong technical skills combined with excellent problem-solving abilities and a passion for emerging technologies.',
+    summary: 'Software developer with hands-on experience building web applications using modern JavaScript frameworks and cloud technologies. Proficient in full-stack development with focus on creating responsive, user-friendly interfaces. Strong problem-solving skills and collaborative team player in Agile environments.',
     skills: [
-      { id: generateId(), name: 'JavaScript', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Python', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'React', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Node.js', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'SQL', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Git', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Agile/Scrum', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Problem Solving', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Team Collaboration', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Technical Communication', level: 'intermediate', category: 'soft' }
+      { id: generateId(), name: 'JavaScript (ES6+)', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'React & Redux', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Node.js & Express', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'HTML5 & CSS3', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'SQL & MongoDB', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Git & GitHub', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'RESTful APIs', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Agile/Scrum Methodology', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Problem Solving & Debugging', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Team Collaboration', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['software', 'development', 'engineering', 'technical', 'digital', 'innovation', 'agile', 'scalable'],
+    keywords: ['software', 'development', 'engineering', 'JavaScript', 'React', 'full-stack', 'agile', 'web applications'],
     experience: [
       {
         id: generateId(),
-        company: 'Tech Solutions Inc.',
-        position: 'Software Developer',
+        company: 'TechVenture Solutions',
+        position: 'Junior Software Developer',
         location: 'San Francisco, CA',
         startDate: '2023-06',
         endDate: '2024-01',
         current: false,
-        description: 'Developed and maintained web applications using modern JavaScript frameworks and cloud technologies.',
+        description: 'Developed and maintained responsive web applications using React, Node.js, and MongoDB in collaborative Agile team environment.',
         highlights: [
-          'Built responsive web applications serving 10,000+ users',
-          'Collaborated with cross-functional teams in Agile environment',
-          'Reduced page load times by 40% through optimization'
+          'Built 5 full-stack features serving 15,000+ active users',
+          'Improved application performance by 35% through code optimization',
+          'Participated in daily standups and bi-weekly sprint planning',
+          'Wrote unit tests achieving 85% code coverage'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'State University',
+        institution: 'San Francisco State University',
         degree: 'Bachelor of Science',
         field: 'Computer Science',
         location: 'San Francisco, CA',
@@ -62,335 +63,342 @@ const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
         endDate: '2023-05',
         current: false,
         gpa: '3.7/4.0',
-        honors: ['Dean\'s List'],
-        description: 'Focused on software engineering, algorithms, and web development'
+        honors: ['Dean\'s List (4 semesters)', 'CS Department Scholarship'],
+        description: 'Coursework in data structures, algorithms, web development, and software engineering'
       }
     ]
   },
   'Healthcare': {
-    summary: 'Dedicated healthcare professional committed to delivering exceptional patient care and improving health outcomes. Strong clinical knowledge combined with compassionate patient interaction and adherence to healthcare regulations. Experienced in collaborative care environments.',
+    summary: 'Compassionate healthcare professional dedicated to delivering high-quality patient care in fast-paced clinical settings. Certified Medical Assistant with expertise in patient intake, vital signs, EHR documentation, and HIPAA compliance. Strong clinical and interpersonal skills with commitment to patient safety and satisfaction.',
     skills: [
-      { id: generateId(), name: 'Patient Care', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Patient Care & Assessment', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Vital Signs & Measurements', level: 'expert', category: 'technical' },
       { id: generateId(), name: 'Medical Terminology', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'HIPAA Compliance', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Electronic Health Records (EHR)', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'EHR Systems (Epic/Cerner)', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'HIPAA Compliance', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Phlebotomy & Injections', level: 'intermediate', category: 'technical' },
       { id: generateId(), name: 'Clinical Documentation', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Patient Assessment', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Patient Communication', level: 'expert', category: 'soft' },
       { id: generateId(), name: 'Empathy & Compassion', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Communication', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Attention to Detail', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Teamwork', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Multitasking & Organization', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['patient', 'clinical', 'medical', 'healthcare', 'treatment', 'care', 'HIPAA', 'compliance'],
+    keywords: ['patient care', 'clinical', 'medical assistant', 'healthcare', 'EHR', 'HIPAA', 'vital signs', 'medical'],
     experience: [
       {
         id: generateId(),
-        company: 'City Medical Center',
-        position: 'Medical Assistant',
+        company: 'Boston Family Medical Center',
+        position: 'Certified Medical Assistant',
         location: 'Boston, MA',
         startDate: '2023-03',
         endDate: '2024-01',
         current: false,
-        description: 'Provided patient care support and administrative assistance in busy medical practice.',
+        description: 'Provided direct patient care and clinical support in primary care practice serving 40+ patients daily, including intake, vital signs, EHR documentation, and care coordination.',
         highlights: [
-          'Assisted with 30+ patient appointments daily',
-          'Maintained accurate EHR documentation in compliance with HIPAA',
-          'Coordinated patient care with healthcare team members'
+          'Performed patient intake and recorded vital signs for 35-40 patients daily',
+          'Maintained 100% HIPAA compliance in all patient interactions and documentation',
+          'Assisted physicians with examinations, procedures, and patient education',
+          'Achieved 98% patient satisfaction rating through compassionate care'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Healthcare Training Academy',
+        institution: 'Boston Medical Training Institute',
         degree: 'Certificate',
         field: 'Medical Assisting',
         location: 'Boston, MA',
         startDate: '2022-01',
         endDate: '2022-12',
         current: false,
-        gpa: '3.8/4.0',
-        honors: ['Clinical Excellence Award'],
-        description: 'Comprehensive training in patient care, medical procedures, and healthcare administration'
+        gpa: '3.9/4.0',
+        honors: ['Certified Medical Assistant (CMA)', 'Clinical Excellence Award'],
+        description: 'Completed 720-hour program including 160 hours of clinical externship'
       }
     ]
   },
   'Finance': {
-    summary: 'Detail-oriented finance professional with strong analytical skills and expertise in financial analysis, risk management, and regulatory compliance. Proven track record of optimizing financial performance and delivering data-driven insights to support strategic decision-making.',
+    summary: 'Analytical finance professional with expertise in financial modeling, data analysis, and investment research. Proficient in Excel, Bloomberg Terminal, and financial reporting. Strong quantitative skills with ability to translate complex financial data into actionable insights. Detail-oriented with commitment to accuracy and regulatory compliance.',
     skills: [
-      { id: generateId(), name: 'Financial Analysis', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Excel & Financial Modeling', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Risk Management', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Regulatory Compliance', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Portfolio Management', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Financial Reporting', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'QuickBooks/SAP', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Analytical Thinking', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Financial Analysis & Modeling', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Excel (Advanced Functions, VBA)', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Bloomberg Terminal', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Financial Reporting & GAAP', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Valuation & DCF Analysis', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Risk Assessment', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'QuickBooks & SAP', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Analytical & Quantitative Skills', level: 'expert', category: 'soft' },
       { id: generateId(), name: 'Attention to Detail', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Communication', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Communication & Presentation', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['financial', 'investment', 'portfolio', 'risk', 'compliance', 'regulatory', 'ROI', 'analysis'],
+    keywords: ['financial analysis', 'investment', 'portfolio', 'modeling', 'Excel', 'Bloomberg', 'valuation', 'reporting'],
     experience: [
       {
         id: generateId(),
-        company: 'Premier Financial Group',
-        position: 'Financial Analyst',
+        company: 'Sterling Investment Partners',
+        position: 'Junior Financial Analyst',
         location: 'New York, NY',
         startDate: '2023-06',
         endDate: '2024-01',
         current: false,
-        description: 'Conducted financial analysis and reporting to support investment decisions and portfolio management.',
+        description: 'Performed financial analysis, built valuation models, and prepared investment reports for equity research team covering technology and healthcare sectors.',
         highlights: [
-          'Analyzed financial data for 20+ client portfolios',
-          'Created detailed financial models and forecasts',
-          'Ensured compliance with regulatory requirements'
+          'Built financial models for 25+ companies with 95% forecast accuracy',
+          'Analyzed quarterly earnings reports and prepared investment summaries',
+          'Created Excel dashboards tracking $150M portfolio performance',
+          'Presented findings to senior analysts in weekly investment committee meetings'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Business University',
+        institution: 'New York University - Stern School of Business',
         degree: 'Bachelor of Science',
         field: 'Finance',
         location: 'New York, NY',
         startDate: '2019-09',
         endDate: '2023-05',
         current: false,
-        gpa: '3.6/4.0',
-        honors: ['Finance Honor Society'],
-        description: 'Specialized in financial analysis, investment management, and corporate finance'
+        gpa: '3.7/4.0',
+        honors: ['Dean\'s List', 'Finance Society Member', 'CFA Level I Candidate'],
+        description: 'Concentrated in corporate finance, investment analysis, and financial markets'
       }
     ]
   },
   'Education': {
-    summary: 'Passionate educator dedicated to fostering student growth and creating engaging learning environments. Skilled in curriculum development, differentiated instruction, and leveraging technology to enhance educational outcomes. Committed to student success and continuous professional development.',
+    summary: 'Dedicated educator passionate about creating inclusive, engaging learning environments that foster student growth and academic achievement. Experienced in lesson planning, classroom management, and differentiated instruction. Skilled in educational technology and data-driven assessment. Committed to supporting diverse learners and collaborating with families and colleagues.',
     skills: [
-      { id: generateId(), name: 'Curriculum Development', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Lesson Planning', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Lesson Planning & Curriculum Design', level: 'advanced', category: 'technical' },
       { id: generateId(), name: 'Classroom Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Student Assessment', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Differentiated Instruction', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Educational Technology', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Google Classroom/Canvas', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Communication', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Patience', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Adaptability', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Differentiated Instruction', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Student Assessment & Data Analysis', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Google Classroom & Canvas LMS', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Educational Technology Integration', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Special Education Support', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Communication & Collaboration', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Patience & Empathy', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Adaptability & Problem-Solving', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['student', 'learning', 'curriculum', 'teaching', 'academic', 'educational', 'pedagogy', 'assessment'],
+    keywords: ['teaching', 'education', 'curriculum', 'classroom', 'student', 'learning', 'instruction', 'assessment'],
     experience: [
       {
         id: generateId(),
-        company: 'Lincoln Elementary School',
-        position: 'Teaching Assistant',
+        company: 'Roosevelt Elementary School',
+        position: 'Student Teacher / Teaching Assistant',
         location: 'Chicago, IL',
         startDate: '2023-08',
-        endDate: '2024-01',
+        endDate: '2024-05',
         current: false,
-        description: 'Supported classroom instruction and student learning in elementary education setting.',
+        description: 'Supported lead teacher in 3rd-grade classroom of 24 students, developing and delivering lessons in all core subjects while managing classroom activities and providing individualized student support.',
         highlights: [
-          'Assisted lead teacher with classroom of 25 students',
-          'Developed engaging learning activities and materials',
-          'Provided one-on-one support to students with diverse needs'
+          'Planned and delivered 50+ lessons across math, reading, and science',
+          'Implemented differentiated instruction strategies for diverse learners',
+          'Improved student reading scores by 15% through targeted interventions',
+          'Collaborated with parents through weekly communication and conferences'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Teachers College',
+        institution: 'University of Illinois at Chicago',
         degree: 'Bachelor of Arts',
         field: 'Elementary Education',
         location: 'Chicago, IL',
         startDate: '2020-09',
         endDate: '2024-05',
         current: false,
-        gpa: '3.7/4.0',
-        honors: ['Education Honor Society'],
-        description: 'Completed student teaching practicum and coursework in curriculum development'
+        gpa: '3.8/4.0',
+        honors: ['Kappa Delta Pi Education Honor Society', 'Dean\'s List', 'Illinois Teaching License (Pending)'],
+        description: 'Completed 16-week student teaching practicum and coursework in literacy, mathematics pedagogy, and child development'
       }
     ]
   },
   'Retail': {
-    summary: 'Customer-focused retail professional with proven success in driving sales, enhancing customer experiences, and managing inventory. Strong interpersonal skills combined with product knowledge and a results-oriented approach to achieving business objectives.',
+    summary: 'Energetic retail sales professional with proven track record of exceeding sales goals and delivering exceptional customer experiences. Skilled in product knowledge, visual merchandising, and POS systems. Strong ability to build customer relationships, upsell products, and work effectively in fast-paced team environments.',
     skills: [
-      { id: generateId(), name: 'Customer Service', level: 'expert', category: 'technical' },
-      { id: generateId(), name: 'Sales Techniques', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Point of Sale (POS) Systems', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Customer Service Excellence', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Sales & Upselling Techniques', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'POS Systems & Cash Handling', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Visual Merchandising', level: 'advanced', category: 'technical' },
       { id: generateId(), name: 'Inventory Management', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Merchandising', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Cash Handling', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Product Knowledge', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Communication', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Problem Solving', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Teamwork', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Product Knowledge & Recommendations', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Loss Prevention', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Communication & Interpersonal Skills', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Problem Resolution', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Teamwork & Collaboration', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['customer', 'sales', 'merchandise', 'retail', 'commerce', 'consumer', 'inventory', 'POS'],
+    keywords: ['retail', 'sales', 'customer service', 'merchandising', 'POS', 'inventory', 'upselling', 'store operations'],
     experience: [
       {
         id: generateId(),
-        company: 'Fashion Retail Store',
+        company: 'Urban Outfitters',
         position: 'Sales Associate',
         location: 'Los Angeles, CA',
         startDate: '2023-01',
         endDate: '2024-01',
         current: false,
-        description: 'Provided exceptional customer service and drove sales in fast-paced retail environment.',
+        description: 'Delivered exceptional customer service and drove sales in high-volume retail store, assisting 50+ customers daily with product selection, styling advice, and checkout.',
         highlights: [
-          'Consistently exceeded monthly sales targets by 15%',
-          'Maintained visual merchandising standards',
-          'Processed transactions and managed cash handling accurately'
+          'Exceeded monthly sales targets by average of 18% through effective upselling',
+          'Achieved $85K in personal sales over 12-month period',
+          'Maintained 4.9/5.0 customer satisfaction rating based on feedback surveys',
+          'Trained 3 new team members on POS systems and sales techniques'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Community College',
+        institution: 'Santa Monica College',
         degree: 'Associate Degree',
         field: 'Business Administration',
-        location: 'Los Angeles, CA',
+        location: 'Santa Monica, CA',
         startDate: '2021-09',
-        endDate: '2023-05',
+        endDate: '2023-12',
         current: false,
         gpa: '3.4/4.0',
-        honors: [],
-        description: 'Focused on retail management, customer service, and business operations'
+        honors: ['Business Department Award'],
+        description: 'Coursework in retail management, marketing, and customer relationship management'
       }
     ]
   },
   'Manufacturing': {
-    summary: 'Experienced manufacturing professional with expertise in production operations, quality control, and process optimization. Strong understanding of lean manufacturing principles and commitment to safety, efficiency, and continuous improvement.',
+    summary: 'Safety-focused manufacturing technician with hands-on experience in production operations, quality assurance, and equipment maintenance. Trained in Lean Manufacturing and 5S principles. Strong mechanical aptitude with commitment to meeting production targets while maintaining quality standards and workplace safety.',
     skills: [
-      { id: generateId(), name: 'Production Operations', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Quality Control', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Lean Manufacturing', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Six Sigma', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Safety Compliance', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Equipment Operation', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Supply Chain Management', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Problem Solving', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Production Operations & Assembly', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Quality Control & Inspection', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'CNC Machine Operation', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Lean Manufacturing & 5S', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'OSHA Safety Standards', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Blueprint Reading & Measurements', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Equipment Maintenance', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Problem Solving & Troubleshooting', level: 'advanced', category: 'soft' },
       { id: generateId(), name: 'Attention to Detail', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Teamwork', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Teamwork & Communication', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['production', 'manufacturing', 'operations', 'quality', 'process', 'efficiency', 'lean', 'Six Sigma'],
+    keywords: ['manufacturing', 'production', 'quality control', 'CNC', 'lean', 'assembly', 'safety', 'operations'],
     experience: [
       {
         id: generateId(),
-        company: 'Advanced Manufacturing Co.',
+        company: 'Precision Manufacturing Inc.',
         position: 'Production Technician',
         location: 'Detroit, MI',
         startDate: '2023-02',
         endDate: '2024-01',
         current: false,
-        description: 'Operated production equipment and maintained quality standards in manufacturing facility.',
+        description: 'Operated CNC machines and assembly equipment in automotive parts manufacturing facility, performing quality inspections and maintaining production schedules.',
         highlights: [
-          'Maintained 99% quality compliance rate',
-          'Operated CNC machinery and production equipment safely',
-          'Participated in continuous improvement initiatives'
+          'Achieved 99.2% quality compliance rate across 5,000+ parts produced',
+          'Operated 3 different CNC machines with zero safety incidents',
+          'Reduced machine downtime by 12% through preventive maintenance',
+          'Participated in Kaizen event that improved line efficiency by 8%'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Technical Institute',
+        institution: 'Wayne County Community College',
         degree: 'Certificate',
         field: 'Manufacturing Technology',
         location: 'Detroit, MI',
         startDate: '2022-01',
         endDate: '2022-12',
         current: false,
-        gpa: '3.5/4.0',
-        honors: ['Technical Excellence Award'],
-        description: 'Training in manufacturing processes, quality control, and safety procedures'
+        gpa: '3.6/4.0',
+        honors: ['OSHA 10-Hour Certified', 'Technical Excellence Award'],
+        description: 'Hands-on training in CNC operation, quality control, blueprint reading, and manufacturing safety'
       }
     ]
   },
   'Marketing': {
-    summary: 'Creative marketing professional with expertise in digital marketing, content creation, and campaign management. Data-driven approach to developing strategies that increase brand awareness, engagement, and conversion rates. Strong analytical and creative skills.',
+    summary: 'Data-driven marketing professional with expertise in digital campaigns, social media management, and content strategy. Proven ability to increase brand engagement and drive conversions through creative campaigns and analytics-based optimization. Skilled in SEO, email marketing, and marketing automation platforms.',
     skills: [
-      { id: generateId(), name: 'Digital Marketing', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Content Creation', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Social Media Marketing', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'SEO/SEM', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Google Analytics', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Email Marketing', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Adobe Creative Suite', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Creativity', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Communication', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Analytical Thinking', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Digital Marketing Strategy', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Social Media Management', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Content Creation & Copywriting', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Google Analytics & SEO', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Email Marketing (Mailchimp)', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Facebook Ads & Google Ads', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Canva & Adobe Creative Suite', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Creativity & Innovation', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Data Analysis', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Project Management', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['marketing', 'brand', 'campaign', 'content', 'digital', 'engagement', 'SEO', 'analytics'],
+    keywords: ['marketing', 'digital', 'social media', 'content', 'SEO', 'campaigns', 'analytics', 'brand'],
     experience: [
       {
         id: generateId(),
-        company: 'Digital Marketing Agency',
-        position: 'Marketing Coordinator',
+        company: 'Bright Digital Marketing',
+        position: 'Digital Marketing Coordinator',
         location: 'Austin, TX',
         startDate: '2023-04',
         endDate: '2024-01',
         current: false,
-        description: 'Coordinated digital marketing campaigns and content creation for diverse client portfolio.',
+        description: 'Managed social media accounts and digital campaigns for 8 clients across various industries, creating content and analyzing performance metrics to optimize engagement.',
         highlights: [
-          'Managed social media accounts with 50K+ combined followers',
-          'Created engaging content that increased engagement by 30%',
-          'Analyzed campaign performance using Google Analytics'
+          'Grew combined social media following from 45K to 78K followers (73% increase)',
+          'Created 150+ pieces of engaging content resulting in 42% higher engagement',
+          'Managed $15K monthly ad budget across Facebook and Google Ads',
+          'Improved email open rates by 28% through A/B testing and segmentation'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Marketing University',
-        degree: 'Bachelor of Science',
+        institution: 'University of Texas at Austin',
+        degree: 'Bachelor of Business Administration',
         field: 'Marketing',
         location: 'Austin, TX',
         startDate: '2019-09',
         endDate: '2023-05',
         current: false,
         gpa: '3.6/4.0',
-        honors: ['Marketing Excellence Award'],
-        description: 'Specialized in digital marketing, brand management, and consumer behavior'
+        honors: ['Marketing Honor Society', 'Dean\'s List'],
+        description: 'Specialized in digital marketing, consumer behavior, and brand strategy'
       }
     ]
   },
   'Consulting': {
-    summary: 'Strategic consultant with proven ability to analyze complex business challenges and deliver actionable recommendations. Strong analytical and communication skills combined with industry expertise. Track record of driving organizational transformation and delivering measurable results.',
+    summary: 'Analytical business consultant with expertise in process improvement, data analysis, and strategic planning. Skilled in stakeholder engagement, project management, and delivering client presentations. Strong problem-solving abilities with focus on driving operational efficiency and business transformation through data-driven insights.',
     skills: [
-      { id: generateId(), name: 'Business Analysis', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Strategic Planning', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Business Process Analysis', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Strategic Planning & Frameworks', level: 'advanced', category: 'technical' },
       { id: generateId(), name: 'Stakeholder Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Data Analysis', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'PowerPoint/Presentations', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Data Analysis & Visualization', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'PowerPoint & Executive Presentations', level: 'expert', category: 'technical' },
       { id: generateId(), name: 'Excel & Financial Modeling', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Project Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Communication', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Problem Solving', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Leadership', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Project Management (Agile)', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Communication & Presentation', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Critical Thinking & Problem Solving', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Client Relationship Management', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['consulting', 'strategy', 'advisory', 'business', 'transformation', 'solutions', 'stakeholder', 'analysis'],
+    keywords: ['consulting', 'strategy', 'business analysis', 'process improvement', 'stakeholder', 'advisory', 'transformation'],
     experience: [
       {
         id: generateId(),
-        company: 'Strategic Consulting Group',
+        company: 'Deloitte Consulting',
         position: 'Business Analyst',
         location: 'Washington, DC',
         startDate: '2023-06',
         endDate: '2024-01',
         current: false,
-        description: 'Conducted business analysis and provided strategic recommendations to client organizations.',
+        description: 'Supported consulting engagements for Fortune 500 clients, conducting business analysis, developing recommendations, and creating executive presentations for process improvement initiatives.',
         highlights: [
-          'Analyzed business processes for 5+ client engagements',
-          'Developed strategic recommendations that improved efficiency by 25%',
-          'Created executive presentations and reports'
+          'Analyzed operations for 4 client engagements totaling $2M in project value',
+          'Identified process improvements projected to save clients $500K annually',
+          'Created 30+ executive PowerPoint presentations for C-suite stakeholders',
+          'Led workshops with 15+ stakeholders to gather requirements and build consensus'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Business School',
+        institution: 'Georgetown University - McDonough School of Business',
         degree: 'Master of Business Administration',
         field: 'Strategy & Consulting',
         location: 'Washington, DC',
@@ -404,20 +412,20 @@ const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
     ]
   },
   'Real Estate': {
-    summary: 'Results-driven real estate professional with expertise in property management, sales, and client relations. Strong negotiation skills combined with market knowledge and commitment to client satisfaction. Proven track record of closing deals and building lasting relationships.',
+    summary: 'Results-driven real estate professional with expertise in property sales, market analysis, and client relationship management. Licensed agent with proven ability to close deals, negotiate favorable terms, and provide exceptional service. Strong knowledge of local market trends, property valuation, and MLS systems.',
     skills: [
-      { id: generateId(), name: 'Property Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Sales & Negotiation', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Market Analysis', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Property Sales & Leasing', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Negotiation & Closing', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Market Analysis & CMA', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'MLS & Real Estate Software', level: 'advanced', category: 'technical' },
       { id: generateId(), name: 'Contract Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Client Relations', level: 'expert', category: 'technical' },
       { id: generateId(), name: 'Property Valuation', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'MLS Systems', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Communication', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Networking', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Time Management', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Open House Coordination', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Client Relationship Management', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Networking & Prospecting', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Communication & Presentation', level: 'expert', category: 'soft' }
     ],
-    keywords: ['property', 'real estate', 'construction', 'development', 'sales', 'leasing', 'market', 'valuation'],
+    keywords: ['property', 'real estate', 'sales', 'leasing', 'market', 'valuation', 'MLS', 'negotiation', 'closing'],
     experience: [
       {
         id: generateId(),
@@ -427,11 +435,12 @@ const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
         startDate: '2023-03',
         endDate: '2024-01',
         current: false,
-        description: 'Assisted clients with property sales, purchases, and leasing transactions.',
+        description: 'Represented buyers and sellers in residential real estate transactions, providing comprehensive market analysis and negotiation services.',
         highlights: [
-          'Closed 15+ property transactions totaling $3M in sales',
-          'Built strong client relationships through excellent service',
-          'Conducted property showings and market analysis'
+          'Closed $4.2M in property sales across 18 transactions in first year',
+          'Achieved 95% client satisfaction rating through responsive communication',
+          'Conducted 40+ property showings and 12 successful open houses',
+          'Built referral network generating 30% of new business'
         ]
       }
     ],
@@ -440,101 +449,103 @@ const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
         id: generateId(),
         institution: 'Real Estate Institute',
         degree: 'Certificate',
-        field: 'Real Estate',
+        field: 'Real Estate Sales',
         location: 'Phoenix, AZ',
         startDate: '2022-06',
         endDate: '2022-12',
         current: false,
         gpa: '',
-        honors: [],
-        description: 'Completed real estate licensing coursework and state certification'
+        honors: ['Licensed Real Estate Salesperson'],
+        description: 'Completed 90-hour pre-licensing course covering property law, contracts, and ethics'
       }
     ]
   },
   'Hospitality': {
-    summary: 'Dedicated hospitality professional with passion for delivering exceptional guest experiences. Strong service orientation combined with operational knowledge and team leadership abilities. Committed to maintaining high standards and creating memorable experiences for guests.',
+    summary: 'Service-oriented hospitality professional dedicated to creating exceptional guest experiences in fast-paced environments. Skilled in front desk operations, reservation management, and guest relations. Strong multitasking abilities with positive attitude and commitment to exceeding guest expectations.',
     skills: [
-      { id: generateId(), name: 'Guest Services', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Guest Services & Relations', level: 'expert', category: 'technical' },
       { id: generateId(), name: 'Front Desk Operations', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Reservation Systems', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Event Coordination', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Food & Beverage Service', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Reservation Systems (Opera, Maestro)', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Check-in/Check-out Procedures', level: 'expert', category: 'technical' },
       { id: generateId(), name: 'Conflict Resolution', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'POS Systems', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Customer Service', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Multitasking', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Teamwork', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'POS & Payment Processing', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Upselling & Revenue Generation', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Customer Service Excellence', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Multitasking & Time Management', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Communication & Teamwork', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['hospitality', 'service', 'guest', 'customer', 'hotel', 'restaurant', 'tourism', 'events'],
+    keywords: ['hospitality', 'hotel', 'guest services', 'front desk', 'customer service', 'reservations', 'tourism'],
     experience: [
       {
         id: generateId(),
-        company: 'Seaside Resort & Spa',
-        position: 'Guest Services Associate',
+        company: 'Oceanview Resort & Spa',
+        position: 'Front Desk Associate',
         location: 'Miami Beach, FL',
         startDate: '2023-01',
         endDate: '2024-01',
         current: false,
-        description: 'Provided exceptional guest services at upscale resort property, managing check-ins, reservations, and guest inquiries.',
+        description: 'Managed front desk operations at 200-room beachfront resort, handling guest check-ins/check-outs, reservations, and concierge services while maintaining high satisfaction standards.',
         highlights: [
-          'Maintained 95% guest satisfaction rating through attentive service',
-          'Processed 50+ daily check-ins/check-outs efficiently',
-          'Resolved guest concerns promptly, ensuring positive experiences'
+          'Processed 60+ daily check-ins/check-outs with 97% guest satisfaction rating',
+          'Upsold room upgrades and amenities generating $12K additional revenue',
+          'Resolved 95% of guest concerns on first contact without escalation',
+          'Recognized as "Employee of the Month" twice for exceptional service'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Hospitality Management Institute',
-        degree: 'Associate Degree',
+        institution: 'Florida International University',
+        degree: 'Associate of Science',
         field: 'Hospitality Management',
         location: 'Miami, FL',
         startDate: '2021-09',
         endDate: '2023-05',
         current: false,
-        gpa: '3.6/4.0',
-        honors: ['Dean\'s List'],
-        description: 'Focused on hotel operations, guest services, and hospitality industry best practices'
+        gpa: '3.7/4.0',
+        honors: ['Dean\'s List', 'Hospitality Excellence Scholarship'],
+        description: 'Coursework in hotel operations, guest services, revenue management, and hospitality technology'
       }
     ]
   },
   'Legal': {
-    summary: 'Detail-oriented legal professional with strong research, analytical, and writing skills. Expertise in legal procedures, compliance, and case management. Committed to upholding ethical standards and delivering thorough, accurate legal support.',
+    summary: 'Detail-oriented legal professional with expertise in legal research, document preparation, and case management. Proficient in Westlaw/LexisNexis research platforms and legal writing. Strong analytical skills with commitment to accuracy, confidentiality, and ethical standards. Experience supporting attorneys in litigation, contracts, and compliance matters.',
     skills: [
-      { id: generateId(), name: 'Legal Research', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Legal Writing', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Case Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Contract Review', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Compliance', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Document Preparation', level: 'expert', category: 'technical' },
-      { id: generateId(), name: 'Westlaw/LexisNexis', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Legal Research & Analysis', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Legal Writing & Drafting', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Case Management & E-Filing', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Contract Review & Analysis', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Westlaw & LexisNexis', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Document Preparation & Proofreading', level: 'expert', category: 'technical' },
+      { id: generateId(), name: 'Litigation Support', level: 'intermediate', category: 'technical' },
       { id: generateId(), name: 'Attention to Detail', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Critical Thinking', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Confidentiality', level: 'expert', category: 'soft' }
+      { id: generateId(), name: 'Critical Thinking & Analysis', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Confidentiality & Ethics', level: 'expert', category: 'soft' }
     ],
-    keywords: ['legal', 'law', 'compliance', 'regulatory', 'litigation', 'contracts', 'research', 'attorney'],
+    keywords: ['legal', 'law', 'paralegal', 'litigation', 'contracts', 'research', 'compliance', 'attorney support'],
     experience: [
       {
         id: generateId(),
-        company: 'Law Firm Associates',
-        position: 'Legal Assistant',
+        company: 'Morrison & Associates Law Firm',
+        position: 'Legal Assistant / Paralegal',
         location: 'Philadelphia, PA',
         startDate: '2023-05',
         endDate: '2024-01',
         current: false,
-        description: 'Provided legal support including research, document preparation, and case management.',
+        description: 'Provided comprehensive legal support to attorneys in civil litigation and corporate law matters, including research, document preparation, and case management.',
         highlights: [
-          'Conducted legal research for 20+ cases',
-          'Prepared legal documents and correspondence',
-          'Maintained confidential client files and case records'
+          'Conducted legal research using Westlaw for 25+ active cases',
+          'Drafted pleadings, motions, and discovery documents with 99% accuracy',
+          'Managed case files and coordinated e-filing in state and federal courts',
+          'Prepared trial binders and exhibits for 8 successful court proceedings'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Legal Studies College',
+        institution: 'Temple University',
         degree: 'Bachelor of Arts',
         field: 'Legal Studies',
         location: 'Philadelphia, PA',
@@ -542,56 +553,57 @@ const INDUSTRY_BOILERPLATES: Record<string, IndustryBoilerplate> = {
         endDate: '2023-05',
         current: false,
         gpa: '3.7/4.0',
-        honors: ['Pre-Law Honor Society'],
-        description: 'Focused on legal research, writing, and paralegal studies'
+        honors: ['Pre-Law Honor Society', 'Dean\'s List (6 semesters)'],
+        description: 'Comprehensive coursework in legal research, writing, civil procedure, and paralegal studies'
       }
     ]
   },
   'Media & Entertainment': {
-    summary: 'Creative media professional with expertise in content creation, production, and digital media. Strong storytelling abilities combined with technical skills and industry knowledge. Passionate about creating engaging content that resonates with audiences.',
+    summary: 'Creative content producer with expertise in video production, editing, and digital storytelling. Proficient in Adobe Creative Suite and social media platforms. Strong visual storytelling skills with ability to create engaging content that drives audience engagement. Experience managing projects from concept to final delivery.',
     skills: [
-      { id: generateId(), name: 'Content Creation', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Video Production', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Audio Editing', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Adobe Creative Suite', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Social Media Management', level: 'advanced', category: 'technical' },
-      { id: generateId(), name: 'Storytelling', level: 'expert', category: 'technical' },
-      { id: generateId(), name: 'Project Management', level: 'intermediate', category: 'technical' },
-      { id: generateId(), name: 'Creativity', level: 'expert', category: 'soft' },
-      { id: generateId(), name: 'Collaboration', level: 'advanced', category: 'soft' },
-      { id: generateId(), name: 'Adaptability', level: 'advanced', category: 'soft' }
+      { id: generateId(), name: 'Video Production & Editing', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Adobe Premiere Pro & After Effects', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Adobe Photoshop & Illustrator', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Audio Editing (Audition)', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Social Media Content Strategy', level: 'advanced', category: 'technical' },
+      { id: generateId(), name: 'Camera Operation & Lighting', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Scriptwriting & Storyboarding', level: 'intermediate', category: 'technical' },
+      { id: generateId(), name: 'Creativity & Visual Storytelling', level: 'expert', category: 'soft' },
+      { id: generateId(), name: 'Collaboration & Teamwork', level: 'advanced', category: 'soft' },
+      { id: generateId(), name: 'Time Management & Deadlines', level: 'advanced', category: 'soft' }
     ],
-    keywords: ['media', 'content', 'entertainment', 'creative', 'production', 'digital', 'broadcasting', 'storytelling'],
+    keywords: ['media', 'video production', 'content creation', 'editing', 'Adobe', 'creative', 'digital media', 'storytelling'],
     experience: [
       {
         id: generateId(),
-        company: 'Creative Media Studio',
-        position: 'Content Creator',
+        company: 'Skyline Media Productions',
+        position: 'Video Production Assistant',
         location: 'Los Angeles, CA',
         startDate: '2023-04',
         endDate: '2024-01',
         current: false,
-        description: 'Created engaging multimedia content for digital platforms and social media channels.',
+        description: 'Assisted in production and post-production of video content for corporate clients and social media campaigns, including shooting, editing, and motion graphics.',
         highlights: [
-          'Produced 50+ video content pieces with 500K+ total views',
-          'Managed content calendar and social media strategy',
-          'Collaborated with creative team on multimedia projects'
+          'Edited 60+ videos totaling 800K+ views across YouTube and social platforms',
+          'Managed production schedule for 3-5 concurrent video projects',
+          'Created motion graphics and lower thirds using After Effects',
+          'Reduced average editing time by 20% through efficient workflow optimization'
         ]
       }
     ],
     education: [
       {
         id: generateId(),
-        institution: 'Film & Media Arts College',
+        institution: 'University of Southern California',
         degree: 'Bachelor of Arts',
-        field: 'Media Production',
+        field: 'Film & Media Production',
         location: 'Los Angeles, CA',
         startDate: '2019-09',
         endDate: '2023-05',
         current: false,
-        gpa: '3.5/4.0',
-        honors: ['Creative Excellence Award'],
-        description: 'Specialized in video production, digital media, and content creation'
+        gpa: '3.6/4.0',
+        honors: ['Student Film Festival Winner', 'Dean\'s List'],
+        description: 'Specialized in video production, post-production, and digital media with hands-on studio experience'
       }
     ]
   }

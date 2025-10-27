@@ -782,9 +782,9 @@
 										<div class="mb-4">
 											<h3 class="font-bold text-lg">{project.name}</h3>
 											<p class={`text-gray-700 mt-1 ${getFontSizeClass()}`}>{project.description}</p>
-											{#if project.technologies && project.technologies.trim()}
+											{#if project.technologies}
 												<div class="flex flex-wrap gap-2 mt-2">
-													{#each project.technologies.split(',').map(tech => tech.trim()).filter(tech => tech) as tech}
+													{#each Array.isArray(project.technologies) ? project.technologies : project.technologies.split(',').map(tech => tech.trim()).filter(tech => tech) as tech}
 														<span class={`px-3 py-1 ${getColorClasses().secondary} rounded-full text-sm`}>
 															{tech}
 														</span>
