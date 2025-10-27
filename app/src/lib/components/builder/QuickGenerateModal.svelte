@@ -14,6 +14,7 @@
 	import { getIndustryBoilerplate, mergeSkillsWithBoilerplate } from '$lib/services/IndustryBoilerplates';
 	import { builderData } from '$lib/stores/resumeBuilder';
 	import { goto } from '$app/navigation';
+	import { generateId } from '$lib/utils';
 
 	export let open = false;
 	export let currentTemplate: ExtendedResumeTemplate | null = null;
@@ -191,10 +192,15 @@
 						}
 					}
 					
-					// Only update if current content is empty or default
+					// Only update if current content is empty or default/generic
 					if (selectedSections.summary) {
 						const isEmpty = !d.summary || d.summary.trim().length === 0;
-						if (isEmpty) {
+						const isGeneric = d.summary && (
+							d.summary.includes('Professional with strong work ethic') ||
+							d.summary.includes('Recent graduate with experience') ||
+							d.summary.length < 50
+						);
+						if (isEmpty || isGeneric) {
 							updates.summary = boilerplate.summary;
 						}
 						if (!completedSteps.includes('summary')) {
@@ -203,6 +209,10 @@
 					}
 					
 					if (selectedSections.skills) {
+						// Check if current skills are default/generic
+						const hasDefaultSkills = d.skills.length <= 4 && 
+							d.skills.some(s => s.name === 'JavaScript' || s.name === 'HTML/CSS');
+						
 						// Merge profile skills with boilerplate skills
 						const profileSkills = $userProfile?.key_skills 
 							? $userProfile.key_skills.split(',').map(s => ({
@@ -212,7 +222,14 @@
 								category: 'technical' as const
 							}))
 							: [];
-						updates.skills = mergeSkillsWithBoilerplate([...d.skills, ...profileSkills], boilerplate.skills);
+						
+						// If default skills, replace completely; otherwise merge
+						if (hasDefaultSkills) {
+							updates.skills = mergeSkillsWithBoilerplate(profileSkills, boilerplate.skills);
+						} else {
+							updates.skills = mergeSkillsWithBoilerplate([...d.skills, ...profileSkills], boilerplate.skills);
+						}
+						
 						if (!completedSteps.includes('skills')) {
 							completedSteps.push('skills');
 						}
@@ -233,7 +250,11 @@
 					
 					if (selectedSections.education) {
 						const isEmpty = d.education.length === 0;
-						if (isEmpty) {
+						const hasDefaultEducation = d.education.length === 1 && 
+							(d.education[0].institution === 'San Diego State University' ||
+							 d.education[0].institution === 'State University' ||
+							 d.education[0].institution === 'Local University');
+						if (isEmpty || hasDefaultEducation) {
 							updates.education = boilerplate.education;
 						}
 						if (!completedSteps.includes('education')) {
@@ -250,7 +271,7 @@
 								id: generateId(),
 								name: `${targetIndustry} Project`,
 								description: `Sample project demonstrating skills relevant to ${targetIndustry}. Replace with your actual projects.`,
-								technologies: boilerplate.skills.slice(0, 5).map(s => s.name),
+								technologies: boilerplate.skills.slice(0, 5).map(s => s.name).join(', '),
 								link: '',
 								startDate: '',
 								endDate: '',
